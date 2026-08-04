@@ -1,0 +1,58 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="170" y1="48" x2="1456" y2="861" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1A1136"/>
+      <stop offset="0.52" stop-color="#0F0B1F"/>
+      <stop offset="1" stop-color="#090611"/>
+    </linearGradient>
+    <radialGradient id="g1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1112 248) rotate(90) scale(300)">
+      <stop stop-color="#B14CFF" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#B14CFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1188 604) rotate(90) scale(280)">
+      <stop stop-color="#18D9FF" stop-opacity="0.68"/>
+      <stop offset="1" stop-color="#18D9FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="brand" x1="892" y1="184" x2="1336" y2="646" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF70F6"/>
+      <stop offset="0.52" stop-color="#9658FF"/>
+      <stop offset="1" stop-color="#18D9FF"/>
+    </linearGradient>
+    <filter id="glow" x="726" y="66" width="764" height="764" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="38"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" rx="42" fill="url(#bg)"/>
+  <circle cx="1110" cy="260" r="292" fill="url(#g1)"/>
+  <circle cx="1190" cy="606" r="256" fill="url(#g2)"/>
+
+  <g opacity="0.85" filter="url(#glow)">
+    <circle cx="1108" cy="440" r="218" stroke="url(#brand)" stroke-width="28"/>
+  </g>
+  <circle cx="1108" cy="440" r="212" stroke="url(#brand)" stroke-width="18"/>
+  <path d="M952 306L1048 575C1056 598 1088 598 1096 575L1158 406L1192 502C1200 525 1229 527 1239 507L1307 380" stroke="url(#brand)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M935 380H999L1036 469L1087 306L1145 507L1181 434H1274" stroke="white" stroke-opacity="0.96" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="134" y="298" fill="white" font-size="118" font-family="Arial, Helvetica, sans-serif" font-weight="700" letter-spacing="8">VIBRA</text>
+  <text x="136" y="380" fill="white" fill-opacity="0.8" font-size="34" font-family="Arial, Helvetica, sans-serif">Musica, live e connessioni che contano.</text>
+
+  <text x="136" y="502" fill="white" fill-opacity="0.92" font-size="28" font-family="Arial, Helvetica, sans-serif">Collega Spotify. Scopri concerti rilevanti. Vivi la community.</text>
+
+  <g opacity="0.95">
+    <rect x="136" y="590" width="262" height="66" rx="33" fill="#A159FF"/>
+    <text x="267" y="633" fill="white" font-size="26" font-family="Arial, Helvetica, sans-serif" font-weight="700" text-anchor="middle">Scopri i live giusti</text>
+  </g>
+
+  <g opacity="0.22">
+    <path d="M884 876C951 822 1020 788 1093 788C1150 788 1203 806 1264 840C1327 876 1376 900 1444 900H1600V900H884V876Z" fill="#1BD4FF"/>
+    <path d="M780 900C851 852 917 824 995 824C1058 824 1114 842 1172 876C1228 908 1282 924 1352 924C1422 924 1488 902 1555 860L1600 836V900H780Z" fill="#FF64F4"/>
+  </g>
+
+  <g fill="white" fill-opacity="0.12">
+    <circle cx="246" cy="138" r="5"/>
+    <circle cx="446" cy="160" r="6"/>
+    <circle cx="690" cy="250" r="8"/>
+    <circle cx="1430" cy="154" r="6"/>
+  </g>
+</svg>

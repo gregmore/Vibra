@@ -1,0 +1,72 @@
+name: Vibra CI/CD Hardening
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  flutter-test:
+    name: Flutter Frontend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Verify Formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze Code
+        run: flutter analyze
+
+      - name: Run Unit & Widget Tests with Coverage
+        run: flutter test --coverage
+
+      # (Opzionale) Upload coverage ad un servizio come Codecov
+      # - name: Upload coverage reports to Codecov
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     file: ./coverage/lcov.info
+
+      # NOTA: Per test E2E affidabili su CI
+      - name: Run E2E Integration Tests su Emulatore
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: flutter test integration_test/
+
+  supabase-test:
+    name: Supabase Backend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase Local
+        run: supabase start
+
+      - name: Run Supabase DB & RLS Tests
+        run: supabase test db
+
+      - name: Run Edge Functions Unit Tests
+        run: deno test --allow-all supabase/functions/calculate-match/index.test.ts

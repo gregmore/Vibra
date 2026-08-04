@@ -1,0 +1,43 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="80" x2="880" y2="944" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1C1238"/>
+      <stop offset="0.55" stop-color="#0F0B1F"/>
+      <stop offset="1" stop-color="#090611"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(512 350) rotate(90) scale(280)">
+      <stop stop-color="#B14CFF" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#B14CFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(512 610) rotate(90) scale(260)">
+      <stop stop-color="#18D9FF" stop-opacity="0.65"/>
+      <stop offset="1" stop-color="#18D9FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="300" y1="256" x2="724" y2="768" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F45DFF"/>
+      <stop offset="0.5" stop-color="#8F52FF"/>
+      <stop offset="1" stop-color="#18D9FF"/>
+    </linearGradient>
+    <filter id="blur" x="170" y="170" width="684" height="684" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="36"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" rx="232" fill="url(#bg)"/>
+  <circle cx="512" cy="360" r="300" fill="url(#glow1)"/>
+  <circle cx="512" cy="652" r="240" fill="url(#glow2)"/>
+
+  <g filter="url(#blur)" opacity="0.7">
+    <circle cx="512" cy="512" r="238" stroke="url(#ring)" stroke-width="28"/>
+  </g>
+
+  <circle cx="512" cy="512" r="232" stroke="url(#ring)" stroke-width="24"/>
+  <circle cx="512" cy="512" r="178" stroke="white" stroke-opacity="0.07" stroke-width="2"/>
+
+  <path d="M376 369L482 664C491 689 527 689 536 664L603 472L643 581C652 604 684 606 695 584L770 440" stroke="url(#ring)" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M359 440H430L468 548L526 369L592 581L634 494H735" stroke="white" stroke-opacity="0.94" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <circle cx="317" cy="260" r="7" fill="#18D9FF" fill-opacity="0.8"/>
+  <circle cx="774" cy="322" r="8" fill="#F45DFF" fill-opacity="0.7"/>
+  <circle cx="746" cy="756" r="10" fill="#18D9FF" fill-opacity="0.55"/>
+</svg>

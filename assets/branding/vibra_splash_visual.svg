@@ -1,0 +1,52 @@
+<svg width="1290" height="2796" viewBox="0 0 1290 2796" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="645" y1="0" x2="645" y2="2796" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1C1238"/>
+      <stop offset="0.45" stop-color="#0F0B1F"/>
+      <stop offset="1" stop-color="#090611"/>
+    </linearGradient>
+    <radialGradient id="topGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(645 760) rotate(90) scale(520)">
+      <stop stop-color="#B14CFF" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#B14CFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bottomGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(645 1800) rotate(90) scale(640)">
+      <stop stop-color="#18D9FF" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#18D9FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="brand" x1="398" y1="520" x2="904" y2="1152" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF71F6"/>
+      <stop offset="0.55" stop-color="#9658FF"/>
+      <stop offset="1" stop-color="#19D7FF"/>
+    </linearGradient>
+    <filter id="softGlow" x="238" y="372" width="814" height="814" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="44"/>
+    </filter>
+  </defs>
+
+  <rect width="1290" height="2796" fill="url(#bg)"/>
+  <circle cx="645" cy="770" r="520" fill="url(#topGlow)"/>
+  <circle cx="645" cy="1830" r="640" fill="url(#bottomGlow)"/>
+
+  <g filter="url(#softGlow)" opacity="0.8">
+    <circle cx="645" cy="780" r="290" stroke="url(#brand)" stroke-width="34"/>
+  </g>
+  <circle cx="645" cy="780" r="284" stroke="url(#brand)" stroke-width="22"/>
+  <path d="M476 610L606 973C616 1001 656 1001 666 973L748 743L793 858C804 885 842 887 855 858L938 689" stroke="url(#brand)" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M452 689H532L585 830L656 610L735 858L783 756H898" stroke="white" stroke-opacity="0.95" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="645" y="1288" fill="white" font-size="132" font-family="Arial, Helvetica, sans-serif" font-weight="700" text-anchor="middle" letter-spacing="10">VIBRA</text>
+  <text x="645" y="1388" fill="white" fill-opacity="0.74" font-size="46" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" letter-spacing="1.5">Non ascoltare la musica. Vivila.</text>
+
+  <g opacity="0.26">
+    <path d="M0 2360C98 2282 167 2244 258 2244C335 2244 400 2272 470 2317C545 2364 597 2390 668 2390C745 2390 810 2356 892 2301C979 2242 1058 2212 1150 2212C1205 2212 1253 2224 1290 2236V2796H0V2360Z" fill="#1BD4FF"/>
+    <path d="M0 2484C83 2425 159 2398 243 2398C318 2398 372 2414 447 2452C544 2501 597 2526 679 2526C768 2526 837 2486 916 2431C1004 2369 1083 2340 1180 2340C1225 2340 1263 2346 1290 2353V2796H0V2484Z" fill="#FF64F4"/>
+  </g>
+
+  <g fill="white" fill-opacity="0.12">
+    <circle cx="216" cy="412" r="6"/>
+    <circle cx="1084" cy="494" r="7"/>
+    <circle cx="232" cy="1702" r="5"/>
+    <circle cx="1066" cy="1618" r="8"/>
+    <circle cx="952" cy="1032" r="5"/>
+  </g>
+</svg>

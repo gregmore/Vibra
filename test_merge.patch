@@ -1,0 +1,41 @@
+--- lib/presentation/providers/app_state_providers.dart
++++ lib/presentation/providers/app_state_providers.dart
+@@ -39,15 +39,15 @@
+     try {
+       var loaded = await ref.read(getStoredEventsUseCaseProvider).call(50);
+ 
+-      if (loaded.isEmpty) {
+-        loaded = await ref.read(searchNearbyEventsUseCaseProvider).call(
++      if (loaded.length < 15) {
++        final externalEvents = await ref.read(searchNearbyEventsUseCaseProvider).call(
+               const SearchNearbyEventsParams(
+                 latitude: 45.4642,
+                 longitude: 9.19,
+                 radiusKm: 50,
+               ),
+             );
++        loaded = _mergeEvents(loaded, externalEvents);
+       }
+ 
+       final user = ref.read(supabaseDatasourceProvider).currentUser;
+@@ -362,17 +362,17 @@
+ 
+ final featuredEventsProvider = Provider<List<Event>>((ref) {
+   final events = ref.watch(allEventsProvider);
+-  return events.take(3).toList(growable: false);
++  return events.take(5).toList(growable: false);
+ });
+ 
+ final nearbyEventsProvider = Provider<List<Event>>((ref) {
+   final events = ref.watch(allEventsProvider);
+-  return events.skip(events.length > 1 ? 1 : 0).take(4).toList(growable: false);
++  return events.skip(events.length > 1 ? 1 : 0).take(10).toList(growable: false);
+ });
+ 
+ final trendingEventsProvider = Provider<List<Event>>((ref) {
+   final events = ref.watch(allEventsProvider);
+-  return events.reversed.take(4).toList(growable: false);
++  return events.reversed.take(10).toList(growable: false);
+ });
+ 
+ final matchedUsersProvider =

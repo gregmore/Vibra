@@ -1,0 +1,6 @@
+flutter_native_splash:
+  color: "#0D0D0D" # VibraColors.background
+  color_dark: "#0D0D0D"
+  android_12:
+    color: "#0D0D0D"
+    color_dark: "#0D0D0D"

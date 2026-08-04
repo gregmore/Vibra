@@ -1,0 +1,102 @@
+name: vibra
+description: "Non ascoltare la musica. Vivila. — Collega streaming musicale ed eventi dal vivo."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Navigazione
+  go_router: ^14.8.1
+
+  # Backend — Supabase
+  supabase_flutter: ^2.9.0
+
+  # Autenticazione OAuth
+  flutter_appauth: ^12.0.2
+  flutter_secure_storage: ^10.3.1
+  flutter_web_auth_2: ^6.0.0-alpha.5
+  crypto: ^3.0.7
+
+  # HTTP Client
+  dio: ^5.7.0
+  pretty_dio_logger: ^1.4.0
+
+  # UI & Design
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.17
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+  flutter_animate: ^4.5.2
+
+  # Mappe & Geolocalizzazione
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+  geolocator: ^13.0.2
+  geocoding: ^3.0.0
+
+  # Firebase (notifiche push)
+  firebase_core: ^3.12.1
+  firebase_messaging: ^15.2.4
+
+  # Utilità
+  collection: ^1.19.1
+  intl: ^0.20.2
+  shared_preferences: ^2.5.3
+  connectivity_plus: ^6.1.4
+  url_launcher: ^6.3.1
+  image_picker: ^1.1.2
+  flutter_dotenv: ^5.2.1
+  uuid: ^4.5.1
+  timeago: ^3.7.0
+
+  # Data classes
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+  google_sign_in: ^7.2.0
+  sign_in_with_apple: ^8.1.0
+  translator: ^1.0.4+1
+  flutter_map_marker_cluster: ^1.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+  # Code generation
+  build_runner: ^2.4.15
+  freezed: ^3.0.6
+  json_serializable: ^6.9.5
+  riverpod_generator: ^2.6.5
+  riverpod_lint: ^2.6.5
+
+  # Testing
+  mocktail: ^1.0.4
+  integration_test:
+    sdk: flutter
+  flutter_native_splash: ^2.4.8
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - .env
+    - .env.example
+    - assets/images/
+    - assets/icons/
+
+dependency_overrides:
+  flutter_map_marker_cluster:
+    path: ./packages/flutter_map_marker_cluster

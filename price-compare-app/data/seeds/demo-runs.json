@@ -1,0 +1,75 @@
+{
+  "keywords": [
+    {
+      "keyword": "wireless earbuds",
+      "note": "Compact audio products across three major marketplaces"
+    },
+    {
+      "keyword": "gaming mouse",
+      "note": "Accessory pricing with clear sales and seller score differences"
+    },
+    {
+      "keyword": "portable power bank",
+      "note": "Battery pack examples with discount and trust-score signals"
+    }
+  ],
+  "demoRuns": [
+    {
+      "id": "seed-run-2026-07-12",
+      "mode": "demo",
+      "startedAt": "2026-07-12T09:00:00.000Z",
+      "finishedAt": "2026-07-12T09:00:18.000Z",
+      "keywords": ["wireless earbuds", "gaming mouse", "portable power bank"],
+      "providers": ["jd", "taobao", "pinduoduo"],
+      "offers": [
+        { "keyword": "wireless earbuds", "provider": "jd", "productName": "Auralink Wireless Earbuds ENC Edition", "priceText": "299.00", "originalPriceText": "359.00", "salesText": "8.4k+", "storeName": "JD Digital Flagship", "storeRatingText": "4.8", "productUrl": "https://search.jd.com/Search?keyword=wireless%20earbuds", "scrapedAt": "2026-07-12T09:00:08.000Z" },
+        { "keyword": "wireless earbuds", "provider": "taobao", "productName": "SoundArc Wireless Earbuds Dual Mic", "priceText": "279.00", "originalPriceText": "329.00", "salesText": "1.2万+", "storeName": "Taobao Audio Lab", "storeRatingText": "4.7", "productUrl": "https://s.taobao.com/search?q=wireless%20earbuds", "scrapedAt": "2026-07-12T09:00:08.000Z" },
+        { "keyword": "wireless earbuds", "provider": "pinduoduo", "productName": "FlyPods Wireless Earbuds Long Battery", "priceText": "249.00", "originalPriceText": "299.00", "salesText": "2.1万+", "storeName": "PDD Value Audio", "storeRatingText": "4.5", "productUrl": "https://mobile.yangkeduo.com/search_result.html?search_key=wireless%20earbuds", "scrapedAt": "2026-07-12T09:00:08.000Z" },
+        { "keyword": "gaming mouse", "provider": "jd", "productName": "VoltStrike Gaming Mouse 26000 DPI", "priceText": "189.00", "originalPriceText": "229.00", "salesText": "6.1k+", "storeName": "JD Gaming Gear", "storeRatingText": "4.9", "productUrl": "https://search.jd.com/Search?keyword=gaming%20mouse", "scrapedAt": "2026-07-12T09:00:10.000Z" },
+        { "keyword": "gaming mouse", "provider": "taobao", "productName": "ShadowClaw RGB Gaming Mouse", "priceText": "168.00", "originalPriceText": "199.00", "salesText": "9.5k+", "storeName": "Taobao Cyber Peripherals", "storeRatingText": "4.6", "productUrl": "https://s.taobao.com/search?q=gaming%20mouse", "scrapedAt": "2026-07-12T09:00:10.000Z" },
+        { "keyword": "gaming mouse", "provider": "pinduoduo", "productName": "RapidAim Gaming Mouse Macro Edition", "priceText": "149.00", "originalPriceText": "179.00", "salesText": "1.8万+", "storeName": "PDD Mouse Factory", "storeRatingText": "4.4", "productUrl": "https://mobile.yangkeduo.com/search_result.html?search_key=gaming%20mouse", "scrapedAt": "2026-07-12T09:00:10.000Z" },
+        { "keyword": "portable power bank", "provider": "jd", "productName": "PowerBrick 20000mAh Fast Charge Bank", "priceText": "229.00", "originalPriceText": "279.00", "salesText": "5.3k+", "storeName": "JD Charging Pro", "storeRatingText": "4.8", "productUrl": "https://search.jd.com/Search?keyword=portable%20power%20bank", "scrapedAt": "2026-07-12T09:00:12.000Z" },
+        { "keyword": "portable power bank", "provider": "taobao", "productName": "PocketVolt 20000mAh Slim Power Bank", "priceText": "209.00", "originalPriceText": "249.00", "salesText": "8.1k+", "storeName": "Taobao Power Hub", "storeRatingText": "4.6", "productUrl": "https://s.taobao.com/search?q=portable%20power%20bank", "scrapedAt": "2026-07-12T09:00:12.000Z" },
+        { "keyword": "portable power bank", "provider": "pinduoduo", "productName": "ChargeMate 20000mAh Dual USB Power Bank", "priceText": "189.00", "originalPriceText": "229.00", "salesText": "1.6万+", "storeName": "PDD Energy Market", "storeRatingText": "4.5", "productUrl": "https://mobile.yangkeduo.com/search_result.html?search_key=portable%20power%20bank", "scrapedAt": "2026-07-12T09:00:12.000Z" }
+      ]
+    },
+    {
+      "id": "seed-run-2026-07-14",
+      "mode": "demo",
+      "startedAt": "2026-07-14T09:00:00.000Z",
+      "finishedAt": "2026-07-14T09:00:19.000Z",
+      "keywords": ["wireless earbuds", "gaming mouse", "portable power bank"],
+      "providers": ["jd", "taobao", "pinduoduo"],
+      "offers": [
+        { "keyword": "wireless earbuds", "provider": "jd", "productName": "Auralink Wireless Earbuds ENC Edition", "priceText": "289.00", "originalPriceText": "359.00", "salesText": "8.8k+", "storeName": "JD Digital Flagship", "storeRatingText": "4.8", "productUrl": "https://search.jd.com/Search?keyword=wireless%20earbuds", "scrapedAt": "2026-07-14T09:00:08.000Z" },
+        { "keyword": "wireless earbuds", "provider": "taobao", "productName": "SoundArc Wireless Earbuds Dual Mic", "priceText": "269.00", "originalPriceText": "329.00", "salesText": "1.3万+", "storeName": "Taobao Audio Lab", "storeRatingText": "4.7", "productUrl": "https://s.taobao.com/search?q=wireless%20earbuds", "scrapedAt": "2026-07-14T09:00:08.000Z" },
+        { "keyword": "wireless earbuds", "provider": "pinduoduo", "productName": "FlyPods Wireless Earbuds Long Battery", "priceText": "239.00", "originalPriceText": "299.00", "salesText": "2.3万+", "storeName": "PDD Value Audio", "storeRatingText": "4.5", "productUrl": "https://mobile.yangkeduo.com/search_result.html?search_key=wireless%20earbuds", "scrapedAt": "2026-07-14T09:00:08.000Z" },
+        { "keyword": "gaming mouse", "provider": "jd", "productName": "VoltStrike Gaming Mouse 26000 DPI", "priceText": "179.00", "originalPriceText": "229.00", "salesText": "6.3k+", "storeName": "JD Gaming Gear", "storeRatingText": "4.9", "productUrl": "https://search.jd.com/Search?keyword=gaming%20mouse", "scrapedAt": "2026-07-14T09:00:10.000Z" },
+        { "keyword": "gaming mouse", "provider": "taobao", "productName": "ShadowClaw RGB Gaming Mouse", "priceText": "162.00", "originalPriceText": "199.00", "salesText": "9.8k+", "storeName": "Taobao Cyber Peripherals", "storeRatingText": "4.6", "productUrl": "https://s.taobao.com/search?q=gaming%20mouse", "scrapedAt": "2026-07-14T09:00:10.000Z" },
+        { "keyword": "gaming mouse", "provider": "pinduoduo", "productName": "RapidAim Gaming Mouse Macro Edition", "priceText": "145.00", "originalPriceText": "179.00", "salesText": "1.9万+", "storeName": "PDD Mouse Factory", "storeRatingText": "4.4", "productUrl": "https://mobile.yangkeduo.com/search_result.html?search_key=gaming%20mouse", "scrapedAt": "2026-07-14T09:00:10.000Z" },
+        { "keyword": "portable power bank", "provider": "jd", "productName": "PowerBrick 20000mAh Fast Charge Bank", "priceText": "219.00", "originalPriceText": "279.00", "salesText": "5.6k+", "storeName": "JD Charging Pro", "storeRatingText": "4.8", "productUrl": "https://search.jd.com/Search?keyword=portable%20power%20bank", "scrapedAt": "2026-07-14T09:00:12.000Z" },
+        { "keyword": "portable power bank", "provider": "taobao", "productName": "PocketVolt 20000mAh Slim Power Bank", "priceText": "205.00", "originalPriceText": "249.00", "salesText": "8.4k+", "storeName": "Taobao Power Hub", "storeRatingText": "4.6", "productUrl": "https://s.taobao.com/search?q=portable%20power%20bank", "scrapedAt": "2026-07-14T09:00:12.000Z" },
+        { "keyword": "portable power bank", "provider": "pinduoduo", "productName": "ChargeMate 20000mAh Dual USB Power Bank", "priceText": "182.00", "originalPriceText": "229.00", "salesText": "1.7万+", "storeName": "PDD Energy Market", "storeRatingText": "4.5", "productUrl": "https://mobile.yangkeduo.com/search_result.html?search_key=portable%20power%20bank", "scrapedAt": "2026-07-14T09:00:12.000Z" }
+      ]
+    },
+    {
+      "id": "seed-run-2026-07-17",
+      "mode": "demo",
+      "startedAt": "2026-07-17T09:00:00.000Z",
+      "finishedAt": "2026-07-17T09:00:20.000Z",
+      "keywords": ["wireless earbuds", "gaming mouse", "portable power bank"],
+      "providers": ["jd", "taobao", "pinduoduo"],
+      "offers": [
+        { "keyword": "wireless earbuds", "provider": "jd", "productName": "Auralink Wireless Earbuds ENC Edition", "priceText": "279.00", "originalPriceText": "349.00", "salesText": "9.1k+", "storeName": "JD Digital Flagship", "storeRatingText": "4.8", "productUrl": "https://search.jd.com/Search?keyword=wireless%20earbuds", "scrapedAt": "2026-07-17T09:00:08.000Z" },
+        { "keyword": "wireless earbuds", "provider": "taobao", "productName": "SoundArc Wireless Earbuds Dual Mic", "priceText": "259.00", "originalPriceText": "319.00", "salesText": "1.4万+", "storeName": "Taobao Audio Lab", "storeRatingText": "4.7", "productUrl": "https://s.taobao.com/search?q=wireless%20earbuds", "scrapedAt": "2026-07-17T09:00:08.000Z" },
+        { "keyword": "wireless earbuds", "provider": "pinduoduo", "productName": "FlyPods Wireless Earbuds Long Battery", "priceText": "229.00", "originalPriceText": "289.00", "salesText": "2.6万+", "storeName": "PDD Value Audio", "storeRatingText": "4.5", "productUrl": "https://mobile.yangkeduo.com/search_result.html?search_key=wireless%20earbuds", "scrapedAt": "2026-07-17T09:00:08.000Z" },
+        { "keyword": "gaming mouse", "provider": "jd", "productName": "VoltStrike Gaming Mouse 26000 DPI", "priceText": "175.00", "originalPriceText": "219.00", "salesText": "6.5k+", "storeName": "JD Gaming Gear", "storeRatingText": "4.9", "productUrl": "https://search.jd.com/Search?keyword=gaming%20mouse", "scrapedAt": "2026-07-17T09:00:10.000Z" },
+        { "keyword": "gaming mouse", "provider": "taobao", "productName": "ShadowClaw RGB Gaming Mouse", "priceText": "158.00", "originalPriceText": "198.00", "salesText": "1.0万+", "storeName": "Taobao Cyber Peripherals", "storeRatingText": "4.6", "productUrl": "https://s.taobao.com/search?q=gaming%20mouse", "scrapedAt": "2026-07-17T09:00:10.000Z" },
+        { "keyword": "gaming mouse", "provider": "pinduoduo", "productName": "RapidAim Gaming Mouse Macro Edition", "priceText": "139.00", "originalPriceText": "175.00", "salesText": "2.0万+", "storeName": "PDD Mouse Factory", "storeRatingText": "4.4", "productUrl": "https://mobile.yangkeduo.com/search_result.html?search_key=gaming%20mouse", "scrapedAt": "2026-07-17T09:00:10.000Z" },
+        { "keyword": "portable power bank", "provider": "jd", "productName": "PowerBrick 20000mAh Fast Charge Bank", "priceText": "215.00", "originalPriceText": "269.00", "salesText": "5.9k+", "storeName": "JD Charging Pro", "storeRatingText": "4.8", "productUrl": "https://search.jd.com/Search?keyword=portable%20power%20bank", "scrapedAt": "2026-07-17T09:00:12.000Z" },
+        { "keyword": "portable power bank", "provider": "taobao", "productName": "PocketVolt 20000mAh Slim Power Bank", "priceText": "199.00", "originalPriceText": "239.00", "salesText": "8.7k+", "storeName": "Taobao Power Hub", "storeRatingText": "4.6", "productUrl": "https://s.taobao.com/search?q=portable%20power%20bank", "scrapedAt": "2026-07-17T09:00:12.000Z" },
+        { "keyword": "portable power bank", "provider": "pinduoduo", "productName": "ChargeMate 20000mAh Dual USB Power Bank", "priceText": "178.00", "originalPriceText": "219.00", "salesText": "1.9万+", "storeName": "PDD Energy Market", "storeRatingText": "4.5", "productUrl": "https://mobile.yangkeduo.com/search_result.html?search_key=portable%20power%20bank", "scrapedAt": "2026-07-17T09:00:12.000Z" }
+      ]
+    }
+  ]
+}

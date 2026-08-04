@@ -1,0 +1,438 @@
+{
+  "@@locale": "en",
+  "appName": "Vibra",
+  "appSlogan": "Don't just listen to music. Live it.",
+  "welcomeTitle": "Welcome to Vibra",
+  "onboardingConnectTitle": "Connect Your Tastes",
+  "onboardingConnectBody": "Connect Spotify, analyze your favorite artists, tracks, and genres, and turn your listening habits into smarter recommendations.",
+  "onboardingDiscoverTitle": "Discover the Right Live Shows",
+  "onboardingDiscoverBody": "Vibra combines location, events, and musical compatibility to suggest concerts that are truly relevant to you.",
+  "onboardingCommunityTitle": "Live the Community",
+  "onboardingCommunityBody": "Find people with your same sound, enter Live Mode during concerts, and join the conversation in real-time.",
+  "onboardingContinue": "Continue",
+  "onboardingGoToLogin": "Go to Login",
+  "loginTitle": "Log in to Vibra",
+  "loginSubtitle": "Log in with your account or connect using one of the supported providers to unlock real recommendations.",
+  "loginConsent": "By authenticating, you accept data consent, JWT session management, and GDPR privacy preferences.",
+  "loginWithSpotify": "Continue with Spotify",
+  "loginWithGoogle": "Continue with Google",
+  "loginWithApple": "Continue with Apple",
+  "loginWithEmail": "Email",
+  "authFailed": "Authentication failed",
+  "authErrorOccurred": "An error occurred",
+  "settingsTitle": "Settings",
+  "settingsHeaderNotificationsPrivacy": "Notifications and Privacy",
+  "settingsSubtitleNotificationsPrivacy": "Preferences, account, and data management",
+  "settingsOptionCompatibleEvents": "Compatible event notifications",
+  "settingsOptionHighMatchAlerts": "High compatibility user alerts",
+  "settingsOptionLiveChat": "Live Chat during concerts",
+  "settingsOptionDiscoverVisible": "Profile visible in Discover",
+  "settingsNotifications": "Notifications",
+  "settingsNotificationsSub": "Check device permissions and push delivery status",
+  "settingsNotificationsSnackbar": "Notifications depend on device permissions, Firebase configuration, and an authenticated account.",
+  "settingsPrivacyPolicy": "Privacy Policy",
+  "settingsPrivacyPolicySub": "Data usage, consents, and user rights",
+  "settingsTermsOfService": "Terms of Service",
+  "settingsTermsOfServiceSub": "Rules of use, liabilities, and terms of service",
+  "settingsSupport": "Support",
+  "settingsSupportSub": "Help, contacts, and support options",
+  "settingsAbout": "About Vibra",
+  "settingsAboutSub": "App version, identifiers, and product overview",
+  "settingsLogout": "Log Out",
+  "settingsLogoutConfirmTitle": "Log Out",
+  "settingsLogoutConfirmBody": "Are you sure you want to log out?",
+  "settingsLogoutAll": "Log Out from all devices",
+  "settingsLogoutAllConfirmTitle": "Log Out from all devices",
+  "settingsLogoutAllConfirmBody": "Are you sure you want to log out from all devices? You will be signed out everywhere.",
+  "settingsCancel": "Cancel",
+  "settingsDeleteAccount": "Delete Account",
+  "settingsDeleteAccountConfirmTitle": "Delete Account",
+  "settingsDeleteAccountConfirmBody": "Are you sure you want to permanently delete your account? This action is irreversible.",
+  "settingsDelete": "Delete",
+  "settingsLanguage": "Language",
+  "settingsLanguageSub": "Select your preferred application language",
+  "settingsLanguageSystem": "System default",
+  "homeGreeting": "Hello {username}, let's listen loud tonight.",
+  "@homeGreeting": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSearchHint": "Artists, venues, cities",
+  "homeForYouTitle": "For You",
+  "homeForYouSubtitle": "Events with compatibility score over 70",
+  "homeNearYouTitle": "Near You",
+  "homeNearYouSubtitle": "Selected with a 50 km GPS radius",
+  "homeNearYouAction": "Open map",
+  "homeTrendingTitle": "Trending",
+  "homeTrendingSubtitle": "Most followed events of the week",
+  "homeTrendingAction": "View all",
+  "settingsSpotifyAccount": "Spotify Account",
+  "settingsSpotifyDisconnected": "Disconnected — Connect for recommendations",
+  "settingsSpotifyDisconnect": "Disconnect",
+  "settingsSpotifyDisconnectConfirmTitle": "Disconnect Spotify",
+  "settingsSpotifyDisconnectConfirmBody": "Are you sure you want to disconnect your Spotify account? Concert recommendations will no longer be personalized.",
+  "settingsSpotifyDisconnectedSuccess": "Spotify successfully disconnected",
+  "settingsGenerateCompatibleUsers": "Generate Compatible Users",
+  "settingsGenerateCompatibleUsersSub": "Create bots with similar music tastes",
+  "settingsGenerateCompatibleUsersLoading": "Generating... Please wait.",
+  "settingsGenerateCompatibleUsersSuccess": "Generated successfully!",
+  "settingsError": "Error: {error}",
+  "settingsLogoutError": "Error during logout: {error}",
+  "@settingsSpotifyConnected": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "@settingsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@settingsLogoutError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsSpotifyConnected": "Connected as @{username}",
+  "settingsDeleteAccountError": "Unable to delete account. Ensure the RPC has been loaded in the database.",
+  "eventDetailChat": "Chat",
+  "eventDetailTicketsUnavailable": "Ticket link unavailable.",
+  "eventDetailTicketsError": "Unable to open ticket link.",
+  "eventDetailBuyTickets": "Buy Tickets",
+  "eventDetailAttendanceConfirmed": "Attendance confirmed!",
+  "eventDetailAttend": "Going",
+  "eventDetailAttendanceMaybe": "Attendance set to Maybe",
+  "eventDetailMaybe": "Maybe",
+  "eventDetailAttendanceNotGoing": "You marked you are not going",
+  "eventDetailNotGoing": "Not going",
+  "eventDetailCopied": "Event details copied!",
+  "exploreSearchEvents": "Search events",
+  "exploreSearchInArea": "Search in this area",
+  "exploreSearchingEvents": "Searching for events...",
+  "exploreRadius": "{radius} km",
+  "@exploreRadius": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "friendsTitle": "Friends",
+  "chatSendFailed": "Failed to send",
+  "socialTitle": "Social",
+  "socialRequestFrom": "Request from {userId}",
+  "socialOpen": "Open",
+  "userProfileTitle": "User Profile",
+  "userProfileCompatibility": "{percentage}% compatibility",
+  "userProfileTopArtists": "Top artists",
+  "userProfileFriendRequestSent": "Friend request sent!",
+  "userProfileSendRequest": "Send request",
+  "userProfileOpenChat": "Open chat",
+  "socialMatchVibraSent": "Vibra sent to {name}! 🎉",
+  "socialMatchViewProfile": "View full profile",
+  "socialMatchIgnore": "Ignore",
+  "@socialRequestFrom": {
+    "placeholders": {
+      "userId": {
+        "type": "String"
+      }
+    }
+  },
+  "@userProfileCompatibility": {
+    "placeholders": {
+      "percentage": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialMatchVibraSent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "userProfileNotAvailableTitle": "Profile not available",
+  "userProfileNotAvailableMessage": "No user selected or no match available at the moment.",
+  "userProfileEvents": "Past/upcoming concerts",
+  "socialDiscoverUsers": "Discover users",
+  "socialHighCompatibility": "Users with high musical compatibility",
+  "socialRequestsCount": "Requests ({count})",
+  "socialPendingFriendships": "Pending friendships",
+  "socialRequestsToManage": "Requests to manage",
+  "@socialRequestsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "navHome": "Home",
+  "navEvents": "Events",
+  "navVibra": "Vibra",
+  "navChat": "Chat",
+  "navProfile": "Profile",
+  "friendsYourFriends": "Your friends",
+  "friendsYourConnections": "Your Vibra connections",
+  "friendsNoFriendsYet": "No friends yet",
+  "friendsGoToExplore": "Go to the Explore section or use Social Match to find people with the same taste.",
+  "friendsSentRequests": "Sent requests",
+  "friendsWaitingForReply": "Waiting for reply",
+  "friendsPendingApproval": "Pending approval",
+  "socialMatchNewAffinity": "NEW AFFINITY",
+  "socialMatchScore": "MATCH SCORE",
+  "socialMatchWhyMatched": "WHY YOU MATCHED",
+  "socialMatchCommonEvents": "Live nearby • {count} common events",
+  "socialMatchSendVibra": "Send Vibra",
+  "exploreSearchHint": "Search by name or city (e.g. Milan)",
+  "exploreInteractiveMap": "Interactive map",
+  "exploreLiveAroundYou": "Explore live events around you in real time",
+  "exploreSearchRadius": "Search radius",
+  "exploreFindEventsNearYou": "Find events near you",
+  "exploreMusicGenre": "Music genre",
+  "exploreFilterByGenre": "Filter by your favorite genres",
+  "exploreGenreAll": "All",
+  "@socialMatchCommonEvents": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "friendsReceivedRequests": "Received requests",
+  "friendsAcceptOrReject": "Accept or reject new connections",
+  "friendsWantsToConnect": "Wants to connect with you",
+  "socialMatchListenBoth": "You both listen to {artists}",
+  "socialMatchCityEvents": "{city} • {count} common events",
+  "@socialMatchListenBoth": {
+    "placeholders": {
+      "artists": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialMatchCityEvents": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "myProfileConnectSpotify": "Connect Spotify",
+  "myProfileOverview": "Overview",
+  "myProfileOverviewSubtitle": "Quick access to profile areas",
+  "myProfileSettings": "Settings",
+  "myProfileMusicStats": "Music stats",
+  "myProfileMusicStatsSubtitle": "Top artists, genres and listening heatmap",
+  "myProfileMyEvents": "My events",
+  "myProfileMyEventsSubtitle": "{count} saved, upcoming and past events",
+  "myProfileSettingsSubtitle": "Privacy, notifications, account and logout",
+  "@myProfileMyEventsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "myEventsTitle": "My Events",
+  "myEventsGoing": "Going",
+  "myEventsGoingSubtitle": "Confirmed or upcoming events",
+  "myEventsGoingEmpty": "You haven't confirmed your attendance to any event yet.\\nExplore and find your next concerts!",
+  "myEventsSaved": "Saved",
+  "myEventsSavedSubtitle": "Keep an eye on",
+  "myEventsSavedEmpty": "No saved events.\\nSave the events you are interested in so you don't miss them.",
+  "chatEmptyTitle": "No messages",
+  "chatEmptyMessage": "Start the conversation!",
+  "chatInputHint": "Write a message...",
+  "socialMatchScanningTitle": "VIBE ANALYSIS",
+  "socialMatchScanningSubtitle": "Searching for people with similar music taste nearby...",
+  "socialMatchEmptyTitle": "No matches nearby",
+  "socialMatchEmptyMessage": "Your music vibes are unique! There are no people with similar tastes nearby right now...",
+  "socialMatchEmptyAction": "Discover nearby events",
+  "socialMatchEmptySecondary": "Search again",
+  "musicStatsTitle": "Music Stats",
+  "musicStatsSyncError": "Sync error: {error}",
+  "@musicStatsSyncError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "musicStatsTopArtists": "Top artists",
+  "musicStatsTopArtistsSub": "Score based on Spotify preferences",
+  "musicStatsHeatmap": "Listening heatmap",
+  "musicStatsHeatmapSub": "Weekly distribution of your listening",
+  "liveScreenTitle": "Live Vibra",
+  "liveScreenSendFailed": "Send failed. Check session and attendance.",
+  "liveScreenActivateMode": "Activate Live Mode",
+  "liveScreenPresentNowTitle": "Present now",
+  "liveScreenPresentNowSub": "Attendees with high musical compatibility",
+  "liveScreenChatTitle": "Event Chat",
+  "liveScreenChatSub": "Realtime chat auto-closes in 24h",
+  "eventDetailNotAvailableTitle": "Event unavailable",
+  "eventDetailNotAvailableMsg": "This event is no longer available or hasnt loaded.",
+  "eventDetailMapTitle": "Venue Map",
+  "eventDetailMapSub": "Event location",
+  "eventDetailAttendeesTitle": "Attendees",
+  "eventDetailAttendeesSub": "Users with musical match and confirmed attendance",
+  "spotifyAuthStep1Title": "1. OAuth Authorization",
+  "spotifyAuthStep1Sub": "Securely login on official Spotify site",
+  "spotifyAuthStep2Title": "2. Credential Exchange",
+  "spotifyAuthStep2Sub": "Generation of secure keys and token encryption",
+  "spotifyAuthStep3Title": "3. Taste Syncing",
+  "spotifyAuthStep3Sub": "Analysis of top artists, tracks, and playlists",
+  "spotifyAuthCancelled": "Connection cancelled. You must authorize Vibra for personalized recommendations.",
+  "spotifyAuthError": "An error occurred: {error}",
+  "@spotifyAuthError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "commonRetry": "Retry",
+  "legalPrivacyPolicyTitle": "Privacy Policy",
+  "legalPrivacySec1": "What data Vibra collects",
+  "legalPrivacySec2": "Why Vibra uses it",
+  "legalPrivacySec3": "Your controls",
+  "legalPrivacySec4": "Privacy contact",
+  "legalTermsTitle": "Terms of Service",
+  "legalTermsSec1": "Using Vibra",
+  "legalTermsSec2": "Third-party services",
+  "legalTermsSec3": "Content and behavior",
+  "legalTermsSec4": "Legal contact",
+  "legalSupportTitle": "Support",
+  "legalSupportSec1": "Support email",
+  "legalSupportSec2": "Covered issues",
+  "legalSupportSec3": "What to check first",
+  "legalAboutTitle": "About Vibra",
+  "legalAboutSec1": "Version",
+  "legalAboutSec2": "Platform identifiers",
+  "legalAboutSec3": "What Vibra does",
+  "legalAboutSec4": "Support",
+  "langEnglish": "English",
+  "langItalian": "Italiano",
+  "langSpanish": "Español",
+  "langFrench": "Français",
+  "langGerman": "Deutsch",
+  "spotifyAuthCancelledTitle": "Authentication Failed",
+  "errorTitle": "System Error",
+  "legalPrivacyBody1": "Account data, music profile, event attendance, messages, live chat activity, location when authorized, and push tokens.",
+  "legalPrivacyBody2": "To authenticate users, generate music recommendations, enable social features, send notifications, and improve service reliability.",
+  "legalPrivacyBody3": "You can revoke permissions, disconnect services, request deletion, and manage visibility and privacy preferences from account settings.",
+  "legalPrivacyBody4": "Privacy and personal data requests: {email}",
+  "@legalPrivacyBody4": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "legalTermsBody1": "By using Vibra, users agree to use the app lawfully, maintain accurate data, and avoid abusive or harmful behavior.",
+  "legalTermsBody2": "Spotify, Supabase, Firebase, and event providers may be used to deliver core features. Their terms and privacy policies also apply.",
+  "legalTermsBody3": "Users are responsible for published content and sent messages. Vibra may suspend or remove accounts that violate platform rules.",
+  "legalTermsBody4": "Legal requests and formal communications: {email}",
+  "@legalTermsBody4": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "legalSupportBody1": "{email}",
+  "@legalSupportBody1": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "legalSupportBody2": "Login issues, Spotify connection, event discovery, notifications, chat, privacy requests, and account deletion.",
+  "legalSupportBody3": "Permissions, Spotify connection status, Firebase configuration, and the presence of an authenticated user.",
+  "legalAboutBody1": "Version {version} ({build})",
+  "@legalAboutBody1": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "build": {
+        "type": "String"
+      }
+    }
+  },
+  "legalAboutBody2": "Android package: {android}\niOS bundle: {ios}",
+  "@legalAboutBody2": {
+    "placeholders": {
+      "android": {
+        "type": "String"
+      },
+      "ios": {
+        "type": "String"
+      }
+    }
+  },
+  "legalAboutBody3": "Vibra helps connect Spotify, discover relevant live events, view event details, meet compatible people, and join live chats during concerts.",
+  "legalAboutBody4": "{email}",
+  "@legalAboutBody4": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "homeGreetingMorning": "Good morning 👋",
+  "homeGreetingAfternoon": "Good afternoon 👋",
+  "homeGreetingEvening": "Good evening 🌙",
+  "eventCardTBA": "TBA",
+  "eventCardCity": "City",
+  "legalPrivacySubtitle": "A summary of the privacy information available in the app, including categories of processed data and purposes of use.",
+  "legalTermsSubtitle": "A summary of the rules, responsibilities, and terms of service applicable to using Vibra.",
+  "legalSupportSubtitle": "Support information for account access, notifications, Spotify connection, and live features.",
+  "legalAboutSubtitle": "Vibra combines music taste, event discovery, and social interaction around live experiences.",
+  "exploreShowAllEvents": "Show all events",
+  "musicStatsSyncSpotify": "Sync Spotify",
+  "liveModeDisabled": "Live mode is disabled",
+  "authCreateAccount": "Create an Account",
+  "authLoginWithEmail": "Login with Email",
+  "authUsername": "Username",
+  "authUsernameHint": "Enter a username",
+  "authEmail": "Email Address",
+  "authEmailHint": "Enter your email",
+  "authEmailInvalid": "Enter a valid email",
+  "authPassword": "Password",
+  "authPasswordHint": "Enter your password",
+  "authPasswordShort": "Password must be at least 6 characters",
+  "authRegister": "Register",
+  "authLogin": "Login",
+  "authAlreadyHaveAccount": "Already have an account? Login",
+  "authDontHaveAccount": "Don t have an account? Register",
+  "authGenericError": "An error occurred",
+  "eventCardLocation": "Location",
+  "matchScore": "MATCH SCORE",
+  "userGeneric": "User",
+  "spotifyConnectTitle": "Connect Spotify",
+  "spotifyConnectSubtitle": "Connect your account to sync your favorite artists and unlock personalized recommendations for concerts.",
+  "spotifyConnectOnboarding": "Onboarding Flow",
+  "spotifyConnectPrivacyDesc": "We will read your top artists and genres to personalize recommendations and calculate your affinity (Match Score) with other users. Aggregated historical data will only be used for this purpose.",
+  "spotifyConnectContinue": "Continue and Explore",
+  "spotifyConnectRetry": "Retry Connection",
+  "spotifyConnectAction": "Connect my Spotify",
+  "spotifyConnectSkip": "Skip for now",
+  "homeSpotifySyncTitle": "Unlock Personalized Recommendations",
+  "homeSpotifySyncSub": "Sync your music listening",
+  "homeSpotifySyncDesc": "Connect Spotify to get event recommendations and find people with your same tastes.",
+  "homeSpotifySyncAction": "CONNECT SPOTIFY"
+}
