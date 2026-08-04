@@ -7,10 +7,7 @@ import '../vibra_pill_button.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 
 class VibraLoadingView extends StatelessWidget {
-  const VibraLoadingView({
-    this.message = 'Caricamento in corso...',
-    super.key,
-  });
+  const VibraLoadingView({this.message = 'Caricamento in corso...', super.key});
 
   final String message;
 
@@ -22,15 +19,16 @@ class VibraLoadingView extends StatelessWidget {
         children: [
           Animate(
             onPlay: (controller) => controller.repeat(),
-            effects: const [
-              FadeEffect(duration: VibraSpacing.animSlow),
-            ],
+            effects: const [FadeEffect(duration: VibraSpacing.animSlow)],
             child: const VibraLogo(width: 64, height: 64),
           ),
           const SizedBox(height: VibraSpacing.lg),
           const CircularProgressIndicator(color: VibraColors.accent),
           const SizedBox(height: VibraSpacing.lg),
-          Text(message, style: const TextStyle(color: VibraColors.textSecondary)),
+          Text(
+            message,
+            style: const TextStyle(color: VibraColors.textSecondary),
+          ),
         ],
       ),
     );
@@ -60,7 +58,9 @@ class VibraEmptyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    final isTest = WidgetsBinding.instance.runtimeType.toString().contains(
+      'Test',
+    );
 
     return Center(
       child: Padding(
@@ -72,20 +72,27 @@ class VibraEmptyView extends StatelessWidget {
               alignment: Alignment.center,
               children: [
                 Container(
-                  width: 96,
-                  height: 96,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: VibraColors.primary.withValues(alpha: 0.2),
-                      width: 2,
-                    ),
-                  ),
-                ).animate(onPlay: isTest ? null : (controller) => controller.repeat()).scale(
+                      width: 96,
+                      height: 96,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: VibraColors.primary.withValues(alpha: 0.2),
+                          width: 2,
+                        ),
+                      ),
+                    )
+                    .animate(
+                      onPlay: isTest
+                          ? null
+                          : (controller) => controller.repeat(),
+                    )
+                    .scale(
                       duration: 1500.ms,
                       begin: const Offset(0.5, 0.5),
                       end: const Offset(1.5, 1.5),
-                    ).fadeOut(duration: 1500.ms),
+                    )
+                    .fadeOut(duration: 1500.ms),
                 Container(
                   width: 80,
                   height: 80,
@@ -98,7 +105,13 @@ class VibraEmptyView extends StatelessWidget {
               ],
             ),
             const SizedBox(height: VibraSpacing.xl),
-            Text(title, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            Text(
+              title,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: VibraSpacing.sm),
             Text(
               message,
@@ -115,7 +128,8 @@ class VibraEmptyView extends StatelessWidget {
                 isPrimary: true,
               ),
             ],
-            if (secondaryActionLabel != null && onSecondaryActionTap != null) ...[
+            if (secondaryActionLabel != null &&
+                onSecondaryActionTap != null) ...[
               const SizedBox(height: VibraSpacing.md),
               TextButton(
                 onPressed: onSecondaryActionTap,
@@ -156,11 +170,19 @@ class VibraErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 64, color: VibraColors.error)
-                .animate()
-                .shake(duration: VibraSpacing.animNormal, hz: 4),
+            Icon(
+              Icons.error_outline_rounded,
+              size: 64,
+              color: VibraColors.error,
+            ).animate().shake(duration: VibraSpacing.animNormal, hz: 4),
             const SizedBox(height: VibraSpacing.lg),
-            Text(title, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            Text(
+              title,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: VibraSpacing.sm),
             Text(
               message,
@@ -174,9 +196,14 @@ class VibraErrorView extends StatelessWidget {
               OutlinedButton(
                 onPressed: onRetry,
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: VibraColors.error.withValues(alpha: 0.5)),
+                  side: BorderSide(
+                    color: VibraColors.error.withValues(alpha: 0.5),
+                  ),
                   foregroundColor: VibraColors.error,
-                  padding: const EdgeInsets.symmetric(horizontal: VibraSpacing.xl, vertical: VibraSpacing.md),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: VibraSpacing.xl,
+                    vertical: VibraSpacing.md,
+                  ),
                 ),
                 child: Text(AppLocalizations.of(context)!.commonRetry),
               ),

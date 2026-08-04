@@ -26,11 +26,14 @@ class LoginScreen extends ConsumerWidget {
       if (next.status == GeneralAuthStatus.authenticated) {
         context.go('/home');
       } else if (next.status == GeneralAuthStatus.error) {
-        final isSuccessInfo = next.errorMessage?.contains('Registrazione completata') ?? false;
+        final isSuccessInfo =
+            next.errorMessage?.contains('Registrazione completata') ?? false;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage ?? l10n.authFailed),
-            backgroundColor: isSuccessInfo ? VibraColors.green : VibraColors.error,
+            backgroundColor: isSuccessInfo
+                ? VibraColors.green
+                : VibraColors.error,
             duration: Duration(seconds: isSuccessInfo ? 6 : 4),
           ),
         );
@@ -58,12 +61,17 @@ class LoginScreen extends ConsumerWidget {
                           context.go('/welcome');
                         }
                       },
-                      icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                      icon: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Colors.white,
+                      ),
                     ),
                     const Spacer(),
                     Text(
                       l10n.loginTitle,
-                      style: VibraTextStyles.displayMedium.copyWith(color: Colors.white),
+                      style: VibraTextStyles.displayMedium.copyWith(
+                        color: Colors.white,
+                      ),
                     ),
                     const SizedBox(height: VibraSpacing.sm),
                     Text(
@@ -80,7 +88,9 @@ class LoginScreen extends ConsumerWidget {
                             label: l10n.loginWithGoogle,
                             icon: Icons.mail_outline_rounded,
                             bgColor: VibraColors.surfaceElevated,
-                            onTap: () => ref.read(generalAuthProvider.notifier).signInWithGoogle(),
+                            onTap: () => ref
+                                .read(generalAuthProvider.notifier)
+                                .signInWithGoogle(),
                           ),
                           const SizedBox(height: VibraSpacing.sm),
                           _AuthButton(
@@ -111,7 +121,9 @@ class LoginScreen extends ConsumerWidget {
                 color: Colors.black54,
                 child: const Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(VibraColors.accent),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      VibraColors.accent,
+                    ),
                   ),
                 ),
               ),
@@ -159,7 +171,11 @@ class _AuthButton extends StatelessWidget {
                 style: VibraTextStyles.labelLarge.copyWith(color: Colors.white),
               ),
             ),
-            const Icon(Icons.arrow_forward_rounded, size: 18, color: Colors.white),
+            const Icon(
+              Icons.arrow_forward_rounded,
+              size: 18,
+              color: Colors.white,
+            ),
           ],
         ),
       ),

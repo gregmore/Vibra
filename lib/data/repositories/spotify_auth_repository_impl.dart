@@ -42,7 +42,9 @@ class SpotifyAuthRepositoryImpl implements SpotifyAuthRepository {
       throw Exception('Nessun refresh token disponibile per Spotify');
     }
 
-    final tokenModel = await datasource.refreshSession(refreshToken: oldRefreshToken);
+    final tokenModel = await datasource.refreshSession(
+      refreshToken: oldRefreshToken,
+    );
 
     await tokenStorage.saveAccessToken(tokenModel.accessToken);
     if (tokenModel.refreshToken.isNotEmpty) {

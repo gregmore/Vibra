@@ -101,6 +101,9 @@ class SocialRepositoryImpl implements SocialRepository {
   }) {
     return _datasource
         .streamMessagesWith(otherUserId: otherUserId)
-        .map((models) => models.map((item) => item.toEntity()).toList(growable: false));
+        .map(
+          (models) =>
+              models.map((item) => item.toEntity()).toList(growable: false),
+        );
   }
 }

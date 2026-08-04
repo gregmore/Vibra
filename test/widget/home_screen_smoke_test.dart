@@ -54,4 +54,3 @@ void main() {
     // Il TextField della ricerca è stato rimosso dalla home.
   });
 }
-

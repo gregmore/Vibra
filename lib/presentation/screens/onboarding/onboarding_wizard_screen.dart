@@ -18,14 +18,16 @@ class OnboardingWizardScreen extends ConsumerStatefulWidget {
   const OnboardingWizardScreen({super.key});
 
   @override
-  ConsumerState<OnboardingWizardScreen> createState() => _OnboardingWizardScreenState();
+  ConsumerState<OnboardingWizardScreen> createState() =>
+      _OnboardingWizardScreenState();
 }
 
-class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen> {
+class _OnboardingWizardScreenState
+    extends ConsumerState<OnboardingWizardScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   final int _totalPages = 6;
-  
+
   // Step 2: Username
   final TextEditingController _usernameController = TextEditingController();
   bool _isUsernameValid = false;
@@ -43,20 +45,32 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
       final profile = ref.read(myProfileProvider);
       _usernameController.text = profile.username;
       _validateUsername(profile.username);
-      
+
       // Resume from saved step if needed
       if (profile.onboardingStep != null) {
         int initialPage = 0;
-        switch(profile.onboardingStep) {
-          case 'username': initialPage = 1; break;
-          case 'avatar': initialPage = 2; break;
-          case 'spotify': initialPage = 3; break;
-          case 'location': initialPage = 4; break;
-          case 'notifications': initialPage = 5; break;
+        switch (profile.onboardingStep) {
+          case 'username':
+            initialPage = 1;
+            break;
+          case 'avatar':
+            initialPage = 2;
+            break;
+          case 'spotify':
+            initialPage = 3;
+            break;
+          case 'location':
+            initialPage = 4;
+            break;
+          case 'notifications':
+            initialPage = 5;
+            break;
         }
         if (initialPage > 0) {
           _pageController.jumpToPage(initialPage);
-          setState(() { _currentPage = initialPage; });
+          setState(() {
+            _currentPage = initialPage;
+          });
         }
       }
     });
@@ -72,18 +86,22 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
 
   void _nextPage(String stepName) {
     if (_currentPage < _totalPages - 1) {
-      _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-      ref.read(myProfileProvider.notifier).updateProfile(onboardingStep: stepName);
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      ref
+          .read(myProfileProvider.notifier)
+          .updateProfile(onboardingStep: stepName);
     } else {
       _finishOnboarding();
     }
   }
 
   void _finishOnboarding() async {
-    await ref.read(myProfileProvider.notifier).updateProfile(
-      onboardingCompleted: true,
-      onboardingStep: 'done',
-    );
+    await ref
+        .read(myProfileProvider.notifier)
+        .updateProfile(onboardingCompleted: true, onboardingStep: 'done');
     if (mounted) context.go('/home');
   }
 
@@ -163,7 +181,9 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
                 height: 8,
                 width: _currentPage == index ? 24 : 8,
                 decoration: BoxDecoration(
-                  color: _currentPage == index ? VibraColors.primary : VibraColors.glassBorder,
+                  color: _currentPage == index
+                      ? VibraColors.primary
+                      : VibraColors.glassBorder,
                   borderRadius: BorderRadius.circular(4),
                 ),
               );
@@ -222,17 +242,25 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
       child: Column(
         children: [
           const Spacer(),
-          const Icon(Icons.graphic_eq_rounded, size: 80, color: VibraColors.primary),
+          const Icon(
+            Icons.graphic_eq_rounded,
+            size: 80,
+            color: VibraColors.primary,
+          ),
           const SizedBox(height: VibraSpacing.xl),
           Text(
             'Benvenuto in Vibra',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: VibraSpacing.md),
           Text(
             'Scopri eventi musicali vicini a te e connettiti con persone che hanno i tuoi stessi gusti.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: VibraColors.textSecondary),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: VibraColors.textSecondary),
           ),
           const Spacer(),
           SizedBox(
@@ -255,7 +283,9 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
           const Spacer(),
           Text(
             'Scegli il tuo Username',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: VibraSpacing.xl),
           TextField(
@@ -265,34 +295,53 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
               labelText: 'Username',
               errorText: _usernameError,
               prefixIcon: const Icon(Icons.alternate_email_rounded),
-              suffixIcon: _isCheckingUsername 
-                  ? const Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator(strokeWidth: 2)) 
-                  : (_isUsernameValid ? const Icon(Icons.check_circle_rounded, color: Colors.green) : null),
+              suffixIcon: _isCheckingUsername
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : (_isUsernameValid
+                        ? const Icon(
+                            Icons.check_circle_rounded,
+                            color: Colors.green,
+                          )
+                        : null),
             ),
           ),
           const Spacer(),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
-              onPressed: _isUsernameValid && !_isCheckingUsername ? () async {
-                await ref.read(myProfileProvider.notifier).updateProfile(
-                  username: _usernameController.text.trim(),
-                  onboardingStep: 'avatar',
-                );
-                _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-              } : null,
+              onPressed: _isUsernameValid && !_isCheckingUsername
+                  ? () async {
+                      await ref
+                          .read(myProfileProvider.notifier)
+                          .updateProfile(
+                            username: _usernameController.text.trim(),
+                            onboardingStep: 'avatar',
+                          );
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    }
+                  : null,
               child: const Text('Continua'),
             ),
           ),
           const SizedBox(height: VibraSpacing.md),
           TextButton(
-             onPressed: _isUsernameValid && !_isCheckingUsername ? () async {
-                await ref.read(myProfileProvider.notifier).updateProfile(
-                  username: _usernameController.text.trim(),
-                );
-                _finishOnboarding();
-             } : null,
-             child: const Text('Salta il resto e vai alla Home'),
+            onPressed: _isUsernameValid && !_isCheckingUsername
+                ? () async {
+                    await ref
+                        .read(myProfileProvider.notifier)
+                        .updateProfile(
+                          username: _usernameController.text.trim(),
+                        );
+                    _finishOnboarding();
+                  }
+                : null,
+            child: const Text('Salta il resto e vai alla Home'),
           ),
         ],
       ),
@@ -308,34 +357,50 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
           const Spacer(),
           Text(
             'Aggiungi una Foto',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: VibraSpacing.xl),
           GestureDetector(
-            onTap: _isUploadingAvatar ? null : () async {
-              try {
-                final picker = ImagePicker();
-                final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-                if (image != null && mounted) {
-                  setState(() => _isUploadingAvatar = true);
-                  await ref.read(myProfileProvider.notifier).updateProfile(avatarUrl: image.path);
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Permesso negato o errore nella selezione foto.')),
-                  );
-                }
-              } finally {
-                if (mounted) {
-                  setState(() => _isUploadingAvatar = false);
-                }
-              }
-            },
+            onTap: _isUploadingAvatar
+                ? null
+                : () async {
+                    try {
+                      final picker = ImagePicker();
+                      final XFile? image = await picker.pickImage(
+                        source: ImageSource.gallery,
+                      );
+                      if (image != null && mounted) {
+                        setState(() => _isUploadingAvatar = true);
+                        await ref
+                            .read(myProfileProvider.notifier)
+                            .updateProfile(avatarUrl: image.path);
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Permesso negato o errore nella selezione foto.',
+                            ),
+                          ),
+                        );
+                      }
+                    } finally {
+                      if (mounted) {
+                        setState(() => _isUploadingAvatar = false);
+                      }
+                    }
+                  },
             child: Stack(
               alignment: Alignment.bottomRight,
               children: [
-                UserAvatar(name: profile.username, avatarUrl: profile.avatarUrl, radius: 60),
+                UserAvatar(
+                  name: profile.username,
+                  avatarUrl: profile.avatarUrl,
+                  radius: 60,
+                ),
                 if (_isUploadingAvatar)
                   Container(
                     width: 120,
@@ -355,7 +420,11 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
                       color: VibraColors.primary,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 20),
+                    child: const Icon(
+                      Icons.camera_alt_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
               ],
             ),
@@ -364,14 +433,14 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
           SizedBox(
             width: double.infinity,
             child: profile.avatarUrl != null
-              ? FilledButton(
-                  onPressed: () => _nextPage('spotify'),
-                  child: const Text('Continua'),
-                )
-              : FilledButton.tonal(
-                  onPressed: () => _nextPage('spotify'),
-                  child: const Text('Salta per ora'),
-                ),
+                ? FilledButton(
+                    onPressed: () => _nextPage('spotify'),
+                    child: const Text('Continua'),
+                  )
+                : FilledButton.tonal(
+                    onPressed: () => _nextPage('spotify'),
+                    child: const Text('Salta per ora'),
+                  ),
           ),
         ],
       ),
@@ -381,9 +450,11 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
   Widget _buildSpotifyStep() {
     final profile = ref.watch(myProfileProvider);
     final spotifyState = ref.watch(spotifyAuthProvider);
-    final hasSpotify = profile.spotifyId != null && profile.spotifyId!.isNotEmpty;
-    
-    final isProcessing = spotifyState.status == SpotifyAuthStatus.authorizing ||
+    final hasSpotify =
+        profile.spotifyId != null && profile.spotifyId!.isNotEmpty;
+
+    final isProcessing =
+        spotifyState.status == SpotifyAuthStatus.authorizing ||
         spotifyState.status == SpotifyAuthStatus.exchangingToken ||
         spotifyState.status == SpotifyAuthStatus.syncingProfile;
 
@@ -392,47 +463,62 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
       child: Column(
         children: [
           const Spacer(),
-          const Icon(Icons.music_note_rounded, size: 80, color: VibraColors.primary),
+          const Icon(
+            Icons.music_note_rounded,
+            size: 80,
+            color: VibraColors.primary,
+          ),
           const SizedBox(height: VibraSpacing.xl),
           Text(
             'Collega Spotify',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: VibraSpacing.md),
           Text(
             'Trova eventi basati sui tuoi ascolti e scopri la tua affinità musicale con gli altri utenti.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: VibraColors.textSecondary),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: VibraColors.textSecondary),
           ),
-          if (spotifyState.status == SpotifyAuthStatus.userCancelled || spotifyState.status == SpotifyAuthStatus.error) ...[
-             const SizedBox(height: VibraSpacing.md),
-             Container(
-               padding: const EdgeInsets.all(12),
-               decoration: BoxDecoration(
-                 color: VibraColors.error.withValues(alpha: 0.1),
-                 borderRadius: BorderRadius.circular(8),
-               ),
-               child: Text(
-                 spotifyState.status == SpotifyAuthStatus.userCancelled 
-                   ? 'Collegamento annullato. Puoi riprovare o saltare per ora.' 
-                   : 'Errore durante il collegamento. Riprova più tardi.',
-                 style: const TextStyle(color: VibraColors.error, fontSize: 13),
-                 textAlign: TextAlign.center,
-               ),
-             ),
+          if (spotifyState.status == SpotifyAuthStatus.userCancelled ||
+              spotifyState.status == SpotifyAuthStatus.error) ...[
+            const SizedBox(height: VibraSpacing.md),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: VibraColors.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                spotifyState.status == SpotifyAuthStatus.userCancelled
+                    ? 'Collegamento annullato. Puoi riprovare o saltare per ora.'
+                    : 'Errore durante il collegamento. Riprova più tardi.',
+                style: const TextStyle(color: VibraColors.error, fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+            ),
           ],
           const Spacer(),
           if (!hasSpotify) ...[
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: isProcessing ? null : () {
-                  ref.read(spotifyAuthProvider.notifier).connectSpotify();
-                },
+                onPressed: isProcessing
+                    ? null
+                    : () {
+                        ref.read(spotifyAuthProvider.notifier).connectSpotify();
+                      },
                 child: isProcessing
                     ? const SizedBox(
-                        width: 20, height: 20, 
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : const Text('Collega Spotify'),
               ),
@@ -442,14 +528,16 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
           SizedBox(
             width: double.infinity,
             child: hasSpotify
-              ? FilledButton(
-                  onPressed: () => _nextPage('location'),
-                  child: const Text('Continua'),
-                )
-              : FilledButton.tonal(
-                  onPressed: isProcessing ? null : () => _nextPage('location'),
-                  child: const Text('Salta'),
-                ),
+                ? FilledButton(
+                    onPressed: () => _nextPage('location'),
+                    child: const Text('Continua'),
+                  )
+                : FilledButton.tonal(
+                    onPressed: isProcessing
+                        ? null
+                        : () => _nextPage('location'),
+                    child: const Text('Salta'),
+                  ),
           ),
         ],
       ),
@@ -462,33 +550,48 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
       child: Column(
         children: [
           const Spacer(),
-          const Icon(Icons.location_on_rounded, size: 80, color: VibraColors.primary),
+          const Icon(
+            Icons.location_on_rounded,
+            size: 80,
+            color: VibraColors.primary,
+          ),
           const SizedBox(height: VibraSpacing.xl),
           Text(
             'Eventi vicino a te',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: VibraSpacing.md),
           Text(
             'Attiva la posizione per scoprire i concerti e i locali nella tua zona.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: VibraColors.textSecondary),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: VibraColors.textSecondary),
           ),
           const Spacer(),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
               onPressed: () async {
-                bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+                bool serviceEnabled =
+                    await Geolocator.isLocationServiceEnabled();
                 if (serviceEnabled) {
-                  LocationPermission permission = await Geolocator.checkPermission();
+                  LocationPermission permission =
+                      await Geolocator.checkPermission();
                   if (permission == LocationPermission.denied) {
                     permission = await Geolocator.requestPermission();
                   }
-                  
-                  if (permission == LocationPermission.deniedForever && mounted) {
+
+                  if (permission == LocationPermission.deniedForever &&
+                      mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Permesso negato permanentemente. Puoi abilitarlo in seguito nelle Impostazioni.')),
+                      const SnackBar(
+                        content: Text(
+                          'Permesso negato permanentemente. Puoi abilitarlo in seguito nelle Impostazioni.',
+                        ),
+                      ),
                     );
                   }
                 }
@@ -516,17 +619,25 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
       child: Column(
         children: [
           const Spacer(),
-          const Icon(Icons.notifications_active_rounded, size: 80, color: VibraColors.primary),
+          const Icon(
+            Icons.notifications_active_rounded,
+            size: 80,
+            color: VibraColors.primary,
+          ),
           const SizedBox(height: VibraSpacing.xl),
           Text(
             'Rimani aggiornato',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: VibraSpacing.md),
           Text(
             'Ricevi notifiche quando i tuoi artisti preferiti suonano in città o quando ricevi un messaggio.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: VibraColors.textSecondary),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: VibraColors.textSecondary),
           ),
           const Spacer(),
           SizedBox(
@@ -539,11 +650,17 @@ class _OnboardingWizardScreenState extends ConsumerState<OnboardingWizardScreen>
                   badge: true,
                   sound: true,
                 );
-                
-                if (settings.authorizationStatus == AuthorizationStatus.denied && mounted) {
-                   ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Notifiche negate. Non riceverai avvisi sui nuovi eventi.')),
-                    );
+
+                if (settings.authorizationStatus ==
+                        AuthorizationStatus.denied &&
+                    mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Notifiche negate. Non riceverai avvisi sui nuovi eventi.',
+                      ),
+                    ),
+                  );
                 }
                 _finishOnboarding();
               },

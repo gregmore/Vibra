@@ -11,7 +11,7 @@ class VibraNeonAvatar extends StatelessWidget {
   final String? displayName;
   final VoidCallback? onTap;
   final bool isOnline;
-  
+
   const VibraNeonAvatar({
     super.key,
     required this.imageUrl,
@@ -51,7 +51,10 @@ class VibraNeonAvatar extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [bgColor.withValues(alpha: 0.8), bgColor.withValues(alpha: 0.4)],
+            colors: [
+              bgColor.withValues(alpha: 0.8),
+              bgColor.withValues(alpha: 0.4),
+            ],
           ),
         ),
         child: Center(
@@ -76,7 +79,7 @@ class VibraNeonAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = VibraColors.getMatchColor(score);
     final innerRadius = radius - 1.5;
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Stack(
@@ -87,13 +90,8 @@ class VibraNeonAvatar extends StatelessWidget {
             height: radius * 2,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: color,
-                width: 1.5,
-              ),
-              boxShadow: [
-                VibraShadows.neonGlow(color, intensity: 0.5),
-              ],
+              border: Border.all(color: color, width: 1.5),
+              boxShadow: [VibraShadows.neonGlow(color, intensity: 0.5)],
             ),
             child: ClipOval(
               child: imageUrl.isEmpty
@@ -103,8 +101,11 @@ class VibraNeonAvatar extends StatelessWidget {
                       fit: BoxFit.cover,
                       memCacheWidth: 200,
                       placeholder: (context, url) {
-                        final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
-                        if (isTest) return Container(color: VibraColors.surfaceVariant);
+                        final isTest = WidgetsBinding.instance.runtimeType
+                            .toString()
+                            .contains('Test');
+                        if (isTest)
+                          return Container(color: VibraColors.surfaceVariant);
                         return Container(
                           color: VibraColors.surfaceVariant,
                           child: const Center(
@@ -112,7 +113,8 @@ class VibraNeonAvatar extends StatelessWidget {
                           ),
                         );
                       },
-                      errorWidget: (context, url, error) => _buildInitialsAvatar(innerRadius),
+                      errorWidget: (context, url, error) =>
+                          _buildInitialsAvatar(innerRadius),
                     ),
             ),
           ),

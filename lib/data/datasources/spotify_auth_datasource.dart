@@ -12,28 +12,37 @@ import '../../core/utils/logger.dart';
 class SpotifyAuthDatasource {
   final SupabaseClient supabaseClient;
 
-  SpotifyAuthDatasource({
-    required this.supabaseClient,
-  });
+  SpotifyAuthDatasource({required this.supabaseClient});
 
   /// Genera un Code Verifier casuale per PKCE.
   String generateCodeVerifier() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    const chars =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
     final rand = Random.secure();
-    return List.generate(43, (index) => chars[rand.nextInt(chars.length)]).join();
+    return List.generate(
+      43,
+      (index) => chars[rand.nextInt(chars.length)],
+    ).join();
   }
 
   /// Genera un Code Challenge derivato dal Code Verifier usando SHA-256.
   String generateCodeChallenge(String verifier) {
     final bytes = utf8.encode(verifier);
     final digest = sha256.convert(bytes);
-    return base64Url.encode(digest.bytes).replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_');
+    return base64Url
+        .encode(digest.bytes)
+        .replaceAll('=', '')
+        .replaceAll('+', '-')
+        .replaceAll('/', '_');
   }
 
   /// Genera uno stato casuale per prevenire CSRF.
   String generateState() {
     final rand = Random.secure();
-    return List.generate(16, (index) => rand.nextInt(16).toRadixString(16)).join();
+    return List.generate(
+      16,
+      (index) => rand.nextInt(16).toRadixString(16),
+    ).join();
   }
 
   /// Avvia il flusso di autorizzazione Spotify tramite flutter_web_auth_2.
@@ -75,11 +84,15 @@ class SpotifyAuthDatasource {
       }
 
       if (returnedState != state) {
-        throw const AuthException(message: 'Stato non corrispondente. Potenziale attacco CSRF.');
+        throw const AuthException(
+          message: 'Stato non corrispondente. Potenziale attacco CSRF.',
+        );
       }
 
       if (code == null) {
-        throw const AuthException(message: 'Codice di autorizzazione non ricevuto da Spotify.');
+        throw const AuthException(
+          message: 'Codice di autorizzazione non ricevuto da Spotify.',
+        );
       }
 
       return code;
@@ -108,9 +121,12 @@ class SpotifyAuthDatasource {
 
       if (response.status != 200) {
         String errMsg = 'Scambio token fallito: ${response.data}';
-        
-        if (response.data is Map && response.data['error'] == 'spotify_account_already_linked') {
-          errMsg = response.data['message'] ?? 'Questo account Spotify è già collegato a un altro profilo Vibra.';
+
+        if (response.data is Map &&
+            response.data['error'] == 'spotify_account_already_linked') {
+          errMsg =
+              response.data['message'] ??
+              'Questo account Spotify è già collegato a un altro profilo Vibra.';
         }
 
         throw ServerException(
@@ -124,19 +140,21 @@ class SpotifyAuthDatasource {
     } catch (e) {
       VibraLogger.error('Errore durante lo scambio token Spotify', error: e);
       if (e is ServerException) rethrow;
-      throw ServerException(message: 'Scambio token fallito: $e', endpoint: 'spotify-token-exchange');
+      throw ServerException(
+        message: 'Scambio token fallito: $e',
+        endpoint: 'spotify-token-exchange',
+      );
     }
   }
 
   /// Rinnova la sessione Spotify tramite Edge Function.
-  Future<SpotifyTokenModel> refreshSession({required String refreshToken}) async {
+  Future<SpotifyTokenModel> refreshSession({
+    required String refreshToken,
+  }) async {
     try {
       final response = await supabaseClient.functions.invoke(
         'spotify-token-exchange',
-        body: {
-          'action': 'refresh',
-          'refresh_token': refreshToken,
-        },
+        body: {'action': 'refresh', 'refresh_token': refreshToken},
       );
 
       if (response.status != 200) {
@@ -149,9 +167,15 @@ class SpotifyAuthDatasource {
       final data = response.data as Map<String, dynamic>;
       return SpotifyTokenModel.fromJson(data);
     } catch (e) {
-      VibraLogger.error('Errore durante il refresh della sessione Spotify', error: e);
+      VibraLogger.error(
+        'Errore durante il refresh della sessione Spotify',
+        error: e,
+      );
       if (e is ServerException) rethrow;
-      throw ServerException(message: 'Refresh sessione fallito: $e', endpoint: 'spotify-token-exchange');
+      throw ServerException(
+        message: 'Refresh sessione fallito: $e',
+        endpoint: 'spotify-token-exchange',
+      );
     }
   }
 
@@ -171,9 +195,15 @@ class SpotifyAuthDatasource {
 
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      VibraLogger.error('Errore durante la sincronizzazione profilo Spotify', error: e);
+      VibraLogger.error(
+        'Errore durante la sincronizzazione profilo Spotify',
+        error: e,
+      );
       if (e is ServerException) rethrow;
-      throw ServerException(message: 'Sincronizzazione profilo fallita: $e', endpoint: 'sync-music-profile');
+      throw ServerException(
+        message: 'Sincronizzazione profilo fallita: $e',
+        endpoint: 'sync-music-profile',
+      );
     }
   }
 }

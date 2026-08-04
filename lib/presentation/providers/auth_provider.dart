@@ -10,43 +10,35 @@ import 'package:crypto/crypto.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'app_state_providers.dart';
 import 'spotify_auth_provider.dart';
-enum GeneralAuthStatus {
-  idle,
-  loading,
-  authenticated,
-  error,
-}
+
+enum GeneralAuthStatus { idle, loading, authenticated, error }
 
 class GeneralAuthState {
   final GeneralAuthStatus status;
   final String? errorMessage;
   final User? user;
 
-  const GeneralAuthState({
-    required this.status,
-    this.errorMessage,
-    this.user,
-  });
+  const GeneralAuthState({required this.status, this.errorMessage, this.user});
 
   const GeneralAuthState.idle()
-      : status = GeneralAuthStatus.idle,
-        errorMessage = null,
-        user = null;
+    : status = GeneralAuthStatus.idle,
+      errorMessage = null,
+      user = null;
 
   const GeneralAuthState.loading()
-      : status = GeneralAuthStatus.loading,
-        errorMessage = null,
-        user = null;
+    : status = GeneralAuthStatus.loading,
+      errorMessage = null,
+      user = null;
 
   const GeneralAuthState.authenticated(User u)
-      : status = GeneralAuthStatus.authenticated,
-        errorMessage = null,
-        user = u;
+    : status = GeneralAuthStatus.authenticated,
+      errorMessage = null,
+      user = u;
 
   const GeneralAuthState.error(String message)
-      : status = GeneralAuthStatus.error,
-        errorMessage = message,
-        user = null;
+    : status = GeneralAuthStatus.error,
+      errorMessage = message,
+      user = null;
 }
 
 class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
@@ -93,7 +85,7 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
       state = const GeneralAuthState.loading();
       await clearLocalState();
       final supabase = _ref.read(supabaseDatasourceProvider);
-      
+
       final webClientId = dotenv.env['GOOGLE_WEB_CLIENT_ID'];
       final iosClientId = dotenv.env['GOOGLE_IOS_CLIENT_ID'];
 
@@ -111,11 +103,9 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
       final idToken = googleAuth.idToken;
 
       // Access token is optional but useful for Supabase
-      final authz = await googleUser.authorizationClient.authorizationForScopes([
-        'email',
-        'profile',
-        'openid',
-      ]);
+      final authz = await googleUser.authorizationClient.authorizationForScopes(
+        ['email', 'profile', 'openid'],
+      );
       final accessToken = authz?.accessToken;
 
       if (idToken == null) {
@@ -132,7 +122,8 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
       String errorMessage = e.toString();
       if (e is AuthApiException) {
         if (e.message.contains('provider is not enabled')) {
-          errorMessage = 'Google Sign-In non è configurato/abilitato nel tuo progetto Supabase di produzione. Abilitalo da Authentication -> Providers -> Google.';
+          errorMessage =
+              'Google Sign-In non è configurato/abilitato nel tuo progetto Supabase di produzione. Abilitalo da Authentication -> Providers -> Google.';
         } else {
           errorMessage = e.message;
         }
@@ -146,7 +137,7 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
       state = const GeneralAuthState.loading();
       await clearLocalState();
       final supabase = _ref.read(supabaseDatasourceProvider);
-      
+
       final rawNonce = supabase.client.auth.generateRawNonce();
       final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
 
@@ -173,7 +164,8 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
       String errorMessage = e.toString();
       if (e is AuthApiException) {
         if (e.message.contains('provider is not enabled')) {
-          errorMessage = 'Apple Sign-In non è configurato/abilitato nel tuo progetto Supabase di produzione. Abilitalo da Authentication -> Providers -> Apple.';
+          errorMessage =
+              'Apple Sign-In non è configurato/abilitato nel tuo progetto Supabase di produzione. Abilitalo da Authentication -> Providers -> Apple.';
         } else {
           errorMessage = e.message;
         }
@@ -187,12 +179,12 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
       state = const GeneralAuthState.loading();
       await clearLocalState();
       final supabase = _ref.read(supabaseDatasourceProvider);
-      
+
       final response = await supabase.client.auth.signInWithPassword(
         email: email,
         password: password,
       );
-      
+
       if (response.user != null) {
         state = GeneralAuthState.authenticated(response.user!);
       } else {
@@ -203,9 +195,11 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
       String errorMessage = e.toString();
       if (e is AuthApiException) {
         if (e.code == 'email_not_confirmed') {
-          errorMessage = 'L\'indirizzo e-mail non è stato ancora confermato. Controlla la tua casella di posta per attivare l\'account!';
+          errorMessage =
+              'L\'indirizzo e-mail non è stato ancora confermato. Controlla la tua casella di posta per attivare l\'account!';
         } else if (e.code == 'invalid_credentials') {
-          errorMessage = 'Credenziali non valide. Controlla l\'indirizzo e-mail e la password inseriti.';
+          errorMessage =
+              'Credenziali non valide. Controlla l\'indirizzo e-mail e la password inseriti.';
         } else {
           errorMessage = e.message;
         }
@@ -214,22 +208,26 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
     }
   }
 
-  Future<void> signUpWithEmail(String email, String password, String username) async {
+  Future<void> signUpWithEmail(
+    String email,
+    String password,
+    String username,
+  ) async {
     try {
       state = const GeneralAuthState.loading();
       await clearLocalState();
       final supabase = _ref.read(supabaseDatasourceProvider);
-      
+
       final response = await supabase.client.auth.signUp(
         email: email,
         password: password,
         data: {'username': username, 'display_name': username},
       );
-      
+
       if (response.user != null) {
         if (response.session == null) {
           state = const GeneralAuthState.error(
-            'Registrazione completata con successo! Ti abbiamo inviato una e-mail di conferma. Controlla la tua casella di posta prima di effettuare l\'accesso.'
+            'Registrazione completata con successo! Ti abbiamo inviato una e-mail di conferma. Controlla la tua casella di posta prima di effettuare l\'accesso.',
           );
         } else {
           state = GeneralAuthState.authenticated(response.user!);
@@ -251,7 +249,7 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
     try {
       state = const GeneralAuthState.loading();
       final supabase = _ref.read(supabaseDatasourceProvider);
-      
+
       final user = supabase.currentUser;
       if (user != null) {
         try {
@@ -261,13 +259,14 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
               .eq('id', user.id);
           VibraLogger.info('Token FCM rimosso da Supabase su logout');
         } catch (e) {
-          VibraLogger.warning('Impossibile rimuovere token FCM su Supabase durante il logout: $e');
+          VibraLogger.warning(
+            'Impossibile rimuovere token FCM su Supabase durante il logout: $e',
+          );
         }
       }
 
       await clearLocalState();
-      
-      
+
       await supabase.client.auth.signOut(scope: scope);
       state = const GeneralAuthState.idle();
     } catch (e) {
@@ -290,7 +289,10 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
       await supabase.client.auth.signOut();
       state = const GeneralAuthState.idle();
     } catch (e) {
-      VibraLogger.error('Errore durante l\'eliminazione dell\'account', error: e);
+      VibraLogger.error(
+        'Errore durante l\'eliminazione dell\'account',
+        error: e,
+      );
       state = GeneralAuthState.error(e.toString());
       rethrow;
     }
@@ -299,5 +301,5 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
 
 final generalAuthProvider =
     StateNotifierProvider<GeneralAuthNotifier, GeneralAuthState>((ref) {
-  return GeneralAuthNotifier(ref);
-});
+      return GeneralAuthNotifier(ref);
+    });

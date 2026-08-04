@@ -38,13 +38,20 @@ class VibraSectionHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  title,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 if (subtitle != null) ...[
                   const SizedBox(height: 2),
                   Text(
                     subtitle!,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.72,
+                      ),
                     ),
                   ),
                 ],
@@ -56,12 +63,17 @@ class VibraSectionHeader extends StatelessWidget {
               onPressed: onActionTap,
               style: TextButton.styleFrom(
                 foregroundColor: VibraColors.primary,
-                padding: const EdgeInsets.symmetric(horizontal: VibraSpacing.sm),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: VibraSpacing.sm,
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(actionLabel!, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(
+                    actionLabel!,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   const SizedBox(width: 4),
                   const Icon(Icons.chevron_right_rounded, size: 20),
                 ],

@@ -13,8 +13,11 @@ class LiveRepositoryImpl implements LiveRepository {
 
   @override
   Stream<List<LiveMessage>> streamMessages({required String eventId}) {
-    return _datasource.streamLiveMessages(eventId: eventId).map(
-          (items) => items.map((item) => item.toEntity()).toList(growable: false),
+    return _datasource
+        .streamLiveMessages(eventId: eventId)
+        .map(
+          (items) =>
+              items.map((item) => item.toEntity()).toList(growable: false),
         );
   }
 
@@ -33,6 +36,8 @@ class LiveRepositoryImpl implements LiveRepository {
   RealtimeChannel subscribeToInserts({
     required String eventId,
     required void Function(LiveMessage message) onInsert,
-  }) =>
-      _datasource.subscribeToLiveInsert(eventId: eventId, onInsert: (model) => onInsert(model.toEntity()));
+  }) => _datasource.subscribeToLiveInsert(
+    eventId: eventId,
+    onInsert: (model) => onInsert(model.toEntity()),
+  );
 }

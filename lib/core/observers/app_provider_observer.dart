@@ -10,7 +10,10 @@ class AppProviderObserver extends ProviderObserver {
     Object? value,
     ProviderContainer container,
   ) {
-    VibraLogger.debug('Provider aggiunto: ${provider.name ?? provider.runtimeType}', tag: 'Riverpod');
+    VibraLogger.debug(
+      'Provider aggiunto: ${provider.name ?? provider.runtimeType}',
+      tag: 'Riverpod',
+    );
   }
 
   @override
@@ -18,7 +21,10 @@ class AppProviderObserver extends ProviderObserver {
     ProviderBase<Object?> provider,
     ProviderContainer container,
   ) {
-    VibraLogger.debug('Provider smaltito: ${provider.name ?? provider.runtimeType}', tag: 'Riverpod');
+    VibraLogger.debug(
+      'Provider smaltito: ${provider.name ?? provider.runtimeType}',
+      tag: 'Riverpod',
+    );
   }
 
   @override
@@ -30,7 +36,7 @@ class AppProviderObserver extends ProviderObserver {
   ) {
     // Evita di loggare stream di posizione o timer se troppo rumorosi.
     if (provider.name == 'locationProvider') return;
-    
+
     VibraLogger.debug(
       'Provider aggiornato: ${provider.name ?? provider.runtimeType}',
       tag: 'Riverpod',

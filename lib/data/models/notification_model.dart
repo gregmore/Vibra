@@ -19,4 +19,3 @@ abstract class NotificationModel with _$NotificationModel {
   factory NotificationModel.fromJson(Map<String, dynamic> json) =>
       _$NotificationModelFromJson(json);
 }
-

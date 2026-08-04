@@ -16,7 +16,8 @@ class TestHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
-      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }
 
@@ -32,12 +33,12 @@ class MockSpotifyAuthNotifier extends SpotifyAuthNotifier {
 class FakeSupabaseDatasource extends Fake implements SupabaseDatasource {
   @override
   User? get currentUser => User(
-        id: 'fake-user-id',
-        appMetadata: const {},
-        userMetadata: const {},
-        aud: 'authenticated',
-        createdAt: DateTime.now().toIso8601String(),
-      );
+    id: 'fake-user-id',
+    appMetadata: const {},
+    userMetadata: const {},
+    aud: 'authenticated',
+    createdAt: DateTime.now().toIso8601String(),
+  );
 
   @override
   bool get isAuthenticated => true;
@@ -55,7 +56,7 @@ void main() {
     SharedPreferences.setMockInitialValues(const {
       'user_selected_locale': 'it',
     });
-    
+
     // Inizializza finta istanza Supabase
     await Supabase.initialize(
       url: 'https://fake.supabase.co',
@@ -74,8 +75,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          supabaseDatasourceProvider.overrideWith((ref) => FakeSupabaseDatasource()),
-          spotifyAuthProvider.overrideWith((ref) => MockSpotifyAuthNotifier(ref)),
+          supabaseDatasourceProvider.overrideWith(
+            (ref) => FakeSupabaseDatasource(),
+          ),
+          spotifyAuthProvider.overrideWith(
+            (ref) => MockSpotifyAuthNotifier(ref),
+          ),
         ],
         child: const VibraApp(),
       ),
@@ -90,8 +95,10 @@ void main() {
     // 1. Splash Screen e Welcome
     debugPrint('BOT: Avvio Splash Screen e Welcome...');
     await pausa(2);
-    
-    final loginButton = find.textContaining(RegExp(r'login|inizia', caseSensitive: false));
+
+    final loginButton = find.textContaining(
+      RegExp(r'login|inizia', caseSensitive: false),
+    );
     if (loginButton.evaluate().isNotEmpty) {
       await tester.tap(loginButton.first);
       await pausa(1);

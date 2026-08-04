@@ -40,12 +40,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     try {
       final events = ref.read(allEventsProvider);
       final eventId = events.isNotEmpty ? events.first.id : 'ev1';
-      await ref.read(sendLiveMessageUseCaseProvider).call(
-            SendLiveMessageParams(
-              eventId: eventId,
-              content: text,
-            ),
-          );
+      await ref
+          .read(sendLiveMessageUseCaseProvider)
+          .call(SendLiveMessageParams(eventId: eventId, content: text));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -66,7 +63,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(VibraSpacing.pagePadding, 20, VibraSpacing.pagePadding, 14),
+            padding: EdgeInsets.fromLTRB(
+              VibraSpacing.pagePadding,
+              20,
+              VibraSpacing.pagePadding,
+              14,
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -75,17 +77,34 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                     children: [
                       Row(
                         children: [
-                          Text(AppLocalizations.of(context)!.liveScreenTitle, style: theme.textTheme.displaySmall),
+                          Text(
+                            AppLocalizations.of(context)!.liveScreenTitle,
+                            style: theme.textTheme.displaySmall,
+                          ),
                           if (liveEnabled)
                             Container(
-                              margin: const EdgeInsets.only(left: 8),
-                              width: 10,
-                              height: 10,
-                              decoration: const BoxDecoration(
-                                color: VibraColors.accent,
-                                shape: BoxShape.circle,
-                              ),
-                            ).animate(onPlay: (controller) => controller.repeat()).scale(begin: const Offset(0.8, 0.8), end: const Offset(1.2, 1.2), duration: 1000.ms).then().scale(begin: const Offset(1.2, 1.2), end: const Offset(0.8, 0.8), duration: 1000.ms),
+                                  margin: const EdgeInsets.only(left: 8),
+                                  width: 10,
+                                  height: 10,
+                                  decoration: const BoxDecoration(
+                                    color: VibraColors.accent,
+                                    shape: BoxShape.circle,
+                                  ),
+                                )
+                                .animate(
+                                  onPlay: (controller) => controller.repeat(),
+                                )
+                                .scale(
+                                  begin: const Offset(0.8, 0.8),
+                                  end: const Offset(1.2, 1.2),
+                                  duration: 1000.ms,
+                                )
+                                .then()
+                                .scale(
+                                  begin: const Offset(1.2, 1.2),
+                                  end: const Offset(0.8, 0.8),
+                                  duration: 1000.ms,
+                                ),
                         ],
                       ),
                       const SizedBox(height: 6),
@@ -115,58 +134,74 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
           SizedBox(
             height: 92,
             child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: VibraSpacing.pagePadding),
+              padding: EdgeInsets.symmetric(
+                horizontal: VibraSpacing.pagePadding,
+              ),
               scrollDirection: Axis.horizontal,
               itemCount: users.length,
               itemBuilder: (context, index) {
                 final user = users[index];
                 return Container(
-                  width: 172,
-                  margin: const EdgeInsets.only(right: 10, top: 8, bottom: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: VibraColors.surfaceElevated,
-                    borderRadius: BorderRadius.circular(VibraSpacing.radiusLarge),
-                    border: Border.all(
-                      color: VibraColors.glassBorder,
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      VibraNeonAvatar(
-                        imageUrl: user.user.avatarUrl ?? '',
-                        radius: 18,
-                        displayName: user.user.displayName ?? user.user.username,
+                      width: 172,
+                      margin: const EdgeInsets.only(
+                        right: 10,
+                        top: 8,
+                        bottom: 8,
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              user.user.displayName ?? user.user.username,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: VibraColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${user.compatibility}%',
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: VibraColors.accentWarm, // using accentWarm instead of plain green
-                              ),
-                            ),
-                          ],
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: VibraColors.surfaceElevated,
+                        borderRadius: BorderRadius.circular(
+                          VibraSpacing.radiusLarge,
+                        ),
+                        border: Border.all(
+                          color: VibraColors.glassBorder,
+                          width: 1,
                         ),
                       ),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: (200 + index * 100).ms, duration: 400.ms).slideX(begin: 0.1, end: 0);
+                      child: Row(
+                        children: [
+                          VibraNeonAvatar(
+                            imageUrl: user.user.avatarUrl ?? '',
+                            radius: 18,
+                            displayName:
+                                user.user.displayName ?? user.user.username,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  user.user.displayName ?? user.user.username,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: VibraColors.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${user.compatibility}%',
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                    color: VibraColors
+                                        .accentWarm, // using accentWarm instead of plain green
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                    .animate()
+                    .fadeIn(delay: (200 + index * 100).ms, duration: 400.ms)
+                    .slideX(begin: 0.1, end: 0);
               },
             ),
           ),
@@ -180,49 +215,98 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 // Chat list
                 ListView.builder(
                   reverse: true,
-                  padding: EdgeInsets.fromLTRB(VibraSpacing.pagePadding, 12, VibraSpacing.pagePadding, 12),
+                  padding: EdgeInsets.fromLTRB(
+                    VibraSpacing.pagePadding,
+                    12,
+                    VibraSpacing.pagePadding,
+                    12,
+                  ),
                   itemCount: liveMessages.length,
                   itemBuilder: (context, index) {
                     final message = liveMessages[index];
-                    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+                    final currentUserId =
+                        Supabase.instance.client.auth.currentUser?.id;
                     final mine = message.userId == currentUserId;
                     final timeString = message.createdAt != null
-                        ? DateFormat('HH:mm').format(message.createdAt!.toLocal())
+                        ? DateFormat(
+                            'HH:mm',
+                          ).format(message.createdAt!.toLocal())
                         : '';
-                    
+
                     return Align(
-                      alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+                      alignment: mine
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
                       child: Column(
-                        crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                        crossAxisAlignment: mine
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
                         children: [
                           Container(
-                            constraints: const BoxConstraints(maxWidth: 290),
-                            margin: const EdgeInsets.only(bottom: 4),
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                            decoration: BoxDecoration(
-                              gradient: mine ? LinearGradient(colors: [VibraColors.primary, VibraColors.accent]) : null,
-                              color: mine
-                                  ? null
-                                  : VibraColors.surfaceElevated,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(VibraSpacing.radiusLarge),
-                                topRight: Radius.circular(VibraSpacing.radiusLarge),
-                                bottomLeft: Radius.circular(mine ? VibraSpacing.radiusLarge : VibraSpacing.radiusSmall),
-                                bottomRight: Radius.circular(mine ? VibraSpacing.radiusSmall : VibraSpacing.radiusLarge),
+                                constraints: const BoxConstraints(
+                                  maxWidth: 290,
+                                ),
+                                margin: const EdgeInsets.only(bottom: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: mine
+                                      ? LinearGradient(
+                                          colors: [
+                                            VibraColors.primary,
+                                            VibraColors.accent,
+                                          ],
+                                        )
+                                      : null,
+                                  color: mine
+                                      ? null
+                                      : VibraColors.surfaceElevated,
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(
+                                      VibraSpacing.radiusLarge,
+                                    ),
+                                    topRight: Radius.circular(
+                                      VibraSpacing.radiusLarge,
+                                    ),
+                                    bottomLeft: Radius.circular(
+                                      mine
+                                          ? VibraSpacing.radiusLarge
+                                          : VibraSpacing.radiusSmall,
+                                    ),
+                                    bottomRight: Radius.circular(
+                                      mine
+                                          ? VibraSpacing.radiusSmall
+                                          : VibraSpacing.radiusLarge,
+                                    ),
+                                  ),
+                                  border: mine
+                                      ? null
+                                      : Border.all(
+                                          color: VibraColors.glassBorder,
+                                        ),
+                                ),
+                                child: Text(
+                                  message.content,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: VibraColors.textPrimary,
+                                  ),
+                                ),
+                              )
+                              .animate()
+                              .fadeIn(duration: 300.ms)
+                              .slideY(
+                                begin: 0.1,
+                                end: 0,
+                                curve: Curves.easeOutQuad,
                               ),
-                              border: mine ? null : Border.all(
-                                color: VibraColors.glassBorder,
-                              ),
-                            ),
-                            child: Text(
-                              message.content,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: VibraColors.textPrimary,
-                              ),
-                            ),
-                          ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 10, left: 4, right: 4),
+                            padding: const EdgeInsets.only(
+                              bottom: 10,
+                              left: 4,
+                              right: 4,
+                            ),
                             child: Text(
                               timeString,
                               style: theme.textTheme.labelSmall?.copyWith(
@@ -272,13 +356,18 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                               ),
                               const SizedBox(height: 24),
                               FilledButton.tonal(
-                                onPressed: () => setState(() => liveEnabled = true),
+                                onPressed: () =>
+                                    setState(() => liveEnabled = true),
                                 style: FilledButton.styleFrom(
                                   backgroundColor: VibraColors.accent,
                                   foregroundColor: VibraColors.textPrimary,
                                 ),
-                                child: Text(AppLocalizations.of(context)!.liveScreenActivateMode),
-                              )
+                                child: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.liveScreenActivateMode,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -289,14 +378,21 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.fromLTRB(VibraSpacing.pagePadding, 8, VibraSpacing.pagePadding, 24),
+            padding: EdgeInsets.fromLTRB(
+              VibraSpacing.pagePadding,
+              8,
+              VibraSpacing.pagePadding,
+              24,
+            ),
             child: Row(
               children: [
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
                       color: VibraColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(VibraSpacing.radiusFull),
+                      borderRadius: BorderRadius.circular(
+                        VibraSpacing.radiusFull,
+                      ),
                       border: Border.all(color: VibraColors.glassBorder),
                     ),
                     child: TextField(
@@ -308,7 +404,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                         hintText: 'Scrivi in chat live...',
                         hintStyle: TextStyle(color: VibraColors.textSecondary),
                         border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 14,
+                        ),
                       ),
                     ),
                   ),
@@ -316,12 +415,19 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 const SizedBox(width: 10),
                 Container(
                   decoration: BoxDecoration(
-                    color: liveEnabled ? VibraColors.accent : VibraColors.surfaceVariant,
+                    color: liveEnabled
+                        ? VibraColors.accent
+                        : VibraColors.surfaceVariant,
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
                     onPressed: liveEnabled ? _sendMessage : null,
-                    icon: Icon(Icons.send_rounded, color: liveEnabled ? Colors.white : VibraColors.textSecondary),
+                    icon: Icon(
+                      Icons.send_rounded,
+                      color: liveEnabled
+                          ? Colors.white
+                          : VibraColors.textSecondary,
+                    ),
                   ),
                 ),
               ],

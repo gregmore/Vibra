@@ -11,7 +11,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // NOTA: Test disabilitato temporaneamente in attesa di Mock API / Local Supabase
-      
+
       /*
       // 1. Apri tab "Esplora"
       await tester.tap(find.byKey(const Key('nav_explore')));

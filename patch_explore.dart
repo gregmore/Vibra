@@ -28,7 +28,7 @@ void main() {
                             );
                           },
 ''';
-  
+
   final newClusterBuilder = '''
                           builder: (context, markers) {
                             return Container(
@@ -61,7 +61,7 @@ void main() {
 
   // 3. Add zoom buttons and position them
   // We need to insert a Positioned after `if (eventsAsync.isLoading) ...`
-  
+
   final oldStackChildrenEnd = '''
                   if (eventsAsync.isLoading)
                     Positioned(

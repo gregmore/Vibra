@@ -18,13 +18,20 @@ class VibraCategoryFilter extends StatelessWidget {
 
   String _getEmojiForCategory(String category) {
     switch (category.toLowerCase()) {
-      case 'tutti': return '🎵';
-      case 'electronic': return '🎹';
-      case 'indie': return '🎸';
-      case 'house': return '🏠';
-      case 'rap': return '🎤';
-      case 'alternative': return '✨';
-      default: return '🎧';
+      case 'tutti':
+        return '🎵';
+      case 'electronic':
+        return '🎹';
+      case 'indie':
+        return '🎸';
+      case 'house':
+        return '🏠';
+      case 'rap':
+        return '🎤';
+      case 'alternative':
+        return '✨';
+      default:
+        return '🎧';
     }
   }
 
@@ -40,16 +47,25 @@ class VibraCategoryFilter extends StatelessWidget {
           final category = categories[index];
           final isSelected = category == selectedCategory;
           final emoji = _getEmojiForCategory(category);
-          
+
           Widget chip = AnimatedContainer(
             duration: VibraSpacing.animFast,
-            padding: const EdgeInsets.symmetric(horizontal: VibraSpacing.xl, vertical: VibraSpacing.sm),
+            padding: const EdgeInsets.symmetric(
+              horizontal: VibraSpacing.xl,
+              vertical: VibraSpacing.sm,
+            ),
             decoration: BoxDecoration(
-              gradient: isSelected ? const LinearGradient(colors: [VibraColors.primary, VibraColors.accent]) : null,
+              gradient: isSelected
+                  ? const LinearGradient(
+                      colors: [VibraColors.primary, VibraColors.accent],
+                    )
+                  : null,
               color: isSelected ? null : VibraColors.surfaceVariant,
               borderRadius: BorderRadius.circular(VibraSpacing.radiusFull),
               border: Border.all(
-                color: isSelected ? Colors.transparent : VibraColors.glassBorder,
+                color: isSelected
+                    ? Colors.transparent
+                    : VibraColors.glassBorder,
               ),
             ),
             child: Row(
@@ -60,8 +76,12 @@ class VibraCategoryFilter extends StatelessWidget {
                 Text(
                   category,
                   style: VibraTextStyles.labelMedium.copyWith(
-                    color: isSelected ? Colors.white : VibraColors.textSecondary,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected
+                        ? Colors.white
+                        : VibraColors.textSecondary,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                 ),
               ],
@@ -69,7 +89,11 @@ class VibraCategoryFilter extends StatelessWidget {
           );
 
           if (isSelected) {
-            chip = chip.animate().scale(begin: const Offset(0.95, 0.95), end: const Offset(1, 1), duration: VibraSpacing.animFast);
+            chip = chip.animate().scale(
+              begin: const Offset(0.95, 0.95),
+              end: const Offset(1, 1),
+              duration: VibraSpacing.animFast,
+            );
           }
 
           return Padding(

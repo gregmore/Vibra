@@ -13,4 +13,3 @@ class Friendship {
   final String status;
   final DateTime? createdAt;
 }
-

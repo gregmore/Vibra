@@ -10,8 +10,8 @@ class EventsRepositoryImpl implements EventsRepository {
   EventsRepositoryImpl({
     required EventsAggregatorDatasource externalDatasource,
     required SupabaseEventsDatasource supabaseDatasource,
-  })  : _external = externalDatasource,
-        _supabase = supabaseDatasource;
+  }) : _external = externalDatasource,
+       _supabase = supabaseDatasource;
 
   final EventsAggregatorDatasource _external;
   final SupabaseEventsDatasource _supabase;
@@ -70,7 +70,10 @@ class EventsRepositoryImpl implements EventsRepository {
     required String status,
   }) async {
     final internalEventId = await _supabase.syncEvent(event.toModel());
-    final model = await _supabase.setAttendance(eventId: internalEventId, status: status);
+    final model = await _supabase.setAttendance(
+      eventId: internalEventId,
+      status: status,
+    );
     return model.toEntity();
   }
 

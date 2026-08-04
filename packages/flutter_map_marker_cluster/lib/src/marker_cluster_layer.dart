@@ -517,8 +517,8 @@ class _MarkerClusterLayerState extends State<MarkerClusterLayer>
                 angle: -widget.mapCamera.rotationRad,
                 alignment: widget.options.alignment,
               ),
-        fade: Fade.fadeOut(
-            curve: widget.options.animationsOptions.fadeOutCurve),
+        fade:
+            Fade.fadeOut(curve: widget.options.animationsOptions.fadeOutCurve),
         child: ClusterWidget(
           cluster: cluster,
           builder: widget.options.builder,

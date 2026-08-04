@@ -33,4 +33,3 @@ abstract class EventsRepository {
     Map<String, dynamic>? metadata,
   });
 }
-

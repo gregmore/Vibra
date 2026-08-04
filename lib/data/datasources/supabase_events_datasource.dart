@@ -11,10 +11,7 @@ class SupabaseEventsDatasource {
 
   final SupabaseDatasource _supabase;
 
-  Future<List<EventModel>> listEvents({
-    DateTime? from,
-    int limit = 50,
-  }) async {
+  Future<List<EventModel>> listEvents({DateTime? from, int limit = 50}) async {
     try {
       final threshold = (from ?? DateTime.now()).toUtc().toIso8601String();
       final rows = await _supabase.client
@@ -23,13 +20,16 @@ class SupabaseEventsDatasource {
           .gte('event_date', threshold)
           .order('event_date', ascending: true)
           .limit(limit);
-      
-      final events = List<Map<String, dynamic>>.from(rows)
-          .map(EventModel.fromJson)
-          .toList(growable: false);
-      
+
+      final events = List<Map<String, dynamic>>.from(
+        rows,
+      ).map(EventModel.fromJson).toList(growable: false);
+
       // Salva in cache
-      await CacheService.saveList(CacheService.keyEvents, events.map((e) => e.toJson()).toList());
+      await CacheService.saveList(
+        CacheService.keyEvents,
+        events.map((e) => e.toJson()).toList(),
+      );
       return events;
     } catch (e) {
       // Fallback cache
@@ -67,12 +67,17 @@ class SupabaseEventsDatasource {
             });
           })
           .toList(growable: false);
-          
+
       // Salviamo anche gli eventi nearby in cache per avere sempre qualcosa sulla mappa offline
-      await CacheService.saveList('${CacheService.keyEvents}_nearby', events.map((e) => e.toJson()).toList());
+      await CacheService.saveList(
+        '${CacheService.keyEvents}_nearby',
+        events.map((e) => e.toJson()).toList(),
+      );
       return events;
     } catch (e) {
-      final cachedJson = CacheService.getList('${CacheService.keyEvents}_nearby');
+      final cachedJson = CacheService.getList(
+        '${CacheService.keyEvents}_nearby',
+      );
       if (cachedJson != null && cachedJson.isNotEmpty) {
         return cachedJson.map(EventModel.fromJson).toList(growable: false);
       }
@@ -116,7 +121,8 @@ class SupabaseEventsDatasource {
     required String status,
   }) async {
     final user = _supabase.currentUser;
-    if (user == null) throw const AuthException(message: 'Utente non autenticato');
+    if (user == null)
+      throw const AuthException(message: 'Utente non autenticato');
 
     if (status == 'none') {
       await _supabase.client.from(DbTables.eventAttendees).delete().match({

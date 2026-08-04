@@ -19,9 +19,7 @@ class EnvConfig {
   static String _readRequired(String key) {
     final value = dotenv.env[key]?.trim();
     if (value == null || value.isEmpty) {
-      throw ConfigurationException(
-        message: 'Configurazione mancante: $key',
-      );
+      throw ConfigurationException(message: 'Configurazione mancante: $key');
     }
     return value;
   }
@@ -43,7 +41,8 @@ class EnvConfig {
   static String get spotifyRedirectUri =>
       _readOptional('SPOTIFY_REDIRECT_URI') ?? 'com.vibra.app://callback';
 
-  static String? get ticketmasterApiKey => _readOptional('TICKETMASTER_API_KEY');
+  static String? get ticketmasterApiKey =>
+      _readOptional('TICKETMASTER_API_KEY');
 
   static String? get songkickApiKey => _readOptional('SONGKICK_API_KEY');
 

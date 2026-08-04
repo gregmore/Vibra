@@ -13,4 +13,3 @@ class LiveMessage {
   final String content;
   final DateTime? createdAt;
 }
-

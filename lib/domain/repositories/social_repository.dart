@@ -36,8 +36,5 @@ abstract class SocialRepository {
     int limit = 50,
   });
 
-  Stream<List<DirectMessage>> streamMessagesWith({
-    required String otherUserId,
-  });
+  Stream<List<DirectMessage>> streamMessagesWith({required String otherUserId});
 }
-

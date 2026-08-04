@@ -12,10 +12,7 @@ import '../models/spotify/spotify_track_model.dart';
 /// - Scarica top artisti/brani/playlists
 /// - Calcola generi e score
 class SpotifyRepositoryImpl implements SpotifyRepository {
-  SpotifyRepositoryImpl(
-    this._datasource,
-    this._tokenStorage,
-  );
+  SpotifyRepositoryImpl(this._datasource, this._tokenStorage);
 
   final SpotifyDatasource _datasource;
   final SpotifyTokenStorage _tokenStorage;
@@ -100,17 +97,15 @@ class SpotifyRepositoryImpl implements SpotifyRepository {
     );
   }
 
-  List<Map<String, dynamic>> _buildArtistsJson(List<SpotifyArtistModel> artists) {
+  List<Map<String, dynamic>> _buildArtistsJson(
+    List<SpotifyArtistModel> artists,
+  ) {
     final out = <Map<String, dynamic>>[];
     for (var i = 0; i < artists.length; i++) {
       final a = artists[i];
       final position = i + 1;
       final score = 100 - (position - 1) * 1; // 1->100, 50->51
-      out.add({
-        'id': a.id,
-        'name': a.name,
-        'score': score.clamp(0, 100),
-      });
+      out.add({'id': a.id, 'name': a.name, 'score': score.clamp(0, 100)});
     }
     return out;
   }
@@ -131,7 +126,9 @@ class SpotifyRepositoryImpl implements SpotifyRepository {
     return out;
   }
 
-  List<Map<String, dynamic>> _buildGenresJson(List<SpotifyArtistModel> artists) {
+  List<Map<String, dynamic>> _buildGenresJson(
+    List<SpotifyArtistModel> artists,
+  ) {
     final counts = <String, int>{};
     for (final a in artists) {
       for (final g in a.genres) {
@@ -146,10 +143,15 @@ class SpotifyRepositoryImpl implements SpotifyRepository {
 
     // Normalizza su 0..1 (peso)
     final max = sorted.isEmpty ? 1 : sorted.first.value;
-    return sorted.map((e) {
-      final weight = e.value / max;
-      return {'genre': e.key, 'weight': double.parse(weight.toStringAsFixed(4))};
-    }).toList(growable: false);
+    return sorted
+        .map((e) {
+          final weight = e.value / max;
+          return {
+            'genre': e.key,
+            'weight': double.parse(weight.toStringAsFixed(4)),
+          };
+        })
+        .toList(growable: false);
   }
 
   /// Refresh token esplicito (utile quando Spotify restituisce 401).

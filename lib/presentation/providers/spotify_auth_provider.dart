@@ -19,18 +19,29 @@ class SpotifyAuthStatusState {
   final SpotifyAuthStatus status;
   final String? errorMessage;
 
-  const SpotifyAuthStatusState({
-    required this.status,
-    this.errorMessage,
-  });
+  const SpotifyAuthStatusState({required this.status, this.errorMessage});
 
-  const SpotifyAuthStatusState.idle() : status = SpotifyAuthStatus.idle, errorMessage = null;
-  const SpotifyAuthStatusState.authorizing() : status = SpotifyAuthStatus.authorizing, errorMessage = null;
-  const SpotifyAuthStatusState.exchangingToken() : status = SpotifyAuthStatus.exchangingToken, errorMessage = null;
-  const SpotifyAuthStatusState.syncingProfile() : status = SpotifyAuthStatus.syncingProfile, errorMessage = null;
-  const SpotifyAuthStatusState.success() : status = SpotifyAuthStatus.success, errorMessage = null;
-  const SpotifyAuthStatusState.userCancelled() : status = SpotifyAuthStatus.userCancelled, errorMessage = null;
-  const SpotifyAuthStatusState.error(String message) : status = SpotifyAuthStatus.error, errorMessage = message;
+  const SpotifyAuthStatusState.idle()
+    : status = SpotifyAuthStatus.idle,
+      errorMessage = null;
+  const SpotifyAuthStatusState.authorizing()
+    : status = SpotifyAuthStatus.authorizing,
+      errorMessage = null;
+  const SpotifyAuthStatusState.exchangingToken()
+    : status = SpotifyAuthStatus.exchangingToken,
+      errorMessage = null;
+  const SpotifyAuthStatusState.syncingProfile()
+    : status = SpotifyAuthStatus.syncingProfile,
+      errorMessage = null;
+  const SpotifyAuthStatusState.success()
+    : status = SpotifyAuthStatus.success,
+      errorMessage = null;
+  const SpotifyAuthStatusState.userCancelled()
+    : status = SpotifyAuthStatus.userCancelled,
+      errorMessage = null;
+  const SpotifyAuthStatusState.error(String message)
+    : status = SpotifyAuthStatus.error,
+      errorMessage = message;
 }
 
 class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
@@ -71,7 +82,8 @@ class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
 
       VibraLogger.error('Errore durante la connessione Spotify', error: e);
 
-      final isCancellation = errorMessage.toLowerCase().contains('cancel') ||
+      final isCancellation =
+          errorMessage.toLowerCase().contains('cancel') ||
           errorMessage.toLowerCase().contains('annull') ||
           errorMessage.toLowerCase().contains('dismiss');
 
@@ -91,7 +103,7 @@ class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
 
       final datasource = _ref.read(spotifyAuthDatasourceProvider);
       await datasource.syncMusicProfile();
-      
+
       // Clear cache to prevent falling back to stale data if parsing fails
       await CacheService.remove(CacheService.keyMusicProfile);
 
@@ -137,11 +149,14 @@ class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
       final currentUser = supabase.currentUser;
       if (currentUser == null) return;
 
-      await supabase.client.from('users').update({
-        'spotify_id': null,
-        'spotify_access_token': null,
-        'spotify_refresh_token': null,
-      }).eq('id', currentUser.id);
+      await supabase.client
+          .from('users')
+          .update({
+            'spotify_id': null,
+            'spotify_access_token': null,
+            'spotify_refresh_token': null,
+          })
+          .eq('id', currentUser.id);
 
       await supabase.client
           .from('music_profiles')
@@ -166,6 +181,7 @@ class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
   }
 }
 
-final spotifyAuthProvider = StateNotifierProvider<SpotifyAuthNotifier, SpotifyAuthStatusState>((ref) {
-  return SpotifyAuthNotifier(ref);
-});
+final spotifyAuthProvider =
+    StateNotifierProvider<SpotifyAuthNotifier, SpotifyAuthStatusState>((ref) {
+      return SpotifyAuthNotifier(ref);
+    });

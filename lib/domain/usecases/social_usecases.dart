@@ -91,10 +91,7 @@ class GetConversationUseCase
 }
 
 class GetConversationParams {
-  const GetConversationParams({
-    required this.otherUserId,
-    this.limit = 50,
-  });
+  const GetConversationParams({required this.otherUserId, this.limit = 50});
 
   final String otherUserId;
   final int limit;
@@ -115,7 +112,7 @@ class StreamConversationUseCase
 class BlockUserUseCase implements UseCase<void, String> {
   BlockUserUseCase(this._repository);
   final SocialRepository _repository;
-  
+
   @override
   Future<void> call(String params) {
     return _repository.blockUser(blockedId: params);
@@ -161,10 +158,7 @@ class SoftDeleteChatUseCase implements UseCase<void, String> {
 }
 
 class ReactToMessageParams {
-  const ReactToMessageParams({
-    required this.messageId,
-    required this.reaction,
-  });
+  const ReactToMessageParams({required this.messageId, required this.reaction});
   final String messageId;
   final String reaction;
 }
@@ -181,4 +175,3 @@ class ReactToMessageUseCase implements UseCase<void, ReactToMessageParams> {
     );
   }
 }
-

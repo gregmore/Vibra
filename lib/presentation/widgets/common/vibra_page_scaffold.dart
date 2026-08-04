@@ -41,12 +41,8 @@ class VibraPageScaffold extends StatelessWidget {
         appBar: appBar,
         floatingActionButton: floatingActionButton,
         bottomNavigationBar: bottomNavigationBar,
-        body: SafeArea(
-          bottom: false,
-          child: child,
-        ),
+        body: SafeArea(bottom: false, child: child),
       ),
     );
   }
 }
-

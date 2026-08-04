@@ -73,8 +73,7 @@ class SupabaseDatasource {
     Map<String, dynamic> data,
   ) async {
     try {
-      final result =
-          await client.from(table).insert(data).select().single();
+      final result = await client.from(table).insert(data).select().single();
       VibraLogger.api('INSERT', table);
       return result;
     } catch (e) {
@@ -199,7 +198,9 @@ class SupabaseDatasource {
     String? contentType,
   }) async {
     try {
-      await client.storage.from(bucket).uploadBinary(
+      await client.storage
+          .from(bucket)
+          .uploadBinary(
             path,
             fileBytes,
             fileOptions: FileOptions(contentType: contentType),
@@ -224,10 +225,7 @@ class SupabaseDatasource {
     Map<String, dynamic>? body,
   }) async {
     try {
-      final response = await client.functions.invoke(
-        functionName,
-        body: body,
-      );
+      final response = await client.functions.invoke(functionName, body: body);
       VibraLogger.api('EDGE_FN', functionName);
       return response.data as Map<String, dynamic>;
     } catch (e) {

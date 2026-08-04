@@ -19,4 +19,3 @@ class AppNotification {
   final bool read;
   final DateTime? createdAt;
 }
-

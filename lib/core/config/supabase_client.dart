@@ -26,9 +26,7 @@ class SupabaseBootstrap {
       realtimeClientOptions: const RealtimeClientOptions(
         logLevel: RealtimeLogLevel.info,
       ),
-      storageOptions: const StorageClientOptions(
-        retryAttempts: 3,
-      ),
+      storageOptions: const StorageClientOptions(retryAttempts: 3),
       debug: kDebugMode,
     );
 

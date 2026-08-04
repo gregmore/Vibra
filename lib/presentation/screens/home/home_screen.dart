@@ -27,7 +27,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    final isTest = WidgetsBinding.instance.runtimeType.toString().contains(
+      'Test',
+    );
     if (isTest) {
       _isLoading = false;
     } else {
@@ -185,105 +187,128 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
           // Incomplete Profile Banner
-          if ((profile.spotifyId == null || profile.spotifyId!.isEmpty) || (profile.avatarUrl == null || profile.avatarUrl!.isEmpty))
+          if ((profile.spotifyId == null || profile.spotifyId!.isEmpty) ||
+              (profile.avatarUrl == null || profile.avatarUrl!.isEmpty))
             SliverToBoxAdapter(
-              child: VibraGlassmorphicCard(
-                margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                padding: const EdgeInsets.all(18),
-                borderColor: VibraColors.primary.withValues(alpha: 0.4),
-                gradient: LinearGradient(
-                  colors: [
-                    VibraColors.primary.withValues(alpha: 0.15),
-                    VibraColors.surfaceElevated.withValues(alpha: 0.8),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: VibraColors.primary.withValues(alpha: 0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.person_pin_rounded,
-                            color: VibraColors.primary,
-                            size: 24,
-                          ),
+              child:
+                  VibraGlassmorphicCard(
+                        margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                        padding: const EdgeInsets.all(18),
+                        borderColor: VibraColors.primary.withValues(alpha: 0.4),
+                        gradient: LinearGradient(
+                          colors: [
+                            VibraColors.primary.withValues(alpha: 0.15),
+                            VibraColors.surfaceElevated.withValues(alpha: 0.8),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Completa il tuo profilo',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Per suggerimenti migliori',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: VibraColors.textSecondary,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Aggiungi una foto o collega Spotify per permetterci di suggerirti gli eventi migliori.',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: VibraColors.textPrimary.withValues(alpha: 0.9),
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => context.push('/profile'), // or somewhere else
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: VibraColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          elevation: 4,
-                          shadowColor: VibraColors.primary.withValues(alpha: 0.4),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: VibraSpacing.borderFull,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Vai al Profilo',
-                              style: VibraTextStyles.labelLarge.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.8,
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: VibraColors.primary.withValues(
+                                      alpha: 0.2,
+                                    ),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.person_pin_rounded,
+                                    color: VibraColors.primary,
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Completa il tuo profilo',
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Per suggerimenti migliori',
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: VibraColors.textSecondary,
+                                            ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        'Aggiungi una foto o collega Spotify per permetterci di suggerirti gli eventi migliori.',
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                              color: VibraColors.textPrimary
+                                                  .withValues(alpha: 0.9),
+                                              height: 1.4,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () => context.push(
+                                  '/profile',
+                                ), // or somewhere else
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: VibraColors.primary,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  elevation: 4,
+                                  shadowColor: VibraColors.primary.withValues(
+                                    alpha: 0.4,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: VibraSpacing.borderFull,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Vai al Profilo',
+                                      style: VibraTextStyles.labelLarge
+                                          .copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: 0.8,
+                                          ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Icon(
+                                      Icons.arrow_forward_rounded,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
                           ],
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ).animate().fadeIn(delay: 150.ms, duration: 450.ms).slideY(begin: 0.1, end: 0),
+                      )
+                      .animate()
+                      .fadeIn(delay: 150.ms, duration: 450.ms)
+                      .slideY(begin: 0.1, end: 0),
             ),
 
           // For You Section

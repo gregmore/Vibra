@@ -21,7 +21,8 @@ class CalculateEventRecommendationScoreUseCase {
     final normalizedPopularity = _clamp(popularityScore);
     final proximity = _calculateProximityScore(distanceKm);
 
-    final total = (normalizedArtist * 0.50) +
+    final total =
+        (normalizedArtist * 0.50) +
         (normalizedGenre * 0.25) +
         (proximity * 0.15) +
         (normalizedPopularity * 0.10);
@@ -50,4 +51,3 @@ class CalculateEventRecommendationScoreUseCase {
     return value;
   }
 }
-

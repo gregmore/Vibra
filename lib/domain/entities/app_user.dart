@@ -28,4 +28,3 @@ class AppUser {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 }
-

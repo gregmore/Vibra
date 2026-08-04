@@ -16,4 +16,3 @@ abstract class FriendshipModel with _$FriendshipModel {
   factory FriendshipModel.fromJson(Map<String, dynamic> json) =>
       _$FriendshipModelFromJson(json);
 }
-

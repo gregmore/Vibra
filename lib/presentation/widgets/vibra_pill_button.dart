@@ -40,15 +40,17 @@ class _VibraPillButtonState extends State<VibraPillButton> {
     if (widget.isGhost) {
       bgColor = Colors.transparent;
     } else {
-      bgColor = widget.isPrimary ? Colors.transparent : VibraColors.surfaceVariant;
+      bgColor = widget.isPrimary
+          ? Colors.transparent
+          : VibraColors.surfaceVariant;
     }
 
-    final fgColor = widget.isGhost 
-        ? VibraColors.accent 
+    final fgColor = widget.isGhost
+        ? VibraColors.accent
         : (widget.isPrimary ? Colors.white : VibraColors.textPrimary);
-    
-    final glow = widget.isPrimary && !widget.isGhost && !isActuallyDisabled 
-        ? VibraShadows.neonGlow(VibraColors.primary, intensity: 0.5) 
+
+    final glow = widget.isPrimary && !widget.isGhost && !isActuallyDisabled
+        ? VibraShadows.neonGlow(VibraColors.primary, intensity: 0.5)
         : null;
 
     return AnimatedScale(
@@ -59,17 +61,17 @@ class _VibraPillButtonState extends State<VibraPillButton> {
         child: Container(
           decoration: BoxDecoration(
             color: widget.isPrimary && !widget.isGhost ? null : bgColor,
-            gradient: widget.isPrimary && !widget.isGhost 
-                ? VibraColors.primaryGradient 
+            gradient: widget.isPrimary && !widget.isGhost
+                ? VibraColors.primaryGradient
                 : null,
             borderRadius: BorderRadius.circular(VibraSpacing.radiusFull),
             boxShadow: [
               ?glow,
-              if (widget.isPrimary && !widget.isGhost && !isActuallyDisabled) 
+              if (widget.isPrimary && !widget.isGhost && !isActuallyDisabled)
                 VibraShadows.buttonElevation,
             ],
-            border: widget.isGhost 
-                ? Border.all(color: VibraColors.accent.withValues(alpha: 0.5)) 
+            border: widget.isGhost
+                ? Border.all(color: VibraColors.accent.withValues(alpha: 0.5))
                 : null,
           ),
           child: Material(
@@ -82,7 +84,7 @@ class _VibraPillButtonState extends State<VibraPillButton> {
               highlightColor: Colors.transparent,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: VibraSpacing.xxxl, 
+                  horizontal: VibraSpacing.xxxl,
                   vertical: VibraSpacing.lg,
                 ),
                 child: Row(

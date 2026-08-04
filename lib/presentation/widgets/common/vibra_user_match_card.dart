@@ -24,14 +24,12 @@ class VibraUserMatchCard extends StatelessWidget {
     final matchColor = VibraColors.getMatchColor(user.compatibility / 100.0);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: VibraSpacing.pagePadding, vertical: VibraSpacing.sm),
+      margin: const EdgeInsets.symmetric(
+        horizontal: VibraSpacing.pagePadding,
+        vertical: VibraSpacing.sm,
+      ),
       decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(
-            color: matchColor,
-            width: 3.0,
-          ),
-        ),
+        border: Border(left: BorderSide(color: matchColor, width: 3.0)),
         borderRadius: BorderRadius.circular(VibraSpacing.radiusLarge),
       ),
       child: VibraGlassmorphicCard(
@@ -57,14 +55,21 @@ class VibraUserMatchCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           user.user.displayName ?? user.user.username,
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: VibraSpacing.md, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: VibraSpacing.md,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: matchColor.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(VibraSpacing.radiusFull),
+                          borderRadius: BorderRadius.circular(
+                            VibraSpacing.radiusFull,
+                          ),
                         ),
                         child: Text(
                           '${user.compatibility}%',
@@ -85,7 +90,11 @@ class VibraUserMatchCard extends StatelessWidget {
                     children: user.topArtists
                         .map(
                           (artist) => Chip(
-                            avatar: const Icon(Icons.music_note_rounded, size: 14, color: VibraColors.primary),
+                            avatar: const Icon(
+                              Icons.music_note_rounded,
+                              size: 14,
+                              color: VibraColors.primary,
+                            ),
                             label: Text(artist),
                             visualDensity: VisualDensity.compact,
                           ),
@@ -95,7 +104,9 @@ class VibraUserMatchCard extends StatelessWidget {
                   const SizedBox(height: VibraSpacing.sm),
                   Text(
                     '${user.attendingEvents} eventi in comune o salvati',
-                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
                   ),
                 ],
               ),

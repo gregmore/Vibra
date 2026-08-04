@@ -47,7 +47,8 @@ class _VibraGlassmorphicCardState extends State<VibraGlassmorphicCard> {
   @override
   Widget build(BuildContext context) {
     final effectiveBlur = widget.blur ?? AppConstants.glassmorphismBlur;
-    final effectiveRadius = widget.borderRadius ?? AppConstants.cardBorderRadius;
+    final effectiveRadius =
+        widget.borderRadius ?? AppConstants.cardBorderRadius;
 
     return AnimatedScale(
       scale: _isPressed ? 0.98 : 1.0,
@@ -59,11 +60,12 @@ class _VibraGlassmorphicCardState extends State<VibraGlassmorphicCard> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(effectiveRadius),
           boxShadow: [
-            widget.glow ?? BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
+            widget.glow ??
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
           ],
         ),
         child: ClipRRect(
@@ -101,7 +103,9 @@ class _VibraGlassmorphicCardState extends State<VibraGlassmorphicCard> {
                     highlightColor: Colors.transparent,
                     borderRadius: BorderRadius.circular(effectiveRadius - 1),
                     child: Padding(
-                      padding: widget.padding ?? const EdgeInsets.all(VibraSpacing.lg),
+                      padding:
+                          widget.padding ??
+                          const EdgeInsets.all(VibraSpacing.lg),
                       child: widget.child,
                     ),
                   ),
@@ -136,22 +140,30 @@ class VibraGlassmorphicImageCard extends StatefulWidget {
   });
 
   @override
-  State<VibraGlassmorphicImageCard> createState() => _VibraGlassmorphicImageCardState();
+  State<VibraGlassmorphicImageCard> createState() =>
+      _VibraGlassmorphicImageCardState();
 }
 
-class _VibraGlassmorphicImageCardState extends State<VibraGlassmorphicImageCard> {
+class _VibraGlassmorphicImageCardState
+    extends State<VibraGlassmorphicImageCard> {
   bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
-    final effectiveRadius = widget.borderRadius ?? AppConstants.cardBorderRadius;
+    final effectiveRadius =
+        widget.borderRadius ?? AppConstants.cardBorderRadius;
 
     return AnimatedScale(
       scale: _isPressed ? 0.98 : 1.0,
       duration: VibraSpacing.animFast,
       child: Container(
         height: widget.height,
-        margin: widget.margin ?? const EdgeInsets.symmetric(horizontal: VibraSpacing.lg, vertical: VibraSpacing.sm),
+        margin:
+            widget.margin ??
+            const EdgeInsets.symmetric(
+              horizontal: VibraSpacing.lg,
+              vertical: VibraSpacing.sm,
+            ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(effectiveRadius),
           child: Stack(
@@ -163,8 +175,11 @@ class _VibraGlassmorphicImageCardState extends State<VibraGlassmorphicImageCard>
                 fit: BoxFit.cover,
                 memCacheWidth: 600,
                 placeholder: (context, url) {
-                  final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
-                  if (isTest) return Container(color: VibraColors.surfaceVariant);
+                  final isTest = WidgetsBinding.instance.runtimeType
+                      .toString()
+                      .contains('Test');
+                  if (isTest)
+                    return Container(color: VibraColors.surfaceVariant);
                   return Container(
                     color: VibraColors.surfaceVariant,
                     child: const Center(

@@ -17,7 +17,9 @@ abstract class UserModel with _$UserModel {
     @JsonKey(name: 'spotify_access_token') String? spotifyAccessToken,
     @JsonKey(name: 'spotify_refresh_token') String? spotifyRefreshToken,
     @JsonKey(name: 'fcm_token') String? fcmToken,
-    @JsonKey(name: 'onboarding_completed', defaultValue: false) @Default(false) bool onboardingCompleted,
+    @JsonKey(name: 'onboarding_completed', defaultValue: false)
+    @Default(false)
+    bool onboardingCompleted,
     @JsonKey(name: 'onboarding_step') String? onboardingStep,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
@@ -26,4 +28,3 @@ abstract class UserModel with _$UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);
 }
-

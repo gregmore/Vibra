@@ -6,7 +6,7 @@ import '../utils/logger.dart';
 class CacheService {
   static const String keyEvents = 'CACHE_EVENTS';
   static const String keyMusicProfile = 'CACHE_MUSIC_PROFILE';
-  
+
   static SharedPreferences? _prefs;
 
   /// Inizializza il servizio (da chiamare in main.dart)
@@ -16,7 +16,10 @@ class CacheService {
   }
 
   /// Salva una lista di JSON in cache.
-  static Future<void> saveList(String key, List<Map<String, dynamic>> data) async {
+  static Future<void> saveList(
+    String key,
+    List<Map<String, dynamic>> data,
+  ) async {
     if (_prefs == null) return;
     try {
       final jsonString = jsonEncode(data);
@@ -30,10 +33,10 @@ class CacheService {
   /// Recupera una lista di JSON dalla cache.
   static List<Map<String, dynamic>>? getList(String key) {
     if (_prefs == null) return null;
-    
+
     final jsonString = _prefs!.getString(key);
     if (jsonString == null) return null;
-    
+
     try {
       final decoded = jsonDecode(jsonString) as List<dynamic>;
       return decoded.map((e) => e as Map<String, dynamic>).toList();
@@ -49,23 +52,32 @@ class CacheService {
     try {
       final jsonString = jsonEncode(data);
       await _prefs!.setString(key, jsonString);
-      VibraLogger.debug('Oggetto salvato in cache per chiave: $key', tag: 'Cache');
+      VibraLogger.debug(
+        'Oggetto salvato in cache per chiave: $key',
+        tag: 'Cache',
+      );
     } catch (e) {
-      VibraLogger.warning('Errore nel salvataggio oggetto in cache: $e', tag: 'Cache');
+      VibraLogger.warning(
+        'Errore nel salvataggio oggetto in cache: $e',
+        tag: 'Cache',
+      );
     }
   }
 
   /// Recupera un oggetto singolo dalla cache.
   static Map<String, dynamic>? getObject(String key) {
     if (_prefs == null) return null;
-    
+
     final jsonString = _prefs!.getString(key);
     if (jsonString == null) return null;
-    
+
     try {
       return jsonDecode(jsonString) as Map<String, dynamic>;
     } catch (e) {
-      VibraLogger.warning('Errore nella lettura oggetto dalla cache: $e', tag: 'Cache');
+      VibraLogger.warning(
+        'Errore nella lettura oggetto dalla cache: $e',
+        tag: 'Cache',
+      );
       return null;
     }
   }

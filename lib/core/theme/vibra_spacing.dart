@@ -21,13 +21,16 @@ class VibraSpacing {
   static const double cardPadding = 16.0;
 
   // ── EdgeInsets comuni ────────────────────────────────────
-  static const EdgeInsets pageHorizontal =
-      EdgeInsets.symmetric(horizontal: pagePadding);
+  static const EdgeInsets pageHorizontal = EdgeInsets.symmetric(
+    horizontal: pagePadding,
+  );
 
   static const EdgeInsets cardAll = EdgeInsets.all(cardPadding);
 
-  static const EdgeInsets cardMargin =
-      EdgeInsets.symmetric(horizontal: pagePadding, vertical: sm);
+  static const EdgeInsets cardMargin = EdgeInsets.symmetric(
+    horizontal: pagePadding,
+    vertical: sm,
+  );
 
   // ── Border Radius ────────────────────────────────────────
   static const double radiusSmall = 12.0;
@@ -38,18 +41,12 @@ class VibraSpacing {
   static const double radiusFull = 999.0;
 
   /// Bordi arrotondati preconfezionati.
-  static final BorderRadius borderSmall =
-      BorderRadius.circular(radiusSmall);
-  static final BorderRadius borderMedium =
-      BorderRadius.circular(radiusMedium);
-  static final BorderRadius borderLarge =
-      BorderRadius.circular(radiusLarge);
-  static final BorderRadius borderXL =
-      BorderRadius.circular(radiusXL);
-  static final BorderRadius borderXXL =
-      BorderRadius.circular(radiusXXL);
-  static final BorderRadius borderFull =
-      BorderRadius.circular(radiusFull);
+  static final BorderRadius borderSmall = BorderRadius.circular(radiusSmall);
+  static final BorderRadius borderMedium = BorderRadius.circular(radiusMedium);
+  static final BorderRadius borderLarge = BorderRadius.circular(radiusLarge);
+  static final BorderRadius borderXL = BorderRadius.circular(radiusXL);
+  static final BorderRadius borderXXL = BorderRadius.circular(radiusXXL);
+  static final BorderRadius borderFull = BorderRadius.circular(radiusFull);
 
   // ── Durate animazione ────────────────────────────────────
   static const Duration animFast = Duration(milliseconds: 200);

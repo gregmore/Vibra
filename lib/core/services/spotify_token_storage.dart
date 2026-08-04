@@ -8,7 +8,10 @@ class SpotifyTokenStorage {
   final SecureStorageService _secureStorage;
 
   Future<void> saveAccessToken(String token) async {
-    await _secureStorage.write(key: StorageKeys.spotifyAccessToken, value: token);
+    await _secureStorage.write(
+      key: StorageKeys.spotifyAccessToken,
+      value: token,
+    );
   }
 
   Future<void> saveRefreshToken(String token) async {
@@ -31,4 +34,3 @@ class SpotifyTokenStorage {
     await _secureStorage.delete(key: StorageKeys.spotifyRefreshToken);
   }
 }
-

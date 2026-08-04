@@ -95,10 +95,7 @@ class GetStoredNearbyEventsUseCase
 }
 
 class SetEventAttendanceParams {
-  const SetEventAttendanceParams({
-    required this.event,
-    required this.status,
-  });
+  const SetEventAttendanceParams({required this.event, required this.status});
 
   final Event event;
   final String status;
@@ -129,4 +126,3 @@ class GetEventAttendeesUseCase implements UseCase<List<EventAttendee>, String> {
     return _repository.listAttendees(eventId: params);
   }
 }
-

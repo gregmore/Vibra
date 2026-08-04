@@ -21,7 +21,7 @@ class VibraMatchComparison extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final matchColor = VibraColors.getMatchColor(score);
-    
+
     return SizedBox(
       height: 100,
       child: Stack(
@@ -30,22 +30,26 @@ class VibraMatchComparison extends StatelessWidget {
           Positioned(
             left: 40,
             right: 40,
-            child: Container(
-              height: 2,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    VibraColors.accent.withValues(alpha: 0.5),
-                    matchColor.withValues(alpha: 0.5),
-                  ],
-                ),
-              ),
-            ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-             .fadeIn(duration: 1.seconds)
-             .then()
-             .fadeOut(duration: 1.seconds),
+            child:
+                Container(
+                      height: 2,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            VibraColors.accent.withValues(alpha: 0.5),
+                            matchColor.withValues(alpha: 0.5),
+                          ],
+                        ),
+                      ),
+                    )
+                    .animate(
+                      onPlay: (controller) => controller.repeat(reverse: true),
+                    )
+                    .fadeIn(duration: 1.seconds)
+                    .then()
+                    .fadeOut(duration: 1.seconds),
           ),
-          
+
           Positioned(
             left: 0,
             child: VibraNeonAvatar(
@@ -55,7 +59,7 @@ class VibraMatchComparison extends StatelessWidget {
               displayName: 'Tu',
             ),
           ),
-          
+
           Positioned(
             right: 0,
             child: VibraNeonAvatar(
@@ -65,7 +69,7 @@ class VibraMatchComparison extends StatelessWidget {
               displayName: theirDisplayName,
             ),
           ),
-          
+
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             decoration: BoxDecoration(

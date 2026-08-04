@@ -95,7 +95,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     setState(() => _messages = [optimistic, ..._messages]);
 
     try {
-      await ref.read(sendDirectMessageUseCaseProvider).call(
+      await ref
+          .read(sendDirectMessageUseCaseProvider)
+          .call(
             SendDirectMessageParams(
               receiverId: widget.otherUserId,
               content: text,
@@ -118,7 +120,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: VibraColors.surfaceElevated,
-        title: const Text('Segnala Utente', style: TextStyle(color: VibraColors.textPrimary)),
+        title: const Text(
+          'Segnala Utente',
+          style: TextStyle(color: VibraColors.textPrimary),
+        ),
         content: StatefulBuilder(
           builder: (builderContext, setDialogState) {
             return Column(
@@ -130,8 +135,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   style: const TextStyle(color: VibraColors.textPrimary),
                   items: const [
                     DropdownMenuItem(value: 'spam', child: Text('Spam')),
-                    DropdownMenuItem(value: 'harassment', child: Text('Molestie')),
-                    DropdownMenuItem(value: 'inappropriate', child: Text('Contenuto Inappropriato')),
+                    DropdownMenuItem(
+                      value: 'harassment',
+                      child: Text('Molestie'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'inappropriate',
+                      child: Text('Contenuto Inappropriato'),
+                    ),
                   ],
                   onChanged: (val) {
                     if (val != null) setDialogState(() => selectedReason = val);
@@ -143,10 +154,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   style: const TextStyle(color: VibraColors.textPrimary),
                   decoration: InputDecoration(
                     hintText: 'Dettagli aggiuntivi (opzionale)',
-                    hintStyle: const TextStyle(color: VibraColors.textSecondary),
+                    hintStyle: const TextStyle(
+                      color: VibraColors.textSecondary,
+                    ),
                     filled: true,
                     fillColor: VibraColors.surfaceVariant,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium), borderSide: BorderSide.none),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        VibraSpacing.radiusMedium,
+                      ),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                   maxLines: 3,
                 ),
@@ -163,15 +181,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             onPressed: () async {
               Navigator.pop(dialogContext);
               try {
-                await ref.read(reportUserUseCaseProvider).call(
-                  ReportUserParams(
-                    reportedId: widget.otherUserId,
-                    reason: selectedReason,
-                    description: descController.text,
-                  ),
-                );
+                await ref
+                    .read(reportUserUseCaseProvider)
+                    .call(
+                      ReportUserParams(
+                        reportedId: widget.otherUserId,
+                        reason: selectedReason,
+                        description: descController.text,
+                      ),
+                    );
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Utente segnalato con successo')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Utente segnalato con successo'),
+                    ),
+                  );
                 }
               } catch (_) {}
             },
@@ -187,8 +211,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: VibraColors.surfaceElevated,
-        title: const Text('Blocca Utente', style: TextStyle(color: VibraColors.textPrimary)),
-        content: const Text('Sei sicuro di voler bloccare questo utente? Non potrete più scambiarvi messaggi.', style: TextStyle(color: VibraColors.textSecondary)),
+        title: const Text(
+          'Blocca Utente',
+          style: TextStyle(color: VibraColors.textPrimary),
+        ),
+        content: const Text(
+          'Sei sicuro di voler bloccare questo utente? Non potrete più scambiarvi messaggi.',
+          style: TextStyle(color: VibraColors.textSecondary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -199,10 +229,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             onPressed: () async {
               Navigator.pop(dialogContext);
               try {
-                await ref.read(blockUserUseCaseProvider).call(widget.otherUserId);
+                await ref
+                    .read(blockUserUseCaseProvider)
+                    .call(widget.otherUserId);
                 if (mounted) {
                   if (context.mounted) Navigator.pop(context); // Close chat
-                  if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Utente bloccato')));
+                  if (context.mounted)
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Utente bloccato')),
+                    );
                 }
               } catch (_) {}
             },
@@ -244,14 +279,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 value: 'block',
                 child: Row(
                   children: [
-                    const Icon(Icons.block_rounded, size: 20, color: VibraColors.error),
+                    const Icon(
+                      Icons.block_rounded,
+                      size: 20,
+                      color: VibraColors.error,
+                    ),
                     const SizedBox(width: 8),
-                    const Text('Blocca Utente', style: TextStyle(color: VibraColors.error)),
+                    const Text(
+                      'Blocca Utente',
+                      style: TextStyle(color: VibraColors.error),
+                    ),
                   ],
                 ),
               ),
             ],
-          )
+          ),
         ],
       ),
       child: Column(
@@ -260,82 +302,132 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _messages.isEmpty
-                    ? VibraEmptyView(
-                        title: AppLocalizations.of(context)!.chatEmptyTitle,
-                        message: AppLocalizations.of(context)!.chatEmptyMessage,
-                        icon: Icons.chat_bubble_rounded,
-                      )
-                    : ListView.builder(
-                        reverse: true,
-                        padding: EdgeInsets.fromLTRB(VibraSpacing.pagePadding, 20, VibraSpacing.pagePadding, 12),
-                        itemCount: _messages.length,
-                        itemBuilder: (context, index) {
-                          final message = _messages[index];
-                          final mine = message.senderId == _currentUserId;
-                          final timeString = message.createdAt != null
-                              ? DateFormat('HH:mm').format(message.createdAt!.toLocal())
-                              : '';
+                ? VibraEmptyView(
+                    title: AppLocalizations.of(context)!.chatEmptyTitle,
+                    message: AppLocalizations.of(context)!.chatEmptyMessage,
+                    icon: Icons.chat_bubble_rounded,
+                  )
+                : ListView.builder(
+                    reverse: true,
+                    padding: EdgeInsets.fromLTRB(
+                      VibraSpacing.pagePadding,
+                      20,
+                      VibraSpacing.pagePadding,
+                      12,
+                    ),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final message = _messages[index];
+                      final mine = message.senderId == _currentUserId;
+                      final timeString = message.createdAt != null
+                          ? DateFormat(
+                              'HH:mm',
+                            ).format(message.createdAt!.toLocal())
+                          : '';
 
-                          return Align(
-                            alignment: mine
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
-                            child: Column(
-                              crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  constraints:
-                                      const BoxConstraints(maxWidth: 280),
+                      return Align(
+                        alignment: mine
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Column(
+                          crossAxisAlignment: mine
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 280,
+                                  ),
                                   margin: const EdgeInsets.only(bottom: 4),
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 12),
+                                    horizontal: 14,
+                                    vertical: 12,
+                                  ),
                                   decoration: BoxDecoration(
-                                    gradient: mine ? LinearGradient(colors: [VibraColors.primary, VibraColors.accent]) : null,
+                                    gradient: mine
+                                        ? LinearGradient(
+                                            colors: [
+                                              VibraColors.primary,
+                                              VibraColors.accent,
+                                            ],
+                                          )
+                                        : null,
                                     color: mine
                                         ? null
                                         : VibraColors.surfaceElevated,
                                     borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(VibraSpacing.radiusLarge),
-                                      topRight: Radius.circular(VibraSpacing.radiusLarge),
-                                      bottomLeft:
-                                          Radius.circular(mine ? VibraSpacing.radiusLarge : VibraSpacing.radiusSmall),
-                                      bottomRight:
-                                          Radius.circular(mine ? VibraSpacing.radiusSmall : VibraSpacing.radiusLarge),
+                                      topLeft: Radius.circular(
+                                        VibraSpacing.radiusLarge,
+                                      ),
+                                      topRight: Radius.circular(
+                                        VibraSpacing.radiusLarge,
+                                      ),
+                                      bottomLeft: Radius.circular(
+                                        mine
+                                            ? VibraSpacing.radiusLarge
+                                            : VibraSpacing.radiusSmall,
+                                      ),
+                                      bottomRight: Radius.circular(
+                                        mine
+                                            ? VibraSpacing.radiusSmall
+                                            : VibraSpacing.radiusLarge,
+                                      ),
                                     ),
-                                    border: mine ? null : Border.all(
-                                      color: VibraColors.glassBorder,
-                                    ),
+                                    border: mine
+                                        ? null
+                                        : Border.all(
+                                            color: VibraColors.glassBorder,
+                                          ),
                                   ),
-                                  child: _buildMessageContent(message, theme, mine),
-                                ).animate().fadeIn(duration: 300.ms).slideY(
-                                    begin: 0.08,
-                                    end: 0,
-                                    curve: Curves.easeOutQuad),
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 10, left: 4, right: 4),
-                                  child: Text(
-                                    timeString,
-                                    style: theme.textTheme.labelSmall?.copyWith(
-                                      color: VibraColors.textSecondary,
-                                      fontSize: 10,
-                                    ),
+                                  child: _buildMessageContent(
+                                    message,
+                                    theme,
+                                    mine,
                                   ),
+                                )
+                                .animate()
+                                .fadeIn(duration: 300.ms)
+                                .slideY(
+                                  begin: 0.08,
+                                  end: 0,
+                                  curve: Curves.easeOutQuad,
                                 ),
-                              ],
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: 10,
+                                left: 4,
+                                right: 4,
+                              ),
+                              child: Text(
+                                timeString,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: VibraColors.textSecondary,
+                                  fontSize: 10,
+                                ),
+                              ),
                             ),
-                          );
-                        },
-                      ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
           ),
           Padding(
-            padding: EdgeInsets.fromLTRB(VibraSpacing.pagePadding, 8, VibraSpacing.pagePadding, 24),
+            padding: EdgeInsets.fromLTRB(
+              VibraSpacing.pagePadding,
+              8,
+              VibraSpacing.pagePadding,
+              24,
+            ),
             child: Row(
               children: [
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
                       color: VibraColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(VibraSpacing.radiusFull),
+                      borderRadius: BorderRadius.circular(
+                        VibraSpacing.radiusFull,
+                      ),
                       border: Border.all(color: VibraColors.glassBorder),
                     ),
                     child: TextField(
@@ -344,9 +436,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       style: const TextStyle(color: VibraColors.textPrimary),
                       decoration: InputDecoration(
                         hintText: AppLocalizations.of(context)!.chatInputHint,
-                        hintStyle: const TextStyle(color: VibraColors.textSecondary),
+                        hintStyle: const TextStyle(
+                          color: VibraColors.textSecondary,
+                        ),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 14,
+                        ),
                       ),
                     ),
                   ),
@@ -370,8 +467,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  Widget _buildMessageContent(DirectMessage message, ThemeData theme, bool mine) {
-    if (message.messageType == 'image' && message.metadata != null && message.metadata!['url'] != null) {
+  Widget _buildMessageContent(
+    DirectMessage message,
+    ThemeData theme,
+    bool mine,
+  ) {
+    if (message.messageType == 'image' &&
+        message.metadata != null &&
+        message.metadata!['url'] != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: CachedNetworkImage(
@@ -379,11 +482,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           fit: BoxFit.cover,
           memCacheWidth: 600,
           placeholder: (context, url) => Container(color: Colors.white10),
-          errorWidget: (context, url, error) => const Center(child: Icon(Icons.broken_image, color: Colors.white54)),
+          errorWidget: (context, url, error) => const Center(
+            child: Icon(Icons.broken_image, color: Colors.white54),
+          ),
         ),
       );
     }
-    
+
     if (message.messageType == 'meetup_proposal') {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -391,30 +496,46 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.location_on_rounded, color: VibraColors.accent, size: 18),
+              const Icon(
+                Icons.location_on_rounded,
+                color: VibraColors.accent,
+                size: 18,
+              ),
               const SizedBox(width: 6),
-              Text('Proposta di Incontro', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                'Proposta di Incontro',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 4),
           Text(message.content, style: theme.textTheme.bodyMedium),
           const SizedBox(height: 12),
-          if (!mine) Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FilledButton.tonal(
-                style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12), minimumSize: Size.zero),
-                onPressed: () {},
-                child: const Text('Ci Sto'),
-              ),
-              const SizedBox(width: 8),
-              TextButton(
-                style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12), minimumSize: Size.zero),
-                onPressed: () {},
-                child: const Text('Non Posso'),
-              ),
-            ],
-          ),
+          if (!mine)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FilledButton.tonal(
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    minimumSize: Size.zero,
+                  ),
+                  onPressed: () {},
+                  child: const Text('Ci Sto'),
+                ),
+                const SizedBox(width: 8),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    minimumSize: Size.zero,
+                  ),
+                  onPressed: () {},
+                  child: const Text('Non Posso'),
+                ),
+              ],
+            ),
         ],
       );
     }

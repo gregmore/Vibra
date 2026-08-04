@@ -24,12 +24,12 @@ class MockSpotifyAuthNotifier extends SpotifyAuthNotifier {
 class FakeSupabaseDatasource extends Fake implements SupabaseDatasource {
   @override
   User? get currentUser => User(
-        id: 'fake-user-id',
-        appMetadata: const {},
-        userMetadata: const {},
-        aud: 'authenticated',
-        createdAt: DateTime.now().toIso8601String(),
-      );
+    id: 'fake-user-id',
+    appMetadata: const {},
+    userMetadata: const {},
+    aud: 'authenticated',
+    createdAt: DateTime.now().toIso8601String(),
+  );
 
   @override
   bool get isAuthenticated => true;
@@ -59,7 +59,9 @@ void main() {
     HttpOverrides.global = null;
   });
 
-  testWidgets('Flow base: Welcome -> Login -> SpotifyConnect -> Home', (tester) async {
+  testWidgets('Flow base: Welcome -> Login -> SpotifyConnect -> Home', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -68,8 +70,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          supabaseDatasourceProvider.overrideWith((ref) => FakeSupabaseDatasource()),
-          spotifyAuthProvider.overrideWith((ref) => MockSpotifyAuthNotifier(ref)),
+          supabaseDatasourceProvider.overrideWith(
+            (ref) => FakeSupabaseDatasource(),
+          ),
+          spotifyAuthProvider.overrideWith(
+            (ref) => MockSpotifyAuthNotifier(ref),
+          ),
         ],
         child: const VibraApp(),
       ),
@@ -104,4 +110,3 @@ void main() {
     expect(find.text('Per Te'), findsOneWidget);
   });
 }
-

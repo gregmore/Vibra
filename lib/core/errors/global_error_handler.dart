@@ -1,8 +1,7 @@
-
 import 'package:flutter/foundation.dart';
 import '../utils/logger.dart';
 
-/// Centralizza la gestione degli errori per l'applicazione, prevenendo crash fatali 
+/// Centralizza la gestione degli errori per l'applicazione, prevenendo crash fatali
 /// "schermo grigio" e inoltrando la telemetria in modo uniforme.
 class GlobalErrorHandler {
   static void initialize() {
@@ -14,7 +13,7 @@ class GlobalErrorHandler {
         stackTrace: details.stack,
         tag: 'GlobalErrorHandler',
       );
-      
+
       // In produzione: FirebaseCrashlytics.instance.recordFlutterFatalError(details);
 
       // Continua a loggare in console se in debug
@@ -24,14 +23,16 @@ class GlobalErrorHandler {
     };
 
     // Gestione degli errori asincroni (Dart) al di fuori del ciclo Flutter
-    PlatformDispatcher.instance.onError = (Object error, StackTrace stackTrace) {
+    PlatformDispatcher
+        .instance
+        .onError = (Object error, StackTrace stackTrace) {
       VibraLogger.error(
         'Eccezione Dart Asincrona catturata dal GlobalErrorHandler',
         error: error,
         stackTrace: stackTrace,
         tag: 'GlobalErrorHandler',
       );
-      
+
       // In produzione: FirebaseCrashlytics.instance.recordError(error, stackTrace, fatal: true);
 
       // Evita che l'eccezione si propaghi causando crash fatali a basso livello

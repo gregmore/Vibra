@@ -30,10 +30,7 @@ class AuthException implements Exception {
   final String message;
   final String? errorCode;
 
-  const AuthException({
-    required this.message,
-    this.errorCode,
-  });
+  const AuthException({required this.message, this.errorCode});
 
   @override
   String toString() =>

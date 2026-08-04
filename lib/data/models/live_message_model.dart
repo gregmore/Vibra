@@ -16,4 +16,3 @@ abstract class LiveMessageModel with _$LiveMessageModel {
   factory LiveMessageModel.fromJson(Map<String, dynamic> json) =>
       _$LiveMessageModelFromJson(json);
 }
-

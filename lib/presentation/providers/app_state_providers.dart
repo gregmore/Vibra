@@ -29,7 +29,6 @@ export '../../domain/entities/matched_user_preview.dart';
 export '../../domain/entities/music_stat_point.dart';
 export '../../domain/entities/settings_option.dart';
 
-
 class EventsFeedController extends StateNotifier<List<Event>> {
   EventsFeedController(this.ref) : super(const []) {
     Future.microtask(_load);
@@ -56,7 +55,9 @@ class EventsFeedController extends StateNotifier<List<Event>> {
       var loaded = await ref.read(getStoredEventsUseCaseProvider).call(50);
 
       if (loaded.length < 15) {
-        final externalEvents = await ref.read(searchNearbyEventsUseCaseProvider).call(
+        final externalEvents = await ref
+            .read(searchNearbyEventsUseCaseProvider)
+            .call(
               const SearchNearbyEventsParams(
                 latitude: 45.4642,
                 longitude: 9.19,
@@ -69,22 +70,28 @@ class EventsFeedController extends StateNotifier<List<Event>> {
       final user = ref.read(supabaseDatasourceProvider).currentUser;
       if (user != null) {
         try {
-          final response = await ref.read(supabaseDatasourceProvider).invokeFunction(
-            'recommend-events',
-            body: {
-              'user_id': user.id,
-              'limit': 20,
-              'latitude': 45.4642,
-              'longitude': 9.19,
-            },
-          );
+          final response = await ref
+              .read(supabaseDatasourceProvider)
+              .invokeFunction(
+                'recommend-events',
+                body: {
+                  'user_id': user.id,
+                  'limit': 20,
+                  'latitude': 45.4642,
+                  'longitude': 9.19,
+                },
+              );
 
           final items = List<Map<String, dynamic>>.from(
             response['data'] as List? ?? const [],
           );
 
           final recommended = items
-              .map((item) => EventModel.fromJson(Map<String, dynamic>.from(item['event'] as Map)).toEntity())
+              .map(
+                (item) => EventModel.fromJson(
+                  Map<String, dynamic>.from(item['event'] as Map),
+                ).toEntity(),
+              )
               .toList(growable: false);
 
           if (recommended.isNotEmpty) {
@@ -93,7 +100,9 @@ class EventsFeedController extends StateNotifier<List<Event>> {
           }
         } catch (e) {
           if (e.toString().contains('music_profile_not_found')) {
-            VibraLogger.info('Profilo Spotify non sincronizzato. Mostro solo eventi generici.');
+            VibraLogger.info(
+              'Profilo Spotify non sincronizzato. Mostro solo eventi generici.',
+            );
           } else {
             VibraLogger.error('Failed to load recommended events', error: e);
           }
@@ -113,18 +122,23 @@ class EventsFeedController extends StateNotifier<List<Event>> {
   List<Event> _filterPastEvents(List<Event> events) {
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
-    return events.where((e) => !e.eventDate.isBefore(startOfDay)).toList(growable: false);
+    return events
+        .where((e) => !e.eventDate.isBefore(startOfDay))
+        .toList(growable: false);
   }
 }
 
 class ProfileController extends StateNotifier<AppUser> {
-  ProfileController(this.ref) : super(AppUser(
-    id: '',
-    email: '',
-    username: '',
-    createdAt: DateTime.now(),
-    updatedAt: DateTime.now(),
-  )) {
+  ProfileController(this.ref)
+    : super(
+        AppUser(
+          id: '',
+          email: '',
+          username: '',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+      ) {
     Future.microtask(_load);
   }
 
@@ -137,27 +151,37 @@ class ProfileController extends StateNotifier<AppUser> {
       if (authUser == null) return;
 
       try {
-        state = await ref.read(getMyProfileUseCaseProvider).call(const NoParams());
+        state = await ref
+            .read(getMyProfileUseCaseProvider)
+            .call(const NoParams());
       } catch (e) {
-        VibraLogger.error('Failed to load profile, checking if user was deleted', error: e);
-        
+        VibraLogger.error(
+          'Failed to load profile, checking if user was deleted',
+          error: e,
+        );
+
         try {
           // Verify if the user still exists in auth.users by calling the server
           await supabase.client.auth.getUser();
         } catch (authError) {
-          VibraLogger.error('User no longer exists on server, logging out', error: authError);
+          VibraLogger.error(
+            'User no longer exists on server, logging out',
+            error: authError,
+          );
           await ref.read(generalAuthProvider.notifier).signOut();
           return;
         }
 
         VibraLogger.info('User exists, trying to upsert bootstrap profile');
-        
+
         final bootstrap = AppUser(
           id: authUser.id,
           email: authUser.email ?? '',
-          username: (authUser.userMetadata?['username'] as String?) ??
+          username:
+              (authUser.userMetadata?['username'] as String?) ??
               (authUser.email?.split('@').first ?? 'vibra_user'),
-          displayName: (authUser.userMetadata?['display_name'] as String?) ??
+          displayName:
+              (authUser.userMetadata?['display_name'] as String?) ??
               authUser.email?.split('@').first,
           avatarUrl: authUser.userMetadata?['avatar_url'] as String?,
           bio: null,
@@ -168,7 +192,9 @@ class ProfileController extends StateNotifier<AppUser> {
         );
 
         try {
-          state = await ref.read(upsertMyProfileUseCaseProvider).call(bootstrap);
+          state = await ref
+              .read(upsertMyProfileUseCaseProvider)
+              .call(bootstrap);
         } catch (err) {
           VibraLogger.error('Failed to upsert bootstrap profile', error: err);
           state = bootstrap;
@@ -180,40 +206,47 @@ class ProfileController extends StateNotifier<AppUser> {
   }
 
   Future<void> updateProfile({
-    String? username, 
+    String? username,
     String? displayName,
     String? bio,
-    String? onboardingStep, 
-    bool? onboardingCompleted, 
-    String? avatarUrl
+    String? onboardingStep,
+    bool? onboardingCompleted,
+    String? avatarUrl,
   }) async {
     final supabase = ref.read(supabaseDatasourceProvider);
     final user = supabase.currentUser;
     if (user == null) return;
-    
+
     final updates = <String, dynamic>{};
     if (username != null) updates['username'] = username;
     if (displayName != null) updates['display_name'] = displayName;
     if (bio != null) updates['bio'] = bio;
     if (onboardingStep != null) updates['onboarding_step'] = onboardingStep;
-    if (onboardingCompleted != null) updates['onboarding_completed'] = onboardingCompleted;
+    if (onboardingCompleted != null)
+      updates['onboarding_completed'] = onboardingCompleted;
     if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
-    
+
     if (updates.isNotEmpty) {
-      await supabase.client.from(DbTables.users).update(updates).eq('id', user.id);
+      await supabase.client
+          .from(DbTables.users)
+          .update(updates)
+          .eq('id', user.id);
       await _load();
     }
   }
 }
 
 class MusicProfileController extends StateNotifier<MusicProfile> {
-  MusicProfileController(this.ref) : super(const MusicProfile(
-    id: '',
-    userId: '',
-    topArtists: [],
-    topTracks: [],
-    topGenres: [],
-  )) {
+  MusicProfileController(this.ref)
+    : super(
+        const MusicProfile(
+          id: '',
+          userId: '',
+          topArtists: [],
+          topTracks: [],
+          topGenres: [],
+        ),
+      ) {
     Future.microtask(_load);
   }
 
@@ -221,7 +254,9 @@ class MusicProfileController extends StateNotifier<MusicProfile> {
 
   Future<void> _load() async {
     try {
-      final music = await ref.read(getMyMusicProfileUseCaseProvider).call(const NoParams());
+      final music = await ref
+          .read(getMyMusicProfileUseCaseProvider)
+          .call(const NoParams());
       if (music != null) {
         state = music;
       }
@@ -243,16 +278,18 @@ class MatchedUsersController extends StateNotifier<List<MatchedUserPreview>> {
 
   void _subscribe() {
     final ds = ref.read(supabaseDatasourceProvider);
-    _channel = ds.client.channel('public:user_matches')
-      .onPostgresChanges(
-        event: PostgresChangeEvent.all,
-        schema: 'public',
-        table: 'user_matches',
-        callback: (payload) {
-          _load();
-        }
-      ).subscribe();
-      
+    _channel = ds.client
+        .channel('public:user_matches')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'user_matches',
+          callback: (payload) {
+            _load();
+          },
+        )
+        .subscribe();
+
     ref.onDispose(() {
       _channel?.unsubscribe();
     });
@@ -263,7 +300,10 @@ class MatchedUsersController extends StateNotifier<List<MatchedUserPreview>> {
       final datasource = ref.read(supabaseSocialDatasourceProvider);
       final rows = await datasource.listMyMatches(limit: 20);
 
-      final currentUserId = ref.read(supabaseDatasourceProvider).currentUser?.id;
+      final currentUserId = ref
+          .read(supabaseDatasourceProvider)
+          .currentUser
+          ?.id;
       final ids = rows
           .map((row) {
             final a = row['user_id_a']?.toString();
@@ -285,37 +325,39 @@ class MatchedUsersController extends StateNotifier<List<MatchedUserPreview>> {
         for (final user in publicUsers) user['id'].toString(): user,
       };
 
-      state = rows.map((row) {
-        final otherId = row['user_id_a'] == currentUserId
-            ? row['user_id_b'].toString()
-            : row['user_id_a'].toString();
-        final user = userById[otherId];
+      state = rows
+          .map((row) {
+            final otherId = row['user_id_a'] == currentUserId
+                ? row['user_id_b'].toString()
+                : row['user_id_a'].toString();
+            final user = userById[otherId];
 
-        final appUser = AppUser(
-          id: otherId,
-          email: '',
-          username: user?['username']?.toString() ?? 'user',
-          displayName: user?['display_name']?.toString(),
-          avatarUrl: user?['avatar_url']?.toString(),
-          bio: user?['bio']?.toString(),
-          spotifyId: user?['spotify_id']?.toString(),
-          createdAt: user?['created_at'] != null
-              ? DateTime.tryParse(user!['created_at'].toString())
-              : null,
-          updatedAt: user?['updated_at'] != null
-              ? DateTime.tryParse(user!['updated_at'].toString())
-              : null,
-        );
+            final appUser = AppUser(
+              id: otherId,
+              email: '',
+              username: user?['username']?.toString() ?? 'user',
+              displayName: user?['display_name']?.toString(),
+              avatarUrl: user?['avatar_url']?.toString(),
+              bio: user?['bio']?.toString(),
+              spotifyId: user?['spotify_id']?.toString(),
+              createdAt: user?['created_at'] != null
+                  ? DateTime.tryParse(user!['created_at'].toString())
+                  : null,
+              updatedAt: user?['updated_at'] != null
+                  ? DateTime.tryParse(user!['updated_at'].toString())
+                  : null,
+            );
 
-        return MatchedUserPreview(
-          user: appUser,
-          compatibility: (row['compatibility'] as num?)?.round() ?? 0,
-          topArtists: const [],
-          city: 'Live nearby',
-          attendingEvents: 0,
-          isFriend: acceptedIds.contains(otherId),
-        );
-      }).toList(growable: false);
+            return MatchedUserPreview(
+              user: appUser,
+              compatibility: (row['compatibility'] as num?)?.round() ?? 0,
+              topArtists: const [],
+              city: 'Live nearby',
+              attendingEvents: 0,
+              isFriend: acceptedIds.contains(otherId),
+            );
+          })
+          .toList(growable: false);
     } catch (e) {
       VibraLogger.error('Failed to load matched users', error: e);
       // state remains empty
@@ -344,16 +386,18 @@ class PendingFriendshipsController extends StateNotifier<List<Friendship>> {
 
   void _subscribe() {
     final ds = ref.read(supabaseDatasourceProvider);
-    _channel = ds.client.channel('public:friendships')
-      .onPostgresChanges(
-        event: PostgresChangeEvent.all,
-        schema: 'public',
-        table: 'friendships',
-        callback: (payload) {
-          _load();
-        }
-      ).subscribe();
-      
+    _channel = ds.client
+        .channel('public:friendships')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'friendships',
+          callback: (payload) {
+            _load();
+          },
+        )
+        .subscribe();
+
     ref.onDispose(() {
       _channel?.unsubscribe();
     });
@@ -378,21 +422,30 @@ class DirectMessagesController extends StateNotifier<List<DirectMessage>> {
   void loadConversation(String otherUserId) {
     _subscription?.cancel();
     final ds = ref.read(supabaseSocialDatasourceProvider);
-    _subscription = ds.streamMessagesWith(otherUserId: otherUserId).listen((models) {
-      final messages = models.map((m) => DirectMessage(
-        id: m.id,
-        senderId: m.senderId,
-        receiverId: m.receiverId,
-        content: m.content,
-        createdAt: m.createdAt,
-        readAt: m.readAt,
-      )).toList(growable: false);
-      state = messages;
-    }, onError: (e) {
-      VibraLogger.error('Failed to stream direct messages', error: e);
-    });
+    _subscription = ds
+        .streamMessagesWith(otherUserId: otherUserId)
+        .listen(
+          (models) {
+            final messages = models
+                .map(
+                  (m) => DirectMessage(
+                    id: m.id,
+                    senderId: m.senderId,
+                    receiverId: m.receiverId,
+                    content: m.content,
+                    createdAt: m.createdAt,
+                    readAt: m.readAt,
+                  ),
+                )
+                .toList(growable: false);
+            state = messages;
+          },
+          onError: (e) {
+            VibraLogger.error('Failed to stream direct messages', error: e);
+          },
+        );
   }
-  
+
   @override
   void dispose() {
     _subscription?.cancel();
@@ -422,16 +475,20 @@ class LiveMessagesController extends StateNotifier<List<LiveMessage>> {
           .read(streamLiveMessagesUseCaseProvider)
           .call(eventId!)
           .listen((messages) {
-        state = messages.reversed.toList(growable: false);
-      });
+            state = messages.reversed.toList(growable: false);
+          });
     } catch (e) {
-      VibraLogger.error('Failed to stream live messages for event $eventId', error: e);
+      VibraLogger.error(
+        'Failed to stream live messages for event $eventId',
+        error: e,
+      );
       // state remains empty
     }
   }
 }
 
-class UserEventsController extends StateNotifier<({List<Event> going, List<Event> saved})> {
+class UserEventsController
+    extends StateNotifier<({List<Event> going, List<Event> saved})> {
   UserEventsController(this.ref) : super((going: const [], saved: const [])) {
     Future.microtask(_load);
   }
@@ -455,7 +512,7 @@ class UserEventsController extends StateNotifier<({List<Event> going, List<Event
 
       final goingIds = <String>[];
       final savedIds = <String>[];
-      
+
       for (final row in attendeeRows) {
         final id = row['event_id']?.toString();
         final status = row['status']?.toString();
@@ -488,8 +545,12 @@ class UserEventsController extends StateNotifier<({List<Event> going, List<Event
           .map((e) => e.toEntity())
           .toList(growable: false);
 
-      final goingEvents = eventsList.where((e) => goingIds.contains(e.id)).toList(growable: false);
-      final savedEvents = eventsList.where((e) => savedIds.contains(e.id)).toList(growable: false);
+      final goingEvents = eventsList
+          .where((e) => goingIds.contains(e.id))
+          .toList(growable: false);
+      final savedEvents = eventsList
+          .where((e) => savedIds.contains(e.id))
+          .toList(growable: false);
 
       state = (going: goingEvents, saved: savedEvents);
     } catch (e) {
@@ -501,8 +562,8 @@ class UserEventsController extends StateNotifier<({List<Event> going, List<Event
 
 final allEventsProvider =
     StateNotifierProvider<EventsFeedController, List<Event>>((ref) {
-  return EventsFeedController(ref);
-});
+      return EventsFeedController(ref);
+    });
 
 final featuredEventsProvider = Provider<List<Event>>((ref) {
   final events = ref.watch(allEventsProvider);
@@ -522,39 +583,51 @@ final trendingEventsProvider = Provider<List<Event>>((ref) {
 });
 
 final matchedUsersProvider =
-    StateNotifierProvider<MatchedUsersController, List<MatchedUserPreview>>((ref) {
-  return MatchedUsersController(ref);
-});
+    StateNotifierProvider<MatchedUsersController, List<MatchedUserPreview>>((
+      ref,
+    ) {
+      return MatchedUsersController(ref);
+    });
 
 final friendsProvider = Provider<List<MatchedUserPreview>>((ref) {
-  return ref.watch(matchedUsersProvider).where((u) => u.isFriend).toList(growable: false);
+  return ref
+      .watch(matchedUsersProvider)
+      .where((u) => u.isFriend)
+      .toList(growable: false);
 });
 
 final pendingFriendshipsProvider =
-    StateNotifierProvider<PendingFriendshipsController, List<Friendship>>((ref) {
-  return PendingFriendshipsController(ref);
-});
+    StateNotifierProvider<PendingFriendshipsController, List<Friendship>>((
+      ref,
+    ) {
+      return PendingFriendshipsController(ref);
+    });
 
 final directMessagesProvider =
     StateNotifierProvider<DirectMessagesController, List<DirectMessage>>((ref) {
-  return DirectMessagesController(ref);
-});
+      return DirectMessagesController(ref);
+    });
 
 final liveMessagesProvider =
-    StateNotifierProvider.autoDispose<LiveMessagesController, List<LiveMessage>>((ref) {
-  final events = ref.watch(allEventsProvider);
-  final eventId = events.isNotEmpty ? events.first.id : null;
-  return LiveMessagesController(ref, eventId);
-});
+    StateNotifierProvider.autoDispose<
+      LiveMessagesController,
+      List<LiveMessage>
+    >((ref) {
+      final events = ref.watch(allEventsProvider);
+      final eventId = events.isNotEmpty ? events.first.id : null;
+      return LiveMessagesController(ref, eventId);
+    });
 
-final myProfileProvider = StateNotifierProvider<ProfileController, AppUser>((ref) {
+final myProfileProvider = StateNotifierProvider<ProfileController, AppUser>((
+  ref,
+) {
   return ProfileController(ref);
 });
 
 final myMusicProfileProvider =
     StateNotifierProvider<MusicProfileController, MusicProfile>((ref) {
-  return MusicProfileController(ref);
-});
+      return MusicProfileController(ref);
+    });
 
 final topArtistsStatsProvider = Provider<List<MusicArtistPreference>>((ref) {
   final artists = ref.watch(myMusicProfileProvider).topArtists;
@@ -579,30 +652,47 @@ final listeningHeatmapProvider = Provider<List<MusicStatPoint>>((ref) {
 });
 
 final myEventsProvider =
-    StateNotifierProvider<UserEventsController, ({List<Event> going, List<Event> saved})>((ref) {
-  return UserEventsController(ref);
-});
+    StateNotifierProvider<
+      UserEventsController,
+      ({List<Event> going, List<Event> saved})
+    >((ref) {
+      return UserEventsController(ref);
+    });
 
 final savedEventsProvider = Provider<List<Event>>((ref) {
   return ref.watch(myEventsProvider).saved;
 });
 
-final settingsStateProvider = StateNotifierProvider<SettingsController, List<SettingsOptionState>>((ref) {
-  return SettingsController(ref);
-});
+final settingsStateProvider =
+    StateNotifierProvider<SettingsController, List<SettingsOptionState>>((ref) {
+      return SettingsController(ref);
+    });
 
 class SettingsController extends StateNotifier<List<SettingsOptionState>> {
-  SettingsController(this.ref) : super(const [
-    SettingsOptionState(label: 'Notifiche eventi compatibili', enabled: true),
-    SettingsOptionState(label: 'Alert utenti con match alto', enabled: true),
-    SettingsOptionState(label: 'Chat Live durante i concerti', enabled: true),
-    SettingsOptionState(label: 'Richieste e messaggi privati', enabled: true),
-  ]) {
+  SettingsController(this.ref)
+    : super(const [
+        SettingsOptionState(
+          label: 'Notifiche eventi compatibili',
+          enabled: true,
+        ),
+        SettingsOptionState(
+          label: 'Alert utenti con match alto',
+          enabled: true,
+        ),
+        SettingsOptionState(
+          label: 'Chat Live durante i concerti',
+          enabled: true,
+        ),
+        SettingsOptionState(
+          label: 'Richieste e messaggi privati',
+          enabled: true,
+        ),
+      ]) {
     _load();
   }
 
   final Ref ref;
-  
+
   // Mapping of UI index to JSON keys in Supabase push_settings
   final _settingsKeys = ['event_alert', 'match', 'live_chat', 'chat'];
 
@@ -621,7 +711,7 @@ class SettingsController extends StateNotifier<List<SettingsOptionState>> {
       if (res != null && res['push_settings'] != null) {
         final pushSettings = res['push_settings'] as Map<String, dynamic>;
         final updated = <SettingsOptionState>[];
-        
+
         for (int i = 0; i < state.length; i++) {
           final key = _settingsKeys[i];
           final val = pushSettings[key] as bool? ?? state[i].enabled;
@@ -651,22 +741,22 @@ class SettingsController extends StateNotifier<List<SettingsOptionState>> {
       if (user == null) return;
 
       final key = _settingsKeys[index];
-      
+
       // Fetch current settings first to merge them
       final res = await supabase.client
           .from(DbTables.users)
           .select('push_settings')
           .eq('id', user.id)
           .maybeSingle();
-          
-      final currentSettings = (res?['push_settings'] as Map<String, dynamic>?) ?? {};
+
+      final currentSettings =
+          (res?['push_settings'] as Map<String, dynamic>?) ?? {};
       currentSettings[key] = value;
-      
+
       await supabase.client
           .from(DbTables.users)
           .update({'push_settings': currentSettings})
           .eq('id', user.id);
-          
     } catch (e) {
       VibraLogger.error('Failed to save settings to Supabase', error: e);
     }
@@ -724,7 +814,9 @@ class LocaleController extends StateNotifier<Locale?> {
   }
 }
 
-final localeStateProvider = StateNotifierProvider<LocaleController, Locale?>((ref) {
+final localeStateProvider = StateNotifierProvider<LocaleController, Locale?>((
+  ref,
+) {
   return LocaleController();
 });
 
@@ -749,7 +841,7 @@ class PushEnabledController extends StateNotifier<bool> {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('push_enabled', value);
-      
+
       final supabase = ref.read(supabaseDatasourceProvider);
       final user = supabase.currentUser;
       if (user != null) {
@@ -763,7 +855,10 @@ class PushEnabledController extends StateNotifier<bool> {
               'email': user.email ?? '',
               'fcm_token': token,
             }, onConflict: 'id');
-            VibraLogger.info('Push notifications re-enabled, token sent to Supabase', tag: 'Push');
+            VibraLogger.info(
+              'Push notifications re-enabled, token sent to Supabase',
+              tag: 'Push',
+            );
           }
         } else {
           // remove FCM token from Supabase
@@ -772,7 +867,10 @@ class PushEnabledController extends StateNotifier<bool> {
             'email': user.email ?? '',
             'fcm_token': null,
           }, onConflict: 'id');
-          VibraLogger.info('Push notifications disabled, token removed from Supabase', tag: 'Push');
+          VibraLogger.info(
+            'Push notifications disabled, token removed from Supabase',
+            tag: 'Push',
+          );
         }
       }
     } catch (e) {
@@ -781,11 +879,14 @@ class PushEnabledController extends StateNotifier<bool> {
   }
 }
 
-final pushEnabledProvider = StateNotifierProvider<PushEnabledController, bool>((ref) {
+final pushEnabledProvider = StateNotifierProvider<PushEnabledController, bool>((
+  ref,
+) {
   return PushEnabledController(ref);
 });
 
-class PresenceController extends StateNotifier<Map<String, String>> with WidgetsBindingObserver {
+class PresenceController extends StateNotifier<Map<String, String>>
+    with WidgetsBindingObserver {
   PresenceController(this.ref) : super(const {}) {
     WidgetsBinding.instance.addObserver(this);
     _initPresence();
@@ -800,32 +901,38 @@ class PresenceController extends StateNotifier<Map<String, String>> with Widgets
     if (user == null) return;
 
     _presenceChannel = ds.client.channel('global_presence');
-    
-    _presenceChannel?.onPresenceSync((_) {
-      final newState = <String, String>{};
-      final presenceState = _presenceChannel!.presenceState();
-      for (final singleState in presenceState) {
-        if (singleState.presences.isNotEmpty) {
-          final payload = singleState.presences.first.payload;
-          final userId = payload['user_id'] as String?;
-          if (userId != null) {
-            newState[userId] = payload['status'] as String? ?? 'online';
+
+    _presenceChannel
+        ?.onPresenceSync((_) {
+          final newState = <String, String>{};
+          final presenceState = _presenceChannel!.presenceState();
+          for (final singleState in presenceState) {
+            if (singleState.presences.isNotEmpty) {
+              final payload = singleState.presences.first.payload;
+              final userId = payload['user_id'] as String?;
+              if (userId != null) {
+                newState[userId] = payload['status'] as String? ?? 'online';
+              }
+            }
           }
-        }
-      }
-      state = newState;
-    }).subscribe((status, [error]) async {
-      if (status == RealtimeSubscribeStatus.subscribed) {
-        await _presenceChannel?.track({'status': 'online', 'user_id': user.id});
-      }
-    });
+          state = newState;
+        })
+        .subscribe((status, [error]) async {
+          if (status == RealtimeSubscribeStatus.subscribed) {
+            await _presenceChannel?.track({
+              'status': 'online',
+              'user_id': user.id,
+            });
+          }
+        });
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _presenceChannel?.track({'status': 'online'});
-    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
       _presenceChannel?.untrack();
     }
   }
@@ -838,6 +945,7 @@ class PresenceController extends StateNotifier<Map<String, String>> with Widgets
   }
 }
 
-final presenceProvider = StateNotifierProvider<PresenceController, Map<String, String>>((ref) {
-  return PresenceController(ref);
-});
+final presenceProvider =
+    StateNotifierProvider<PresenceController, Map<String, String>>((ref) {
+      return PresenceController(ref);
+    });

@@ -27,4 +27,3 @@ class EventRecommendationScore {
   final double proximityScore;
   final double popularityScore;
 }
-

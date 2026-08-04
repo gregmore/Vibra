@@ -17,14 +17,13 @@ class CalculateUserCompatibilityUseCase {
     final sharedArtists = leftArtistIds.intersection(rightArtistIds).length;
 
     final leftGenres = left.topGenres.map((e) => e.genre.toLowerCase()).toSet();
-    final rightGenres = right.topGenres.map((e) => e.genre.toLowerCase()).toSet();
+    final rightGenres = right.topGenres
+        .map((e) => e.genre.toLowerCase())
+        .toSet();
     final sharedGenres = leftGenres.intersection(rightGenres).length;
 
     final artistBase = left.topArtists.isEmpty ? 1 : left.topArtists.length;
-    final genreUniverse = {
-      ...leftGenres,
-      ...rightGenres,
-    }.length;
+    final genreUniverse = {...leftGenres, ...rightGenres}.length;
 
     final sharedArtistsPercentage = (sharedArtists / artistBase) * 100;
     final sharedGenresPercentage =
@@ -35,11 +34,12 @@ class CalculateUserCompatibilityUseCase {
 
     return CompatibilityResult(
       percentage: double.parse(total.toStringAsFixed(2)),
-      sharedArtistsPercentage:
-          double.parse(sharedArtistsPercentage.toStringAsFixed(2)),
-      sharedGenresPercentage:
-          double.parse(sharedGenresPercentage.toStringAsFixed(2)),
+      sharedArtistsPercentage: double.parse(
+        sharedArtistsPercentage.toStringAsFixed(2),
+      ),
+      sharedGenresPercentage: double.parse(
+        sharedGenresPercentage.toStringAsFixed(2),
+      ),
     );
   }
 }
-

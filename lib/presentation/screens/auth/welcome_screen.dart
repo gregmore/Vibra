@@ -20,7 +20,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   final PageController _controller = PageController();
   int _page = 0;
 
-  List<({IconData icon, String title, String body})> _getSlides(BuildContext context) {
+  List<({IconData icon, String title, String body})> _getSlides(
+    BuildContext context,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     return [
       (
@@ -101,9 +103,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: VibraColors.surfaceElevated,
-                              border: Border.all(color: VibraColors.glassBorder),
+                              border: Border.all(
+                                color: VibraColors.glassBorder,
+                              ),
                             ),
-                            child: Icon(item.icon, size: 60, color: VibraColors.accent),
+                            child: Icon(
+                              item.icon,
+                              size: 60,
+                              color: VibraColors.accent,
+                            ),
                           ),
                           const SizedBox(height: 28),
                           VibraGlassmorphicCard(
@@ -140,9 +148,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       width: _page == index ? 28 : 8,
                       height: 8,
                       decoration: BoxDecoration(
-                        gradient: _page == index ? VibraColors.primaryGradient : null,
-                        color: _page == index ? null : VibraColors.surfaceElevated,
-                        borderRadius: BorderRadius.circular(VibraSpacing.radiusFull),
+                        gradient: _page == index
+                            ? VibraColors.primaryGradient
+                            : null,
+                        color: _page == index
+                            ? null
+                            : VibraColors.surfaceElevated,
+                        borderRadius: BorderRadius.circular(
+                          VibraSpacing.radiusFull,
+                        ),
                       ),
                     ),
                   ),
@@ -152,7 +166,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   width: double.infinity,
                   child: VibraPillButton(
                     onPressed: () => context.push('/login'),
-                    text: _page == slides.length - 1 ? l10n.onboardingContinue : l10n.onboardingGoToLogin,
+                    text: _page == slides.length - 1
+                        ? l10n.onboardingContinue
+                        : l10n.onboardingGoToLogin,
                   ),
                 ),
               ],

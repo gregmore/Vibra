@@ -13,7 +13,8 @@ class SpotifyConnectScreen extends ConsumerStatefulWidget {
   const SpotifyConnectScreen({super.key});
 
   @override
-  ConsumerState<SpotifyConnectScreen> createState() => _SpotifyConnectScreenState();
+  ConsumerState<SpotifyConnectScreen> createState() =>
+      _SpotifyConnectScreenState();
 }
 
 class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
@@ -26,18 +27,21 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
 
     // Gestione degli step visivi
     final step1Active = status == SpotifyAuthStatus.authorizing;
-    final step1Done = status == SpotifyAuthStatus.exchangingToken ||
+    final step1Done =
+        status == SpotifyAuthStatus.exchangingToken ||
         status == SpotifyAuthStatus.syncingProfile ||
         status == SpotifyAuthStatus.success;
 
     final step2Active = status == SpotifyAuthStatus.exchangingToken;
-    final step2Done = status == SpotifyAuthStatus.syncingProfile ||
+    final step2Done =
+        status == SpotifyAuthStatus.syncingProfile ||
         status == SpotifyAuthStatus.success;
 
     final step3Active = status == SpotifyAuthStatus.syncingProfile;
     final step3Done = status == SpotifyAuthStatus.success;
 
-    final isProcessing = status == SpotifyAuthStatus.authorizing ||
+    final isProcessing =
+        status == SpotifyAuthStatus.authorizing ||
         status == SpotifyAuthStatus.exchangingToken ||
         status == SpotifyAuthStatus.syncingProfile;
 
@@ -62,10 +66,15 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
                         context.go('/login');
                       }
                     },
-                    icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                    icon: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                    ),
                   )
                 else
-                  const SizedBox(height: 48), // Spazio placeholder per mantenere il layout
+                  const SizedBox(
+                    height: 48,
+                  ), // Spazio placeholder per mantenere il layout
 
                 const SizedBox(height: 16),
 
@@ -93,16 +102,19 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
                   _buildStatusBanner(
                     icon: Icons.info_outline_rounded,
                     color: Colors.amber,
-                    message: '${AppLocalizations.of(context)!.spotifyAuthCancelledTitle}\n${AppLocalizations.of(context)!.spotifyAuthCancelled}',
+                    message:
+                        '${AppLocalizations.of(context)!.spotifyAuthCancelledTitle}\n${AppLocalizations.of(context)!.spotifyAuthCancelled}',
                   ).animate().shake(duration: 400.ms)
                 else if (status == SpotifyAuthStatus.error)
                   _buildStatusBanner(
                     icon: Icons.error_outline_rounded,
                     color: VibraColors.error,
-                    message: '${AppLocalizations.of(context)!.errorTitle}\n${AppLocalizations.of(context)!.spotifyAuthError(authState.errorMessage ?? "Riprova più tardi.")}',
+                    message:
+                        '${AppLocalizations.of(context)!.errorTitle}\n${AppLocalizations.of(context)!.spotifyAuthError(authState.errorMessage ?? "Riprova più tardi.")}',
                   ).animate().shake(duration: 400.ms),
 
-                if (status == SpotifyAuthStatus.userCancelled || status == SpotifyAuthStatus.error)
+                if (status == SpotifyAuthStatus.userCancelled ||
+                    status == SpotifyAuthStatus.error)
                   const SizedBox(height: 20),
 
                 // Card principale degli step
@@ -115,7 +127,9 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              AppLocalizations.of(context)!.spotifyConnectOnboarding,
+                              AppLocalizations.of(
+                                context,
+                              )!.spotifyConnectOnboarding,
                               style: theme.textTheme.titleMedium?.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -123,22 +137,34 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
                             ),
                             const SizedBox(height: 24),
                             _SyncStep(
-                              title: AppLocalizations.of(context)!.spotifyAuthStep1Title,
-                              subtitle: AppLocalizations.of(context)!.spotifyAuthStep1Sub,
+                              title: AppLocalizations.of(
+                                context,
+                              )!.spotifyAuthStep1Title,
+                              subtitle: AppLocalizations.of(
+                                context,
+                              )!.spotifyAuthStep1Sub,
                               isActive: step1Active,
                               isDone: step1Done,
                             ),
                             const SizedBox(height: 20),
                             _SyncStep(
-                              title: AppLocalizations.of(context)!.spotifyAuthStep2Title,
-                              subtitle: AppLocalizations.of(context)!.spotifyAuthStep2Sub,
+                              title: AppLocalizations.of(
+                                context,
+                              )!.spotifyAuthStep2Title,
+                              subtitle: AppLocalizations.of(
+                                context,
+                              )!.spotifyAuthStep2Sub,
                               isActive: step2Active,
                               isDone: step2Done,
                             ),
                             const SizedBox(height: 20),
                             _SyncStep(
-                              title: AppLocalizations.of(context)!.spotifyAuthStep3Title,
-                              subtitle: AppLocalizations.of(context)!.spotifyAuthStep3Sub,
+                              title: AppLocalizations.of(
+                                context,
+                              )!.spotifyAuthStep3Title,
+                              subtitle: AppLocalizations.of(
+                                context,
+                              )!.spotifyAuthStep3Sub,
                               isActive: step3Active,
                               isDone: step3Done,
                               showMusicAnimation: step3Active,
@@ -149,8 +175,6 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
                     ),
                   ).animate().fade(delay: 200.ms, duration: 400.ms),
                 ),
-
-
 
                 const SizedBox(height: 24),
 
@@ -169,7 +193,9 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            AppLocalizations.of(context)!.spotifyConnectPrivacyDesc,
+                            AppLocalizations.of(
+                              context,
+                            )!.spotifyConnectPrivacyDesc,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: Colors.white.withValues(alpha: 0.5),
                             ),
@@ -204,14 +230,24 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
                           ),
                           icon: const Icon(Icons.arrow_forward_rounded),
                           label: Text(
-                            AppLocalizations.of(context)!.spotifyConnectContinue,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            AppLocalizations.of(
+                              context,
+                            )!.spotifyConnectContinue,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ).animate().scale(duration: 300.ms, curve: Curves.easeOutBack)
+                        ).animate().scale(
+                          duration: 300.ms,
+                          curve: Curves.easeOutBack,
+                        )
                       : ElevatedButton(
                           onPressed: isProcessing
                               ? null
-                              : () => ref.read(spotifyAuthProvider.notifier).connectSpotify(),
+                              : () => ref
+                                    .read(spotifyAuthProvider.notifier)
+                                    .connectSpotify(),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: VibraColors.green,
                             foregroundColor: Colors.black,
@@ -226,13 +262,21 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
                                   height: 24,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2.5,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
                                   ),
                                 )
                               : Text(
-                                  status == SpotifyAuthStatus.error || status == SpotifyAuthStatus.userCancelled
-                                      ? AppLocalizations.of(context)!.spotifyConnectRetry
-                                      : AppLocalizations.of(context)!.spotifyConnectAction,
+                                  status == SpotifyAuthStatus.error ||
+                                          status ==
+                                              SpotifyAuthStatus.userCancelled
+                                      ? AppLocalizations.of(
+                                          context,
+                                        )!.spotifyConnectRetry
+                                      : AppLocalizations.of(
+                                          context,
+                                        )!.spotifyConnectAction,
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -240,7 +284,9 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
                                 ),
                         ),
                 ),
-                if (hasUser && !isProcessing && status != SpotifyAuthStatus.success) ...[
+                if (hasUser &&
+                    !isProcessing &&
+                    status != SpotifyAuthStatus.success) ...[
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
@@ -252,12 +298,14 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
                       ),
                       child: Text(
                         AppLocalizations.of(context)!.spotifyConnectSkip,
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ),
                 ],
-                
               ],
             ),
           ),
@@ -335,20 +383,22 @@ class _SyncStep extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(3, (index) {
                 return Container(
-                  width: 3,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(1.5),
-                  ),
-                )
-                .animate(onPlay: (controller) => controller.repeat(reverse: true))
-                .scaleY(
-                  begin: 0.3,
-                  end: 1.3,
-                  duration: (400 + (index * 150)).ms,
-                  curve: Curves.easeInOut,
-                );
+                      width: 3,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(1.5),
+                      ),
+                    )
+                    .animate(
+                      onPlay: (controller) => controller.repeat(reverse: true),
+                    )
+                    .scaleY(
+                      begin: 0.3,
+                      end: 1.3,
+                      duration: (400 + (index * 150)).ms,
+                      curve: Curves.easeInOut,
+                    );
               }),
             ),
           );
@@ -372,10 +422,7 @@ class _SyncStep extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 2),
-          child: buildLeading(),
-        ),
+        Padding(padding: const EdgeInsets.only(top: 2), child: buildLeading()),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
@@ -387,9 +434,11 @@ class _SyncStep extends StatelessWidget {
                   color: isDone
                       ? Colors.white
                       : isActive
-                          ? Colors.white
-                          : Colors.white.withValues(alpha: 0.4),
-                  fontWeight: isActive || isDone ? FontWeight.bold : FontWeight.normal,
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.4),
+                  fontWeight: isActive || isDone
+                      ? FontWeight.bold
+                      : FontWeight.normal,
                 ),
               ),
               const SizedBox(height: 4),
@@ -399,8 +448,8 @@ class _SyncStep extends StatelessWidget {
                   color: isDone
                       ? Colors.white.withValues(alpha: 0.6)
                       : isActive
-                          ? Colors.white.withValues(alpha: 0.7)
-                          : Colors.white.withValues(alpha: 0.3),
+                      ? Colors.white.withValues(alpha: 0.7)
+                      : Colors.white.withValues(alpha: 0.3),
                 ),
               ),
             ],
@@ -410,4 +459,3 @@ class _SyncStep extends StatelessWidget {
     );
   }
 }
-

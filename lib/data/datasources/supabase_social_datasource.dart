@@ -16,25 +16,29 @@ class SupabaseSocialDatasource {
     required String receiverId,
   }) async {
     final user = _supabase.currentUser;
-    if (user == null) throw const AuthException(message: 'Utente non autenticato');
+    if (user == null)
+      throw const AuthException(message: 'Utente non autenticato');
 
     try {
-      final row = await _supabase.insert(
-        DbTables.friendships,
-        {
-          'requester_id': user.id,
-          'receiver_id': receiverId,
-          'status': 'pending',
-        },
-      );
+      final row = await _supabase.insert(DbTables.friendships, {
+        'requester_id': user.id,
+        'receiver_id': receiverId,
+        'status': 'pending',
+      });
       return FriendshipModel.fromJson(row);
     } on PostgrestException catch (e) {
       if (e.code == '23505') {
-        throw const ServerException(message: 'Richiesta di amicizia già inviata o già siete amici.');
+        throw const ServerException(
+          message: 'Richiesta di amicizia già inviata o già siete amici.',
+        );
       }
-      throw ServerException(message: 'Errore durante la richiesta di amicizia: ${e.message}');
+      throw ServerException(
+        message: 'Errore durante la richiesta di amicizia: ${e.message}',
+      );
     } catch (e) {
-      throw ServerException(message: 'Errore generico durante la richiesta di amicizia.');
+      throw ServerException(
+        message: 'Errore generico durante la richiesta di amicizia.',
+      );
     }
   }
 
@@ -43,7 +47,8 @@ class SupabaseSocialDatasource {
     required String status, // accepted|rejected
   }) async {
     final user = _supabase.currentUser;
-    if (user == null) throw const AuthException(message: 'Utente non autenticato');
+    if (user == null)
+      throw const AuthException(message: 'Utente non autenticato');
 
     final row = await _supabase.update(
       DbTables.friendships,
@@ -56,7 +61,8 @@ class SupabaseSocialDatasource {
 
   Future<List<FriendshipModel>> listMyFriendships({String? status}) async {
     final user = _supabase.currentUser;
-    if (user == null) throw const AuthException(message: 'Utente non autenticato');
+    if (user == null)
+      throw const AuthException(message: 'Utente non autenticato');
 
     try {
       var query = _supabase.client
@@ -69,9 +75,9 @@ class SupabaseSocialDatasource {
       }
 
       final rows = await query.order('created_at', ascending: false).limit(200);
-      return List<Map<String, dynamic>>.from(rows)
-          .map(FriendshipModel.fromJson)
-          .toList(growable: false);
+      return List<Map<String, dynamic>>.from(
+        rows,
+      ).map(FriendshipModel.fromJson).toList(growable: false);
     } catch (e) {
       throw ServerException(
         message: 'Errore nel caricamento amicizie',
@@ -87,24 +93,23 @@ class SupabaseSocialDatasource {
     Map<String, dynamic>? metadata,
   }) async {
     final user = _supabase.currentUser;
-    if (user == null) throw const AuthException(message: 'Utente non autenticato');
+    if (user == null)
+      throw const AuthException(message: 'Utente non autenticato');
 
-    final row = await _supabase.insert(
-      DbTables.messages,
-      {
-        'sender_id': user.id,
-        'receiver_id': receiverId,
-        'content': content,
-        'message_type': messageType,
-        'metadata': ?metadata,
-      },
-    );
+    final row = await _supabase.insert(DbTables.messages, {
+      'sender_id': user.id,
+      'receiver_id': receiverId,
+      'content': content,
+      'message_type': messageType,
+      'metadata': ?metadata,
+    });
     return MessageModel.fromJson(row);
   }
 
   Future<void> blockUser({required String blockedId}) async {
     final user = _supabase.currentUser;
-    if (user == null) throw const AuthException(message: 'Utente non autenticato');
+    if (user == null)
+      throw const AuthException(message: 'Utente non autenticato');
     await _supabase.insert('blocked_users', {
       'blocker_id': user.id,
       'blocked_id': blockedId,
@@ -118,7 +123,8 @@ class SupabaseSocialDatasource {
     String? messageId,
   }) async {
     final user = _supabase.currentUser;
-    if (user == null) throw const AuthException(message: 'Utente non autenticato');
+    if (user == null)
+      throw const AuthException(message: 'Utente non autenticato');
     await _supabase.insert('reports', {
       'reporter_id': user.id,
       'reported_id': reportedId,
@@ -130,14 +136,15 @@ class SupabaseSocialDatasource {
 
   Future<void> softDeleteChat({required String otherUserId}) async {
     final user = _supabase.currentUser;
-    if (user == null) throw const AuthException(message: 'Utente non autenticato');
-    
+    if (user == null)
+      throw const AuthException(message: 'Utente non autenticato');
+
     // We append our user ID to deleted_by array for messages between us and the other user
     // The query finds messages where sender is A and receiver is B, or vice-versa
-    await _supabase.client.rpc('soft_delete_chat', params: {
-      'p_user_id': user.id,
-      'p_other_user_id': otherUserId,
-    });
+    await _supabase.client.rpc(
+      'soft_delete_chat',
+      params: {'p_user_id': user.id, 'p_other_user_id': otherUserId},
+    );
   }
 
   Future<void> reactToMessage({
@@ -145,14 +152,18 @@ class SupabaseSocialDatasource {
     required String reaction,
   }) async {
     final user = _supabase.currentUser;
-    if (user == null) throw const AuthException(message: 'Utente non autenticato');
-    
+    if (user == null)
+      throw const AuthException(message: 'Utente non autenticato');
+
     // Using an RPC to update jsonb is better, or doing a select then update
-    await _supabase.client.rpc('react_to_message', params: {
-      'p_message_id': messageId,
-      'p_user_id': user.id,
-      'p_reaction': reaction,
-    });
+    await _supabase.client.rpc(
+      'react_to_message',
+      params: {
+        'p_message_id': messageId,
+        'p_user_id': user.id,
+        'p_reaction': reaction,
+      },
+    );
   }
 
   Future<List<MessageModel>> listMessagesWith({
@@ -160,7 +171,8 @@ class SupabaseSocialDatasource {
     int limit = 50,
   }) async {
     final user = _supabase.currentUser;
-    if (user == null) throw const AuthException(message: 'Utente non autenticato');
+    if (user == null)
+      throw const AuthException(message: 'Utente non autenticato');
 
     try {
       final rows = await _supabase.client
@@ -172,9 +184,9 @@ class SupabaseSocialDatasource {
           .order('created_at', ascending: true)
           .limit(limit);
 
-      return List<Map<String, dynamic>>.from(rows)
-          .map(MessageModel.fromJson)
-          .toList(growable: false);
+      return List<Map<String, dynamic>>.from(
+        rows,
+      ).map(MessageModel.fromJson).toList(growable: false);
     } catch (e) {
       throw ServerException(
         message: 'Errore nel caricamento messaggi',
@@ -185,7 +197,8 @@ class SupabaseSocialDatasource {
 
   Future<List<Map<String, dynamic>>> listMyMatches({int limit = 20}) async {
     final user = _supabase.currentUser;
-    if (user == null) throw const AuthException(message: 'Utente non autenticato');
+    if (user == null)
+      throw const AuthException(message: 'Utente non autenticato');
 
     try {
       final rows = await _supabase.client
@@ -204,7 +217,9 @@ class SupabaseSocialDatasource {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getPublicUsersByIds(List<String> ids) async {
+  Future<List<Map<String, dynamic>>> getPublicUsersByIds(
+    List<String> ids,
+  ) async {
     if (ids.isEmpty) return const [];
 
     try {
@@ -221,11 +236,10 @@ class SupabaseSocialDatasource {
     }
   }
 
-  Stream<List<MessageModel>> streamMessagesWith({
-    required String otherUserId,
-  }) {
+  Stream<List<MessageModel>> streamMessagesWith({required String otherUserId}) {
     final user = _supabase.currentUser;
-    if (user == null) throw const AuthException(message: 'Utente non autenticato');
+    if (user == null)
+      throw const AuthException(message: 'Utente non autenticato');
 
     final stream = _supabase.client
         .from(DbTables.messages)
@@ -236,9 +250,11 @@ class SupabaseSocialDatasource {
     return stream.map(
       (rows) => rows
           .map(MessageModel.fromJson)
-          .where((m) =>
-              (m.senderId == user.id && m.receiverId == otherUserId) ||
-              (m.senderId == otherUserId && m.receiverId == user.id))
+          .where(
+            (m) =>
+                (m.senderId == user.id && m.receiverId == otherUserId) ||
+                (m.senderId == otherUserId && m.receiverId == user.id),
+          )
           .toList(growable: false),
     );
   }

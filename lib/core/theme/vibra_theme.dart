@@ -9,8 +9,6 @@ import 'vibra_text_styles.dart';
 class VibraTheme {
   VibraTheme._();
 
-
-
   /// Il tema dark principale dell'app.
   static ThemeData get darkTheme {
     return ThemeData(
@@ -59,10 +57,7 @@ class VibraTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(VibraSpacing.radiusLarge),
-          side: const BorderSide(
-            color: VibraColors.glassBorder,
-            width: 0.5,
-          ),
+          side: const BorderSide(color: VibraColors.glassBorder, width: 0.5),
         ),
         margin: VibraSpacing.cardMargin,
       ),
@@ -74,9 +69,7 @@ class VibraTheme {
           foregroundColor: VibraColors.textPrimary,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: VibraSpacing.borderFull,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderFull),
           textStyle: VibraTextStyles.labelLarge.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -88,9 +81,7 @@ class VibraTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: VibraColors.primary,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: VibraSpacing.borderFull,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderFull),
           side: const BorderSide(color: VibraColors.primary, width: 1.5),
           textStyle: VibraTextStyles.labelLarge,
         ),
@@ -139,17 +130,11 @@ class VibraTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: VibraSpacing.borderSmall,
-          borderSide: const BorderSide(
-            color: VibraColors.primary,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: VibraColors.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: VibraSpacing.borderSmall,
-          borderSide: const BorderSide(
-            color: VibraColors.error,
-            width: 1.0,
-          ),
+          borderSide: const BorderSide(color: VibraColors.error, width: 1.0),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
@@ -167,9 +152,7 @@ class VibraTheme {
         selectedColor: VibraColors.primary.withValues(alpha: 0.25),
         labelStyle: VibraTextStyles.labelMedium,
         side: const BorderSide(color: VibraColors.glassBorder, width: 0.5),
-        shape: RoundedRectangleBorder(
-          borderRadius: VibraSpacing.borderSmall,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderSmall),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       ),
 
@@ -189,9 +172,7 @@ class VibraTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: VibraColors.surfaceElevated,
         elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: VibraSpacing.borderXL,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderXL),
         titleTextStyle: VibraTextStyles.headlineSmall,
         contentTextStyle: VibraTextStyles.bodyMedium,
       ),
@@ -233,8 +214,10 @@ class VibraTheme {
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return VibraTextStyles.labelSmall
-                .copyWith(color: VibraColors.accent, fontWeight: FontWeight.w600);
+            return VibraTextStyles.labelSmall.copyWith(
+              color: VibraColors.accent,
+              fontWeight: FontWeight.w600,
+            );
           }
           return VibraTextStyles.labelSmall;
         }),
@@ -288,9 +271,7 @@ class VibraTheme {
       listTileTheme: ListTileThemeData(
         iconColor: VibraColors.textSecondary,
         textColor: VibraColors.textPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: VibraSpacing.borderMedium,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderMedium),
       ),
 
       // ── Tooltip ────────────────────────────────────────────

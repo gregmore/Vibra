@@ -4,7 +4,8 @@ class ApiConstants {
 
   // ── Spotify ──────────────────────────────────────────────
   static const String spotifyAuthUrl = 'https://accounts.spotify.com/authorize';
-  static const String spotifyTokenUrl = 'https://accounts.spotify.com/api/token';
+  static const String spotifyTokenUrl =
+      'https://accounts.spotify.com/api/token';
   static const String spotifyApiBase = 'https://api.spotify.com/v1';
   static const String spotifyTopArtists = '/me/top/artists';
   static const String spotifyTopTracks = '/me/top/tracks';
@@ -25,7 +26,8 @@ class ApiConstants {
   static const Duration receiveTimeout = Duration(seconds: 20);
 
   // ── Ticketmaster ─────────────────────────────────────────
-  static const String ticketmasterApiBase = 'https://app.ticketmaster.com/discovery/v2';
+  static const String ticketmasterApiBase =
+      'https://app.ticketmaster.com/discovery/v2';
   static const String ticketmasterEvents = '/events.json';
 
   // ── Songkick ─────────────────────────────────────────────

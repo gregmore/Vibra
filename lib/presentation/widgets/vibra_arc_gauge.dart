@@ -41,7 +41,9 @@ class VibraArcGauge extends StatelessWidget {
                       color: VibraColors.getMatchColor(animatedScore),
                       shadows: [
                         Shadow(
-                          color: VibraColors.getMatchColor(animatedScore).withValues(alpha: 0.5),
+                          color: VibraColors.getMatchColor(
+                            animatedScore,
+                          ).withValues(alpha: 0.5),
                           blurRadius: 12,
                         ),
                       ],
@@ -68,25 +70,22 @@ class _ArcGaugePainter extends CustomPainter {
   final double score;
   final double strokeWidth;
 
-  _ArcGaugePainter({
-    required this.score,
-    required this.strokeWidth,
-  });
+  _ArcGaugePainter({required this.score, required this.strokeWidth});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = (size.width - strokeWidth) / 2;
-    
+
     const startAngle = pi * 0.75;
     const maxSweepAngle = pi * 1.5;
-    
+
     final trackPaint = Paint()
       ..color = VibraColors.surfaceVariant
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
-      
+
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
       startAngle,
@@ -94,20 +93,20 @@ class _ArcGaugePainter extends CustomPainter {
       false,
       trackPaint,
     );
-    
+
     final sweepAngle = maxSweepAngle * score;
-    
+
     // Colore dinamico in base allo score
     final color = VibraColors.getMatchColor(score);
-    
+
     final rect = Rect.fromCircle(center: center, radius: radius);
-    
+
     final scorePaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
-      
+
     final glowPaint = Paint()
       ..color = color.withValues(alpha: 0.6)
       ..style = PaintingStyle.stroke
@@ -116,21 +115,9 @@ class _ArcGaugePainter extends CustomPainter {
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
 
     if (sweepAngle > 0) {
-      canvas.drawArc(
-        rect,
-        startAngle,
-        sweepAngle,
-        false,
-        glowPaint,
-      );
-      
-      canvas.drawArc(
-        rect,
-        startAngle,
-        sweepAngle,
-        false,
-        scorePaint,
-      );
+      canvas.drawArc(rect, startAngle, sweepAngle, false, glowPaint);
+
+      canvas.drawArc(rect, startAngle, sweepAngle, false, scorePaint);
     }
   }
 

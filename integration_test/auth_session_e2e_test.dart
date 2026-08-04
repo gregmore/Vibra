@@ -6,16 +6,18 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('E2E Auth & Session Flow', () {
-    testWidgets('Login -> Salva Evento -> Logout -> Nuovo Login (Nessun residuo)', (tester) async {
-      app.main();
-      await tester.pumpAndSettle();
+    testWidgets(
+      'Login -> Salva Evento -> Logout -> Nuovo Login (Nessun residuo)',
+      (tester) async {
+        app.main();
+        await tester.pumpAndSettle();
 
-      // NOTA: Questo è uno scheletro di test E2E.
-      // A causa dell'autenticazione tramite provider esterni (Spotify/Supabase),
-      // i test E2E reali richiedono il mocking del client Supabase o l'uso di
-      // account di test pre-generati con password.
+        // NOTA: Questo è uno scheletro di test E2E.
+        // A causa dell'autenticazione tramite provider esterni (Spotify/Supabase),
+        // i test E2E reali richiedono il mocking del client Supabase o l'uso di
+        // account di test pre-generati con password.
 
-      /*
+        /*
       // 1. Login Utente A
       await tester.enterText(find.byKey(const Key('email_field')), 'utente_a@test.com');
       await tester.enterText(find.byKey(const Key('password_field')), 'password123');
@@ -60,6 +62,7 @@ void main() {
       // Assicura che la lista eventi sia vuota o mostri lo stato "nessun evento"
       expect(find.text('Nessun evento salvato'), findsOneWidget);
       */
-    });
+      },
+    );
   });
 }

@@ -43,12 +43,12 @@ class MockSpotifyAuthNotifier extends SpotifyAuthNotifier {
 class FakeSupabaseDatasource extends Fake implements SupabaseDatasource {
   @override
   User? get currentUser => User(
-        id: 'fake-user-id',
-        appMetadata: const {},
-        userMetadata: const {},
-        aud: 'authenticated',
-        createdAt: DateTime.now().toIso8601String(),
-      );
+    id: 'fake-user-id',
+    appMetadata: const {},
+    userMetadata: const {},
+    aud: 'authenticated',
+    createdAt: DateTime.now().toIso8601String(),
+  );
 
   @override
   bool get isAuthenticated => true;
@@ -94,116 +94,132 @@ void main() {
     HttpOverrides.global = null;
   });
 
-  testWidgets('Navigazione interna ed interazione bottoni (Filtri, Info, Disconnessione, Scollega)', (tester) async {
-    tester.view.physicalSize = const Size(800, 1600);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets(
+    'Navigazione interna ed interazione bottoni (Filtri, Info, Disconnessione, Scollega)',
+    (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          supabaseDatasourceProvider.overrideWith((ref) => FakeSupabaseDatasource()),
-          spotifyAuthProvider.overrideWith((ref) => MockSpotifyAuthNotifier(ref)),
-          getMyProfileUseCaseProvider.overrideWith((ref) => FakeGetMyProfileUseCase()),
-          generalAuthProvider.overrideWith((ref) => MockGeneralAuthNotifier(ref)),
-        ],
-        child: const VibraApp(),
-      ),
-    );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            supabaseDatasourceProvider.overrideWith(
+              (ref) => FakeSupabaseDatasource(),
+            ),
+            spotifyAuthProvider.overrideWith(
+              (ref) => MockSpotifyAuthNotifier(ref),
+            ),
+            getMyProfileUseCaseProvider.overrideWith(
+              (ref) => FakeGetMyProfileUseCase(),
+            ),
+            generalAuthProvider.overrideWith(
+              (ref) => MockGeneralAuthNotifier(ref),
+            ),
+          ],
+          child: const VibraApp(),
+        ),
+      );
 
-    // Attende splash -> welcome
-    await tester.pump(const Duration(milliseconds: 1900));
-    await tester.pumpAndSettle();
+      // Attende splash -> welcome
+      await tester.pump(const Duration(milliseconds: 1900));
+      await tester.pumpAndSettle();
 
-    // Tap su "login"
-    await tester.tap(find.textContaining('login').first);
-    await tester.pumpAndSettle();
+      // Tap su "login"
+      await tester.tap(find.textContaining('login').first);
+      await tester.pumpAndSettle();
 
-    // Tap su "Continua con Spotify"
-    await tester.tap(find.text('Continua con Spotify'));
-    await tester.pumpAndSettle();
+      // Tap su "Continua con Spotify"
+      await tester.tap(find.text('Continua con Spotify'));
+      await tester.pumpAndSettle();
 
-    // Collega Spotify
-    await tester.tap(find.text('Collega il mio Spotify'));
-    await tester.pumpAndSettle();
+      // Collega Spotify
+      await tester.tap(find.text('Collega il mio Spotify'));
+      await tester.pumpAndSettle();
 
-    // Vai alla Home
-    await tester.tap(find.text('Continua ed Esplora'));
-    await tester.pumpAndSettle();
+      // Vai alla Home
+      await tester.tap(find.text('Continua ed Esplora'));
+      await tester.pumpAndSettle();
 
-    // 1. Verifica Home
-    expect(find.text('Per Te'), findsOneWidget);
+      // 1. Verifica Home
+      expect(find.text('Per Te'), findsOneWidget);
 
-    // 2. Naviga alla tab Eventi (Explore)
-    await tester.tap(find.text('Eventi').first);
-    await tester.pumpAndSettle();
-    expect(find.text('Mappa interattiva'), findsOneWidget);
+      // 2. Naviga alla tab Eventi (Explore)
+      await tester.tap(find.text('Eventi').first);
+      await tester.pumpAndSettle();
+      expect(find.text('Mappa interattiva'), findsOneWidget);
 
-    // 3. Naviga alla tab Vibra
-    await tester.tap(find.text('Vibra'));
-    await tester.pumpAndSettle();
+      // 3. Naviga alla tab Vibra
+      await tester.tap(find.text('Vibra'));
+      await tester.pumpAndSettle();
 
-    // 4. Naviga alla tab Chat
-    await tester.tap(find.text('Chat'));
-    await tester.pumpAndSettle();
+      // 4. Naviga alla tab Chat
+      await tester.tap(find.text('Chat'));
+      await tester.pumpAndSettle();
 
-    // 5. Naviga alla tab Profilo
-    await tester.tap(find.text('Profilo'));
-    await tester.pumpAndSettle();
-    expect(find.text('Amo la musica live!'), findsOneWidget);
+      // 5. Naviga alla tab Profilo
+      await tester.tap(find.text('Profilo'));
+      await tester.pumpAndSettle();
+      expect(find.text('Amo la musica live!'), findsOneWidget);
 
-    // 6. Apri Impostazioni
-    await tester.tap(find.text('Impostazioni').first);
-    await tester.pumpAndSettle();
-    
-    expect(find.text('Account Spotify'), findsOneWidget);
+      // 6. Apri Impostazioni
+      await tester.tap(find.text('Impostazioni').first);
+      await tester.pumpAndSettle();
 
-    // 7. Apri e chiudi Privacy Policy
-    await tester.tap(find.text('Privacy Policy'));
-    await tester.pumpAndSettle();
-    expect(find.text('Quali dati raccoglie Vibra'), findsOneWidget);
-    await tester.tap(find.byType(BackButton));
-    await tester.pumpAndSettle();
+      expect(find.text('Account Spotify'), findsOneWidget);
 
-    // 8. Apri e chiudi Termini di servizio
-    await tester.tap(find.text('Termini di servizio'));
-    await tester.pumpAndSettle();
-    expect(find.text('Uso di Vibra'), findsOneWidget);
-    await tester.tap(find.byType(BackButton));
-    await tester.pumpAndSettle();
+      // 7. Apri e chiudi Privacy Policy
+      await tester.tap(find.text('Privacy Policy'));
+      await tester.pumpAndSettle();
+      expect(find.text('Quali dati raccoglie Vibra'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
 
-    // 9. Apri e chiudi Supporto
-    await tester.tap(find.text('Supporto'));
-    await tester.pumpAndSettle();
-    expect(find.text('Email supporto'), findsOneWidget);
-    await tester.tap(find.byType(BackButton));
-    await tester.pumpAndSettle();
+      // 8. Apri e chiudi Termini di servizio
+      await tester.tap(find.text('Termini di servizio'));
+      await tester.pumpAndSettle();
+      expect(find.text('Uso di Vibra'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
 
-    // 10. Apri e chiudi Informazioni su Vibra
-    await tester.tap(find.text('Informazioni su Vibra'));
-    await tester.pumpAndSettle();
-    expect(find.text('Versione'), findsOneWidget);
-    await tester.tap(find.byType(BackButton));
-    await tester.pumpAndSettle();
+      // 9. Apri e chiudi Supporto
+      await tester.tap(find.text('Supporto'));
+      await tester.pumpAndSettle();
+      expect(find.text('Email supporto'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
 
-    // 11. Clicca su Scollega Spotify, conferma dialog
-    await tester.tap(find.text('Account Spotify'));
-    await tester.pumpAndSettle();
-    expect(find.text('Scollega Spotify'), findsOneWidget); // Titolo del dialog
-    await tester.tap(find.text('Scollega').last);
-    await tester.pumpAndSettle();
+      // 10. Apri e chiudi Informazioni su Vibra
+      await tester.tap(find.text('Informazioni su Vibra'));
+      await tester.pumpAndSettle();
+      expect(find.text('Versione'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
 
-    // 12. Clicca su Logout, conferma dialog
-    await tester.tap(find.byIcon(Icons.logout_rounded));
-    await tester.pumpAndSettle();
-    expect(find.text('Sei sicuro di voler uscire?'), findsOneWidget);
-    await tester.tap(find.descendant(
-      of: find.byType(TextButton),
-      matching: find.text('Esci'),
-    ));
-    await tester.pumpAndSettle();
+      // 11. Clicca su Scollega Spotify, conferma dialog
+      await tester.tap(find.text('Account Spotify'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Scollega Spotify'),
+        findsOneWidget,
+      ); // Titolo del dialog
+      await tester.tap(find.text('Scollega').last);
+      await tester.pumpAndSettle();
 
-    expect(find.text('Vai al login'), findsWidgets);
-  });
+      // 12. Clicca su Logout, conferma dialog
+      await tester.tap(find.byIcon(Icons.logout_rounded));
+      await tester.pumpAndSettle();
+      expect(find.text('Sei sicuro di voler uscire?'), findsOneWidget);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(TextButton),
+          matching: find.text('Esci'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Vai al login'), findsWidgets);
+    },
+  );
 }

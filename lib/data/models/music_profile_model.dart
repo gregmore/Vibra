@@ -10,11 +10,14 @@ abstract class MusicProfileModel with _$MusicProfileModel {
   const factory MusicProfileModel({
     required String id,
     @JsonKey(name: 'user_id') required String userId,
-    @JsonKey(name: 'top_artists') @Default(<Map<String, dynamic>>[])
+    @JsonKey(name: 'top_artists')
+    @Default(<Map<String, dynamic>>[])
     List<Map<String, dynamic>> topArtists,
-    @JsonKey(name: 'top_tracks') @Default(<Map<String, dynamic>>[])
+    @JsonKey(name: 'top_tracks')
+    @Default(<Map<String, dynamic>>[])
     List<Map<String, dynamic>> topTracks,
-    @JsonKey(name: 'top_genres') @Default(<Map<String, dynamic>>[])
+    @JsonKey(name: 'top_genres')
+    @Default(<Map<String, dynamic>>[])
     List<Map<String, dynamic>> topGenres,
     @JsonKey(name: 'last_synced_at') DateTime? lastSyncedAt,
   }) = _MusicProfileModel;
@@ -22,4 +25,3 @@ abstract class MusicProfileModel with _$MusicProfileModel {
   factory MusicProfileModel.fromJson(Map<String, dynamic> json) =>
       _$MusicProfileModelFromJson(json);
 }
-

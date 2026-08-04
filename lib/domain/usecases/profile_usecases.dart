@@ -30,6 +30,6 @@ class GetMyMusicProfileUseCase implements UseCase<MusicProfile?, NoParams> {
   final ProfileRepository _repository;
 
   @override
-  Future<MusicProfile?> call(NoParams params) => _repository.getMyMusicProfile();
+  Future<MusicProfile?> call(NoParams params) =>
+      _repository.getMyMusicProfile();
 }
-

@@ -100,7 +100,9 @@ class _SplashScreenState extends State<SplashScreen>
                   height: 28,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.8,
-                    valueColor: AlwaysStoppedAnimation<Color>(VibraColors.accent),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      VibraColors.accent,
+                    ),
                   ),
                 ),
               ],

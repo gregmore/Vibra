@@ -26,7 +26,7 @@ void main() {
                                     return keyVal.split('_').first;
                                   })
                                   .toSet();''';
-                                  
+
   content = content.replaceAll(oldParsing, newParsing);
 
   file.writeAsStringSync(content);

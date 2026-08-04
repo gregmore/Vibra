@@ -25,10 +25,7 @@ class MusicTrackPreference {
 }
 
 class GenrePreference {
-  const GenrePreference({
-    required this.genre,
-    required this.weight,
-  });
+  const GenrePreference({required this.genre, required this.weight});
 
   final String genre;
   final double weight;
@@ -52,4 +49,3 @@ class MusicProfile {
   final List<GenrePreference> topGenres;
   final DateTime? lastSyncedAt;
 }
-

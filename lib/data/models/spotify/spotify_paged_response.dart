@@ -18,4 +18,3 @@ abstract class SpotifyPagedResponse with _$SpotifyPagedResponse {
   factory SpotifyPagedResponse.fromJson(Map<String, dynamic> json) =>
       _$SpotifyPagedResponseFromJson(json);
 }
-

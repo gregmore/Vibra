@@ -10,15 +10,16 @@ class SpotifyOAuthConfig {
 
   static const AuthorizationServiceConfiguration serviceConfiguration =
       AuthorizationServiceConfiguration(
-    authorizationEndpoint: ApiConstants.spotifyAuthUrl,
-    tokenEndpoint: ApiConstants.spotifyTokenUrl,
-  );
+        authorizationEndpoint: ApiConstants.spotifyAuthUrl,
+        tokenEndpoint: ApiConstants.spotifyTokenUrl,
+      );
 
   static String get clientId => EnvConfig.spotifyClientId;
 
   static String get redirectUri => EnvConfig.spotifyRedirectUri;
 
-  static List<String> get scopes => List.unmodifiable(ApiConstants.spotifyScopes);
+  static List<String> get scopes =>
+      List.unmodifiable(ApiConstants.spotifyScopes);
 
   static AuthorizationTokenRequest buildAuthorizationRequest() {
     return AuthorizationTokenRequest(

@@ -8,12 +8,7 @@ class UserAvatar extends StatelessWidget {
   final String? name;
   final double radius;
 
-  const UserAvatar({
-    super.key,
-    this.avatarUrl,
-    this.name,
-    this.radius = 24.0,
-  });
+  const UserAvatar({super.key, this.avatarUrl, this.name, this.radius = 24.0});
 
   factory UserAvatar.fromUser(AppUser? user, {double radius = 24.0}) {
     return UserAvatar(
@@ -56,11 +51,12 @@ class UserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (avatarUrl != null && avatarUrl!.isNotEmpty) {
-      final isNetwork = avatarUrl!.startsWith('http://') || avatarUrl!.startsWith('https://');
-      
+      final isNetwork =
+          avatarUrl!.startsWith('http://') || avatarUrl!.startsWith('https://');
+
       return CircleAvatar(
         radius: radius,
-        backgroundImage: isNetwork 
+        backgroundImage: isNetwork
             ? NetworkImage(avatarUrl!) as ImageProvider
             : FileImage(File(avatarUrl!)),
         backgroundColor: Colors.transparent,

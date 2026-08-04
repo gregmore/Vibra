@@ -28,12 +28,21 @@ class SecureLocalStorage extends LocalStorage {
   @override
   Future<void> removePersistedSession() async {
     await _secureStorage.delete(key: _supabaseSessionKey);
-    VibraLogger.debug('Sessione Supabase rimossa da SecureStorage', tag: 'Auth');
+    VibraLogger.debug(
+      'Sessione Supabase rimossa da SecureStorage',
+      tag: 'Auth',
+    );
   }
 
   @override
   Future<void> persistSession(String persistSessionString) async {
-    await _secureStorage.write(key: _supabaseSessionKey, value: persistSessionString);
-    VibraLogger.debug('Sessione Supabase salvata in SecureStorage', tag: 'Auth');
+    await _secureStorage.write(
+      key: _supabaseSessionKey,
+      value: persistSessionString,
+    );
+    VibraLogger.debug(
+      'Sessione Supabase salvata in SecureStorage',
+      tag: 'Auth',
+    );
   }
 }

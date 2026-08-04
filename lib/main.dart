@@ -20,7 +20,7 @@ import 'core/services/cache_service.dart';
 /// Inizializza tutti i servizi prima di avviare l'UI.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Inizializza Crashlytics / Error Handler per catturare i Red Screen of Death
   GlobalErrorHandler.initialize();
 
@@ -61,8 +61,7 @@ void main() async {
     );
   }
 
-  runApp(ProviderScope(
-    observers: [AppProviderObserver()],
-    child: const VibraApp(),
-  ));
+  runApp(
+    ProviderScope(observers: [AppProviderObserver()], child: const VibraApp()),
+  );
 }

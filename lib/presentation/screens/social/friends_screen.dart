@@ -25,9 +25,17 @@ class FriendsScreen extends ConsumerStatefulWidget {
 }
 
 class _FriendsScreenState extends ConsumerState<FriendsScreen> {
-  Widget _buildEmptyState(BuildContext context, String title, String subtitle, IconData icon) {
+  Widget _buildEmptyState(
+    BuildContext context,
+    String title,
+    String subtitle,
+    IconData icon,
+  ) {
     return VibraGlassmorphicCard(
-      margin: const EdgeInsets.symmetric(horizontal: VibraSpacing.pagePadding, vertical: 12),
+      margin: const EdgeInsets.symmetric(
+        horizontal: VibraSpacing.pagePadding,
+        vertical: 12,
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -38,23 +46,27 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
               color: VibraColors.surfaceVariant.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 42, color: VibraColors.accent.withValues(alpha: 0.8)),
+            child: Icon(
+              icon,
+              size: 42,
+              color: VibraColors.accent.withValues(alpha: 0.8),
+            ),
           ),
           const SizedBox(height: 20),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: VibraColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: VibraColors.textSecondary),
           ),
         ],
       ),
@@ -70,7 +82,10 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 
     return VibraPageScaffold(
       appBar: AppBar(
-        title: Text(l10n.friendsTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          l10n.friendsTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -85,7 +100,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             ).animate().fadeIn(duration: 300.ms),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 12)),
-          
+
           if (friends.isEmpty)
             SliverToBoxAdapter(
               child: _buildEmptyState(
@@ -101,63 +116,102 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
               itemBuilder: (context, index) {
                 final friend = friends[index];
                 return VibraUserMatchCard(
-                  user: friend,
-                  onTap: () => context.push('/user-profile', extra: friend),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton.filledTonal(
-                        onPressed: () {
-                          context.push(
-                            '/chat',
-                            extra: {
-                              'otherUserId': friend.user.id,
-                              'otherDisplayName': friend.user.displayName ?? friend.user.username,
+                      user: friend,
+                      onTap: () => context.push('/user-profile', extra: friend),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton.filledTonal(
+                            onPressed: () {
+                              context.push(
+                                '/chat',
+                                extra: {
+                                  'otherUserId': friend.user.id,
+                                  'otherDisplayName':
+                                      friend.user.displayName ??
+                                      friend.user.username,
+                                },
+                              );
                             },
-                          );
-                        },
-                        icon: const Icon(Icons.chat_bubble_rounded, size: 20, color: VibraColors.accent),
-                        style: IconButton.styleFrom(
-                          backgroundColor: VibraColors.accent.withValues(alpha: 0.15),
-                        ),
-                      ),
-                      PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert_rounded, size: 20, color: VibraColors.textSecondary),
-                        onSelected: (value) async {
-                          if (value == 'delete') {
-                            try {
-                              await ref.read(softDeleteChatUseCaseProvider).call(friend.user.id);
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Chat eliminata')));
+                            icon: const Icon(
+                              Icons.chat_bubble_rounded,
+                              size: 20,
+                              color: VibraColors.accent,
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: VibraColors.accent.withValues(
+                                alpha: 0.15,
+                              ),
+                            ),
+                          ),
+                          PopupMenuButton<String>(
+                            icon: const Icon(
+                              Icons.more_vert_rounded,
+                              size: 20,
+                              color: VibraColors.textSecondary,
+                            ),
+                            onSelected: (value) async {
+                              if (value == 'delete') {
+                                try {
+                                  await ref
+                                      .read(softDeleteChatUseCaseProvider)
+                                      .call(friend.user.id);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Chat eliminata'),
+                                      ),
+                                    );
+                                  }
+                                } catch (_) {}
+                              } else if (value == 'mute') {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Chat silenziata'),
+                                    ),
+                                  );
+                                }
                               }
-                            } catch (_) {}
-                          } else if (value == 'mute') {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Chat silenziata')));
-                            }
-                          }
-                        },
-                        itemBuilder: (context) => const [
-                          PopupMenuItem(value: 'mute', child: Text('Silenzia Chat')),
-                          PopupMenuItem(value: 'delete', child: Text('Elimina Chat', style: TextStyle(color: VibraColors.error))),
+                            },
+                            itemBuilder: (context) => const [
+                              PopupMenuItem(
+                                value: 'mute',
+                                child: Text('Silenzia Chat'),
+                              ),
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Text(
+                                  'Elimina Chat',
+                                  style: TextStyle(color: VibraColors.error),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
-                    ],
-                  ),
-                ).animate().fadeIn(duration: 300.ms).slideX(begin: 0.05, end: 0);
+                    )
+                    .animate()
+                    .fadeIn(duration: 300.ms)
+                    .slideX(begin: 0.05, end: 0);
               },
             ),
-            
+
           const SliverToBoxAdapter(child: SizedBox(height: 32)),
-          
+
           if (pending.isNotEmpty)
             SliverToBoxAdapter(
               child: Builder(
                 builder: (context) {
-                  final currentUserId = Supabase.instance.client.auth.currentUser?.id;
-                  final pendingReceived = pending.where((p) => p.receiverId == currentUserId).toList();
-                  final pendingSent = pending.where((p) => p.requesterId == currentUserId).toList();
-  
+                  final currentUserId =
+                      Supabase.instance.client.auth.currentUser?.id;
+                  final pendingReceived = pending
+                      .where((p) => p.receiverId == currentUserId)
+                      .toList();
+                  final pendingSent = pending
+                      .where((p) => p.requesterId == currentUserId)
+                      .toList();
+
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -175,92 +229,154 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                               break;
                             }
                           }
-                          final displayName = friendUser?.user.displayName ??
+                          final displayName =
+                              friendUser?.user.displayName ??
                               friendUser?.user.username ??
                               AppLocalizations.of(context)!.userGeneric;
-  
+
                           return VibraGlassmorphicCard(
-                            margin: const EdgeInsets.symmetric(horizontal: VibraSpacing.pagePadding, vertical: 6),
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              children: [
-                                UserAvatar.fromUser(friendUser?.user, radius: 26),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        displayName,
-                                        style: const TextStyle(
-                                          color: VibraColors.textPrimary, 
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        )
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        l10n.friendsWantsToConnect,
-                                        style: const TextStyle(color: VibraColors.textSecondary, fontSize: 13)
-                                      ),
-                                    ],
-                                  ),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: VibraSpacing.pagePadding,
+                                  vertical: 6,
                                 ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
                                   children: [
-                                    IconButton.filled(
-                                      iconSize: 20,
-                                      style: IconButton.styleFrom(backgroundColor: VibraColors.error.withValues(alpha: 0.2)),
-                                      onPressed: () async {
-                                        try {
-                                          await ref.read(respondFriendshipUseCaseProvider).call(
-                                            RespondFriendshipParams(
-                                              friendshipId: request.id,
-                                              status: 'rejected',
-                                            ),
-                                          );
-                                          ref.invalidate(pendingFriendshipsProvider);
-                                          ref.invalidate(matchedUsersProvider);
-                                        } catch (e) {
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settingsError(e.toString()))));
-                                          }
-                                        }
-                                      },
-                                      icon: const Icon(Icons.close_rounded, color: VibraColors.error),
+                                    UserAvatar.fromUser(
+                                      friendUser?.user,
+                                      radius: 26,
                                     ),
-                                    const SizedBox(width: 8),
-                                    IconButton.filled(
-                                      iconSize: 20,
-                                      style: IconButton.styleFrom(backgroundColor: VibraColors.accentWarm),
-                                      onPressed: () async {
-                                        try {
-                                          await ref.read(respondFriendshipUseCaseProvider).call(
-                                            RespondFriendshipParams(
-                                              friendshipId: request.id,
-                                              status: 'accepted',
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            displayName,
+                                            style: const TextStyle(
+                                              color: VibraColors.textPrimary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
                                             ),
-                                          );
-                                          ref.invalidate(pendingFriendshipsProvider);
-                                          ref.invalidate(matchedUsersProvider);
-                                        } catch (e) {
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settingsError(e.toString()))));
-                                          }
-                                        }
-                                      },
-                                      icon: const Icon(Icons.check_rounded, color: Colors.white),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            l10n.friendsWantsToConnect,
+                                            style: const TextStyle(
+                                              color: VibraColors.textSecondary,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton.filled(
+                                          iconSize: 20,
+                                          style: IconButton.styleFrom(
+                                            backgroundColor: VibraColors.error
+                                                .withValues(alpha: 0.2),
+                                          ),
+                                          onPressed: () async {
+                                            try {
+                                              await ref
+                                                  .read(
+                                                    respondFriendshipUseCaseProvider,
+                                                  )
+                                                  .call(
+                                                    RespondFriendshipParams(
+                                                      friendshipId: request.id,
+                                                      status: 'rejected',
+                                                    ),
+                                                  );
+                                              ref.invalidate(
+                                                pendingFriendshipsProvider,
+                                              );
+                                              ref.invalidate(
+                                                matchedUsersProvider,
+                                              );
+                                            } catch (e) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      l10n.settingsError(
+                                                        e.toString(),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          },
+                                          icon: const Icon(
+                                            Icons.close_rounded,
+                                            color: VibraColors.error,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        IconButton.filled(
+                                          iconSize: 20,
+                                          style: IconButton.styleFrom(
+                                            backgroundColor:
+                                                VibraColors.accentWarm,
+                                          ),
+                                          onPressed: () async {
+                                            try {
+                                              await ref
+                                                  .read(
+                                                    respondFriendshipUseCaseProvider,
+                                                  )
+                                                  .call(
+                                                    RespondFriendshipParams(
+                                                      friendshipId: request.id,
+                                                      status: 'accepted',
+                                                    ),
+                                                  );
+                                              ref.invalidate(
+                                                pendingFriendshipsProvider,
+                                              );
+                                              ref.invalidate(
+                                                matchedUsersProvider,
+                                              );
+                                            } catch (e) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      l10n.settingsError(
+                                                        e.toString(),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          },
+                                          icon: const Icon(
+                                            Icons.check_rounded,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                          ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0);
+                              )
+                              .animate()
+                              .fadeIn(duration: 400.ms)
+                              .slideY(begin: 0.1, end: 0);
                         }),
                         const SizedBox(height: 32),
                       ],
-  
+
                       if (pendingSent.isNotEmpty) ...[
                         VibraSectionHeader(
                           title: l10n.friendsSentRequests,
@@ -275,45 +391,59 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                               break;
                             }
                           }
-                          final displayName = receiverUser?.user.displayName ??
+                          final displayName =
+                              receiverUser?.user.displayName ??
                               receiverUser?.user.username ??
                               AppLocalizations.of(context)!.userGeneric;
-  
+
                           return VibraGlassmorphicCard(
-                            margin: const EdgeInsets.symmetric(horizontal: VibraSpacing.pagePadding, vertical: 6),
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              children: [
-                                UserAvatar.fromUser(receiverUser?.user, radius: 26),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        displayName,
-                                        style: const TextStyle(
-                                          color: VibraColors.textPrimary, 
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        )
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        l10n.friendsPendingApproval,
-                                        style: const TextStyle(color: VibraColors.textSecondary, fontSize: 13)
-                                      ),
-                                    ],
-                                  ),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: VibraSpacing.pagePadding,
+                                  vertical: 6,
                                 ),
-                              ],
-                            ),
-                          ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0);
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  children: [
+                                    UserAvatar.fromUser(
+                                      receiverUser?.user,
+                                      radius: 26,
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            displayName,
+                                            style: const TextStyle(
+                                              color: VibraColors.textPrimary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            l10n.friendsPendingApproval,
+                                            style: const TextStyle(
+                                              color: VibraColors.textSecondary,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                              .animate()
+                              .fadeIn(duration: 400.ms)
+                              .slideY(begin: 0.1, end: 0);
                         }),
                       ],
                     ],
                   );
-                }
+                },
               ),
             ),
           const SliverPadding(padding: EdgeInsets.only(bottom: 160)),

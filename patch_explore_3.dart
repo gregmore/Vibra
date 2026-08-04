@@ -85,7 +85,7 @@ void main() {
                               }
                             }
                           },''';
-                          
+
   content = content.replaceAll(oldClusterOptions, newClusterOptions);
 
   file.writeAsStringSync(content);

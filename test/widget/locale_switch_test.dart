@@ -27,12 +27,10 @@ void main() {
     HttpOverrides.global = null;
   });
 
-  testWidgets('localeStateProvider switches locale dynamically', (tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: VibraApp(),
-      ),
-    );
+  testWidgets('localeStateProvider switches locale dynamically', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const ProviderScope(child: VibraApp()));
 
     // Aspettiamo che l'app carichi il default locale
     await tester.pumpAndSettle();

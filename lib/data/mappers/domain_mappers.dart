@@ -34,10 +34,7 @@ extension UserModelToEntity on UserModel {
 }
 
 extension UserEntityToModel on AppUser {
-  UserModel toModel({
-    String? spotifyAccessToken,
-    String? spotifyRefreshToken,
-  }) {
+  UserModel toModel({String? spotifyAccessToken, String? spotifyRefreshToken}) {
     return UserModel(
       id: id,
       email: email,
@@ -100,7 +97,9 @@ extension MusicProfileEntityToModel on MusicProfile {
       id: id,
       userId: userId,
       topArtists: topArtists
-          .map((item) => {'id': item.id, 'name': item.name, 'score': item.score})
+          .map(
+            (item) => {'id': item.id, 'name': item.name, 'score': item.score},
+          )
           .toList(growable: false),
       topTracks: topTracks
           .map(
@@ -237,4 +236,3 @@ extension NotificationModelToEntity on NotificationModel {
     );
   }
 }
-

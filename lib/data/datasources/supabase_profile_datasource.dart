@@ -27,12 +27,17 @@ class SupabaseProfileDatasource {
       if (rows.isEmpty) {
         throw const ServerException(message: 'Profilo utente non trovato');
       }
-      
+
       final userModel = UserModel.fromJson(rows.first);
-      await CacheService.saveObject('CACHE_USER_PROFILE_${user.id}', userModel.toJson());
+      await CacheService.saveObject(
+        'CACHE_USER_PROFILE_${user.id}',
+        userModel.toJson(),
+      );
       return userModel;
     } catch (e) {
-      final cachedJson = CacheService.getObject('CACHE_USER_PROFILE_${user.id}');
+      final cachedJson = CacheService.getObject(
+        'CACHE_USER_PROFILE_${user.id}',
+      );
       if (cachedJson != null) {
         return UserModel.fromJson(cachedJson);
       }
@@ -55,7 +60,10 @@ class SupabaseProfileDatasource {
       onConflict: 'id',
     );
     final userModel = UserModel.fromJson(row);
-    await CacheService.saveObject('CACHE_USER_PROFILE_${user.id}', userModel.toJson());
+    await CacheService.saveObject(
+      'CACHE_USER_PROFILE_${user.id}',
+      userModel.toJson(),
+    );
     return userModel;
   }
 
@@ -72,26 +80,41 @@ class SupabaseProfileDatasource {
         limit: 1,
       );
       if (rows.isEmpty) return null;
-      
+
       final row = Map<String, dynamic>.from(rows.first);
-      
+
       // Fix potential Freezed TypeErrors with Supabase jsonb arrays
       if (row['top_artists'] is List) {
-        row['top_artists'] = (row['top_artists'] as List).map((e) => e is Map ? Map<String, dynamic>.from(e) : e).toList();
+        row['top_artists'] = (row['top_artists'] as List)
+            .map((e) => e is Map ? Map<String, dynamic>.from(e) : e)
+            .toList();
       }
       if (row['top_tracks'] is List) {
-        row['top_tracks'] = (row['top_tracks'] as List).map((e) => e is Map ? Map<String, dynamic>.from(e) : e).toList();
+        row['top_tracks'] = (row['top_tracks'] as List)
+            .map((e) => e is Map ? Map<String, dynamic>.from(e) : e)
+            .toList();
       }
       if (row['top_genres'] is List) {
-        row['top_genres'] = (row['top_genres'] as List).map((e) => e is Map ? Map<String, dynamic>.from(e) : e).toList();
+        row['top_genres'] = (row['top_genres'] as List)
+            .map((e) => e is Map ? Map<String, dynamic>.from(e) : e)
+            .toList();
       }
 
       final profile = MusicProfileModel.fromJson(row);
-      await CacheService.saveObject('${CacheService.keyMusicProfile}_${user.id}', profile.toJson());
+      await CacheService.saveObject(
+        '${CacheService.keyMusicProfile}_${user.id}',
+        profile.toJson(),
+      );
       return profile;
     } catch (e, st) {
-      VibraLogger.error('Failed to parse music profile', error: e, stackTrace: st);
-      final cachedJson = CacheService.getObject('${CacheService.keyMusicProfile}_${user.id}');
+      VibraLogger.error(
+        'Failed to parse music profile',
+        error: e,
+        stackTrace: st,
+      );
+      final cachedJson = CacheService.getObject(
+        '${CacheService.keyMusicProfile}_${user.id}',
+      );
       if (cachedJson != null) {
         return MusicProfileModel.fromJson(cachedJson);
       }
@@ -99,7 +122,9 @@ class SupabaseProfileDatasource {
     }
   }
 
-  Future<MusicProfileModel> upsertMyMusicProfile(MusicProfileModel model) async {
+  Future<MusicProfileModel> upsertMyMusicProfile(
+    MusicProfileModel model,
+  ) async {
     final user = _supabase.currentUser;
     if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
@@ -114,7 +139,10 @@ class SupabaseProfileDatasource {
       onConflict: 'user_id',
     );
     final profile = MusicProfileModel.fromJson(row);
-    await CacheService.saveObject('${CacheService.keyMusicProfile}_${user.id}', profile.toJson());
+    await CacheService.saveObject(
+      '${CacheService.keyMusicProfile}_${user.id}',
+      profile.toJson(),
+    );
     VibraLogger.info('Music profile upsert completato', tag: 'SupabaseProfile');
     return profile;
   }

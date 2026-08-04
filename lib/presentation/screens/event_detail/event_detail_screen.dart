@@ -63,7 +63,8 @@ class EventDetailScreen extends ConsumerWidget {
                     highlightColor: VibraColors.shimmerHighlight,
                     child: Container(color: Colors.white),
                   ),
-                  errorWidget: (context, url, error) => Container(color: VibraColors.surface),
+                  errorWidget: (context, url, error) =>
+                      Container(color: VibraColors.surface),
                 ),
               ),
               Positioned(
@@ -71,7 +72,12 @@ class EventDetailScreen extends ConsumerWidget {
                 left: 0,
                 right: 0,
                 child: Container(
-                  padding: EdgeInsets.fromLTRB(VibraSpacing.pagePadding, 40, VibraSpacing.pagePadding, 20),
+                  padding: EdgeInsets.fromLTRB(
+                    VibraSpacing.pagePadding,
+                    40,
+                    VibraSpacing.pagePadding,
+                    20,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -88,22 +94,30 @@ class EventDetailScreen extends ConsumerWidget {
                     children: [
                       Text(
                         displayEvent.name,
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                       ),
                       if (displayEvent.priceMin != null) ...[
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: VibraColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: VibraColors.primary.withValues(alpha: 0.3)),
+                            border: Border.all(
+                              color: VibraColors.primary.withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Text(
-                            displayEvent.priceMax != null && displayEvent.priceMax != displayEvent.priceMin
+                            displayEvent.priceMax != null &&
+                                    displayEvent.priceMax !=
+                                        displayEvent.priceMin
                                 ? '€${displayEvent.priceMin!.toStringAsFixed(2)} - €${displayEvent.priceMax!.toStringAsFixed(2)}'
                                 : '€${displayEvent.priceMin!.toStringAsFixed(2)}',
                             style: const TextStyle(
@@ -136,110 +150,130 @@ class EventDetailScreen extends ConsumerWidget {
           ).animate().fadeIn(duration: 400.ms),
           if (displayEvent.priceMin != null || displayEvent.priceMax != null)
             Padding(
-              padding: EdgeInsets.all(VibraSpacing.pagePadding),
-              child: Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  _InfoPill(
-                    label: 'Prezzo',
-                    value: (displayEvent.priceMin != null && displayEvent.priceMax != null)
-                        ? (displayEvent.priceMin == displayEvent.priceMax
-                            ? '${displayEvent.priceMin!.toStringAsFixed(0)}€'
-                            : '${displayEvent.priceMin!.toStringAsFixed(0)}€ - ${displayEvent.priceMax!.toStringAsFixed(0)}€')
-                        : '${(displayEvent.priceMin ?? displayEvent.priceMax)!.toStringAsFixed(0)}€',
+                  padding: EdgeInsets.all(VibraSpacing.pagePadding),
+                  child: Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      _InfoPill(
+                        label: 'Prezzo',
+                        value:
+                            (displayEvent.priceMin != null &&
+                                displayEvent.priceMax != null)
+                            ? (displayEvent.priceMin == displayEvent.priceMax
+                                  ? '${displayEvent.priceMin!.toStringAsFixed(0)}€'
+                                  : '${displayEvent.priceMin!.toStringAsFixed(0)}€ - ${displayEvent.priceMax!.toStringAsFixed(0)}€')
+                            : '${(displayEvent.priceMin ?? displayEvent.priceMax)!.toStringAsFixed(0)}€',
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideY(begin: 0.05, end: 0),
+                )
+                .animate()
+                .fadeIn(delay: 100.ms, duration: 400.ms)
+                .slideY(begin: 0.05, end: 0),
           if (_cleanDescription(displayEvent.description ?? '').isNotEmpty)
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: VibraSpacing.pagePadding),
-              child: _TranslatedDescription(
-                text: _cleanDescription(displayEvent.description ?? ''),
-              ),
-            ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(begin: 0.05, end: 0),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: VibraSpacing.pagePadding,
+                  ),
+                  child: _TranslatedDescription(
+                    text: _cleanDescription(displayEvent.description ?? ''),
+                  ),
+                )
+                .animate()
+                .fadeIn(delay: 200.ms, duration: 400.ms)
+                .slideY(begin: 0.05, end: 0),
           const SizedBox(height: 20),
           VibraSectionHeader(
             title: AppLocalizations.of(context)!.eventDetailMapTitle,
             subtitle: AppLocalizations.of(context)!.eventDetailMapSub,
           ),
           Container(
-            height: 180,
-            margin: EdgeInsets.fromLTRB(VibraSpacing.pagePadding, 8, VibraSpacing.pagePadding, 12),
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(VibraSpacing.radiusLarge),
-              border: Border.all(
-                color: VibraColors.glassBorder,
-                width: 1.5,
-              ),
-            ),
-            child: FlutterMap(
-              options: MapOptions(
-                initialCenter: LatLng(
-                  displayEvent.latitude ?? 45.4642,
-                  displayEvent.longitude ?? 9.1900,
+                height: 180,
+                margin: EdgeInsets.fromLTRB(
+                  VibraSpacing.pagePadding,
+                  8,
+                  VibraSpacing.pagePadding,
+                  12,
                 ),
-                initialZoom: 14.0,
-                interactionOptions: const InteractionOptions(
-                  flags: InteractiveFlag.none,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(VibraSpacing.radiusLarge),
+                  border: Border.all(
+                    color: VibraColors.glassBorder,
+                    width: 1.5,
+                  ),
                 ),
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'app.vibra.mobile',
-                ),
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: LatLng(
-                        displayEvent.latitude ?? 45.4642,
-                        displayEvent.longitude ?? 9.1900,
-                      ),
-                      width: 40,
-                      height: 40,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: VibraColors.accent,
-                          shape: BoxShape.circle,
-                          boxShadow: [VibraShadows.magentaGlow],
+                child: FlutterMap(
+                  options: MapOptions(
+                    initialCenter: LatLng(
+                      displayEvent.latitude ?? 45.4642,
+                      displayEvent.longitude ?? 9.1900,
+                    ),
+                    initialZoom: 14.0,
+                    interactionOptions: const InteractionOptions(
+                      flags: InteractiveFlag.none,
+                    ),
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'app.vibra.mobile',
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: LatLng(
+                            displayEvent.latitude ?? 45.4642,
+                            displayEvent.longitude ?? 9.1900,
+                          ),
+                          width: 40,
+                          height: 40,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: VibraColors.accent,
+                              shape: BoxShape.circle,
+                              boxShadow: [VibraShadows.magentaGlow],
+                            ),
+                            child: const Icon(
+                              Icons.location_on_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
                         ),
-                        child: const Icon(
-                          Icons.location_on_rounded,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ).animate().fadeIn(delay: 300.ms, duration: 450.ms).scaleXY(begin: 0.98, end: 1.0),
+              )
+              .animate()
+              .fadeIn(delay: 300.ms, duration: 450.ms)
+              .scaleXY(begin: 0.98, end: 1.0),
           VibraSectionHeader(
             title: AppLocalizations.of(context)!.eventDetailAttendeesTitle,
             subtitle: AppLocalizations.of(context)!.eventDetailAttendeesSub,
           ),
-          ...users.asMap().entries.map(
-            (entry) {
-              final index = entry.key;
-              final user = entry.value;
-              return VibraUserMatchCard(
-                user: user,
-                onTap: () => context.push('/user-profile', extra: user),
-                trailing: FilledButton.tonal(
-                  onPressed: () => context.push('/chat'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: VibraColors.accent,
-                    foregroundColor: VibraColors.textPrimary,
+          ...users.asMap().entries.map((entry) {
+            final index = entry.key;
+            final user = entry.value;
+            return VibraUserMatchCard(
+                  user: user,
+                  onTap: () => context.push('/user-profile', extra: user),
+                  trailing: FilledButton.tonal(
+                    onPressed: () => context.push('/chat'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: VibraColors.accent,
+                      foregroundColor: VibraColors.textPrimary,
+                    ),
+                    child: Text(l10n.eventDetailChat),
                   ),
-                  child: Text(l10n.eventDetailChat),
-                ),
-              ).animate().fadeIn(delay: (400 + index * 100).ms, duration: 400.ms).slideY(begin: 0.05, end: 0);
-            },
-          ),
+                )
+                .animate()
+                .fadeIn(delay: (400 + index * 100).ms, duration: 400.ms)
+                .slideY(begin: 0.05, end: 0);
+          }),
           Padding(
             padding: EdgeInsets.all(VibraSpacing.pagePadding),
             child: Row(
@@ -253,19 +287,28 @@ class EventDetailScreen extends ConsumerWidget {
                     ),
                     onPressed: () async {
                       final urlStr = displayEvent.ticketUrl;
-                      if (urlStr == null || urlStr.trim().isEmpty || displayEvent.status == 'canceled' || displayEvent.status == 'offsale') {
+                      if (urlStr == null ||
+                          urlStr.trim().isEmpty ||
+                          displayEvent.status == 'canceled' ||
+                          displayEvent.status == 'offsale') {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(l10n.eventDetailTicketsUnavailable)),
+                          SnackBar(
+                            content: Text(l10n.eventDetailTicketsUnavailable),
+                          ),
                         );
                         return;
                       }
                       final uri = Uri.tryParse(urlStr);
                       if (uri != null && await canLaunchUrl(uri)) {
                         try {
-                          await ref.read(supabaseDatasourceProvider).client.functions.invoke(
-                            'track-ticket-click',
-                            body: {'event_id': displayEvent.id},
-                          );
+                          await ref
+                              .read(supabaseDatasourceProvider)
+                              .client
+                              .functions
+                              .invoke(
+                                'track-ticket-click',
+                                body: {'event_id': displayEvent.id},
+                              );
                         } catch (e) {
                           debugPrint('Tracking error: $e');
                         }
@@ -273,15 +316,19 @@ class EventDetailScreen extends ConsumerWidget {
                       } else {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.eventDetailTicketsError)),
+                            SnackBar(
+                              content: Text(l10n.eventDetailTicketsError),
+                            ),
                           );
                         }
                       }
                     },
                     child: Text(
-                      displayEvent.status == 'canceled' ? 'Cancellato' :
-                      displayEvent.status == 'offsale' ? 'Sold Out' :
-                      l10n.eventDetailBuyTickets
+                      displayEvent.status == 'canceled'
+                          ? 'Cancellato'
+                          : displayEvent.status == 'offsale'
+                          ? 'Sold Out'
+                          : l10n.eventDetailBuyTickets,
                     ),
                   ),
                 ),
@@ -295,92 +342,145 @@ class EventDetailScreen extends ConsumerWidget {
                 Expanded(
                   flex: 3,
                   child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 2)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                    ),
                     onPressed: () async {
                       try {
-                        await ref.read(setEventAttendanceUseCaseProvider).call(
-                          SetEventAttendanceParams(event: displayEvent, status: 'going'),
-                        );
+                        await ref
+                            .read(setEventAttendanceUseCaseProvider)
+                            .call(
+                              SetEventAttendanceParams(
+                                event: displayEvent,
+                                status: 'going',
+                              ),
+                            );
                         ref.read(myEventsProvider.notifier).refresh();
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.eventDetailAttendanceConfirmed)),
+                            SnackBar(
+                              content: Text(
+                                l10n.eventDetailAttendanceConfirmed,
+                              ),
+                            ),
                           );
                         }
                       } catch (e) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.settingsError(e.toString()))),
+                            SnackBar(
+                              content: Text(l10n.settingsError(e.toString())),
+                            ),
                           );
                         }
                       }
                     },
-                    child: Text(l10n.eventDetailAttend, maxLines: 1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      l10n.eventDetailAttend,
+                      maxLines: 1,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 6),
                 Expanded(
                   flex: 3,
                   child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 2)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                    ),
                     onPressed: () async {
                       try {
-                        await ref.read(setEventAttendanceUseCaseProvider).call(
-                          SetEventAttendanceParams(event: displayEvent, status: 'maybe'),
-                        );
+                        await ref
+                            .read(setEventAttendanceUseCaseProvider)
+                            .call(
+                              SetEventAttendanceParams(
+                                event: displayEvent,
+                                status: 'maybe',
+                              ),
+                            );
                         ref.read(myEventsProvider.notifier).refresh();
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.eventDetailAttendanceMaybe)),
+                            SnackBar(
+                              content: Text(l10n.eventDetailAttendanceMaybe),
+                            ),
                           );
                         }
                       } catch (e) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.settingsError(e.toString()))),
+                            SnackBar(
+                              content: Text(l10n.settingsError(e.toString())),
+                            ),
                           );
                         }
                       }
                     },
-                    child: Text(l10n.eventDetailMaybe, maxLines: 1, style: const TextStyle(fontSize: 12)),
+                    child: Text(
+                      l10n.eventDetailMaybe,
+                      maxLines: 1,
+                      style: const TextStyle(fontSize: 12),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 6),
                 Expanded(
                   flex: 3,
                   child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 2)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                    ),
                     onPressed: () async {
                       try {
-                        await ref.read(setEventAttendanceUseCaseProvider).call(
-                          SetEventAttendanceParams(event: displayEvent, status: 'not_going'),
-                        );
+                        await ref
+                            .read(setEventAttendanceUseCaseProvider)
+                            .call(
+                              SetEventAttendanceParams(
+                                event: displayEvent,
+                                status: 'not_going',
+                              ),
+                            );
                         ref.read(myEventsProvider.notifier).refresh();
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.eventDetailAttendanceNotGoing)),
+                            SnackBar(
+                              content: Text(l10n.eventDetailAttendanceNotGoing),
+                            ),
                           );
                         }
                       } catch (e) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.settingsError(e.toString()))),
+                            SnackBar(
+                              content: Text(l10n.settingsError(e.toString())),
+                            ),
                           );
                         }
                       }
                     },
-                    child: Text(l10n.eventDetailNotGoing, maxLines: 1, style: const TextStyle(fontSize: 12)),
+                    child: Text(
+                      l10n.eventDetailNotGoing,
+                      maxLines: 1,
+                      style: const TextStyle(fontSize: 12),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 4),
                 IconButton(
                   onPressed: () async {
-                    await Clipboard.setData(ClipboardData(
-                      text: '${displayEvent.name}\n'
-                          '${displayEvent.venueName} · ${displayEvent.city}\n'
-                          '${displayEvent.eventDate.day}/${displayEvent.eventDate.month}/${displayEvent.eventDate.year}\n'
-                          'Ticket: ${displayEvent.ticketUrl ?? ''}',
-                    ));
+                    await Clipboard.setData(
+                      ClipboardData(
+                        text:
+                            '${displayEvent.name}\n'
+                            '${displayEvent.venueName} · ${displayEvent.city}\n'
+                            '${displayEvent.eventDate.day}/${displayEvent.eventDate.month}/${displayEvent.eventDate.year}\n'
+                            'Ticket: ${displayEvent.ticketUrl ?? ''}',
+                      ),
+                    );
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text(l10n.eventDetailCopied)),
@@ -406,10 +506,7 @@ class EventDetailScreen extends ConsumerWidget {
 }
 
 class _InfoPill extends StatelessWidget {
-  const _InfoPill({
-    required this.label,
-    required this.value,
-  });
+  const _InfoPill({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -418,7 +515,10 @@ class _InfoPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: VibraSpacing.pagePadding, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: VibraSpacing.pagePadding,
+        vertical: 12,
+      ),
       decoration: BoxDecoration(
         color: VibraColors.surfaceElevated,
         borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
@@ -427,9 +527,19 @@ class _InfoPill extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: theme.textTheme.labelMedium?.copyWith(color: VibraColors.accent)),
+          Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: VibraColors.accent,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(value, style: theme.textTheme.titleSmall?.copyWith(color: VibraColors.textPrimary)),
+          Text(
+            value,
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: VibraColors.textPrimary,
+            ),
+          ),
         ],
       ),
     );
@@ -441,10 +551,12 @@ class _TranslatedDescription extends ConsumerStatefulWidget {
   const _TranslatedDescription({required this.text});
 
   @override
-  ConsumerState<_TranslatedDescription> createState() => _TranslatedDescriptionState();
+  ConsumerState<_TranslatedDescription> createState() =>
+      _TranslatedDescriptionState();
 }
 
-class _TranslatedDescriptionState extends ConsumerState<_TranslatedDescription> {
+class _TranslatedDescriptionState
+    extends ConsumerState<_TranslatedDescription> {
   String? _translatedText;
   bool _isLoading = true;
 
@@ -471,10 +583,13 @@ class _TranslatedDescriptionState extends ConsumerState<_TranslatedDescription> 
   Future<void> _translate() async {
     if (_targetLang == null) return;
     setState(() => _isLoading = true);
-    
+
     try {
       final translator = GoogleTranslator();
-      final translation = await translator.translate(widget.text, to: _targetLang!);
+      final translation = await translator.translate(
+        widget.text,
+        to: _targetLang!,
+      );
       if (mounted) {
         setState(() {
           _translatedText = translation.text;
@@ -494,7 +609,7 @@ class _TranslatedDescriptionState extends ConsumerState<_TranslatedDescription> 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     if (_isLoading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 20),
@@ -509,8 +624,9 @@ class _TranslatedDescriptionState extends ConsumerState<_TranslatedDescription> 
 
     return Text(
       _translatedText ?? widget.text,
-      style: theme.textTheme.bodyLarge?.copyWith(color: VibraColors.textPrimary),
+      style: theme.textTheme.bodyLarge?.copyWith(
+        color: VibraColors.textPrimary,
+      ),
     );
   }
 }
-

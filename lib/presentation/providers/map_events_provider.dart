@@ -28,7 +28,8 @@ class MapEventsParams {
           radiusMeters == other.radiusMeters;
 
   @override
-  int get hashCode => latitude.hashCode ^ longitude.hashCode ^ radiusMeters.hashCode;
+  int get hashCode =>
+      latitude.hashCode ^ longitude.hashCode ^ radiusMeters.hashCode;
 }
 
 class MapEventsNotifier extends AutoDisposeAsyncNotifier<List<Event>> {
@@ -75,7 +76,11 @@ class MapEventsNotifier extends AutoDisposeAsyncNotifier<List<Event>> {
         state = AsyncValue.data(events);
       }
     } catch (e, st) {
-      VibraLogger.error('Errore durante fetch eventi mappa', error: e, stackTrace: st);
+      VibraLogger.error(
+        'Errore durante fetch eventi mappa',
+        error: e,
+        stackTrace: st,
+      );
       if (_lastParams == params) {
         state = AsyncValue.error(e, st);
       }
@@ -85,5 +90,5 @@ class MapEventsNotifier extends AutoDisposeAsyncNotifier<List<Event>> {
 
 final mapEventsProvider =
     AutoDisposeAsyncNotifierProvider<MapEventsNotifier, List<Event>>(
-  () => MapEventsNotifier(),
-);
+      () => MapEventsNotifier(),
+    );

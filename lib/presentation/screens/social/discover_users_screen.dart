@@ -14,7 +14,8 @@ class DiscoverUsersScreen extends ConsumerStatefulWidget {
   const DiscoverUsersScreen({super.key});
 
   @override
-  ConsumerState<DiscoverUsersScreen> createState() => _DiscoverUsersScreenState();
+  ConsumerState<DiscoverUsersScreen> createState() =>
+      _DiscoverUsersScreenState();
 }
 
 class _DiscoverUsersScreenState extends ConsumerState<DiscoverUsersScreen> {
@@ -30,7 +31,10 @@ class _DiscoverUsersScreenState extends ConsumerState<DiscoverUsersScreen> {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
             sliver: SliverToBoxAdapter(
-              child: Text(l10n.socialTitle, style: Theme.of(context).textTheme.displaySmall),
+              child: Text(
+                l10n.socialTitle,
+                style: Theme.of(context).textTheme.displaySmall,
+              ),
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 14)),
@@ -68,7 +72,10 @@ class _DiscoverUsersScreenState extends ConsumerState<DiscoverUsersScreen> {
             itemBuilder: (context, index) {
               final friendship = pending[index];
               return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 4,
+                ),
                 leading: const UserAvatar(radius: 20),
                 title: Text(l10n.socialRequestFrom(friendship.requesterId)),
                 trailing: FilledButton.tonal(

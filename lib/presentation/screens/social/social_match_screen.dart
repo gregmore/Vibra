@@ -46,7 +46,11 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
     ref.read(matchedUsersProvider.notifier).sendVibra(match.user.id);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(AppLocalizations.of(context)!.socialMatchVibraSent(match.user.displayName ?? match.user.username)),
+        content: Text(
+          AppLocalizations.of(context)!.socialMatchVibraSent(
+            match.user.displayName ?? match.user.username,
+          ),
+        ),
         backgroundColor: VibraColors.primary,
         behavior: SnackBarBehavior.floating,
       ),
@@ -62,16 +66,21 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
     final theme = Theme.of(context);
     final profile = ref.watch(myProfileProvider);
     final matches = ref.watch(matchedUsersProvider);
-    
+
     return VibraPageScaffold(
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: _isScanning 
+          child: _isScanning
               ? _buildScanningState(theme)
               : matches.isNotEmpty
-                  ? _buildMatchStack(context, theme, profile.avatarUrl ?? '', matches)
-                  : _buildEmptyState(context, theme),
+              ? _buildMatchStack(
+                  context,
+                  theme,
+                  profile.avatarUrl ?? '',
+                  matches,
+                )
+              : _buildEmptyState(context, theme),
         ),
       ),
     );
@@ -87,32 +96,45 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
             children: [
               // Pulsing concentric radar rings
               Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: VibraColors.primary.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                ),
-              ).animate(onPlay: (c) => c.repeat())
-               .scale(begin: const Offset(0.6, 0.6), end: const Offset(1.3, 1.3), duration: 1800.ms, curve: Curves.easeOut)
-               .fadeOut(duration: 1800.ms),
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: VibraColors.primary.withValues(alpha: 0.3),
+                        width: 2,
+                      ),
+                    ),
+                  )
+                  .animate(onPlay: (c) => c.repeat())
+                  .scale(
+                    begin: const Offset(0.6, 0.6),
+                    end: const Offset(1.3, 1.3),
+                    duration: 1800.ms,
+                    curve: Curves.easeOut,
+                  )
+                  .fadeOut(duration: 1800.ms),
 
               Container(
-                width: 140,
-                height: 140,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: VibraColors.accent.withValues(alpha: 0.4),
-                    width: 2,
-                  ),
-                ),
-              ).animate(onPlay: (c) => c.repeat())
-               .scale(begin: const Offset(0.5, 0.5), end: const Offset(1.2, 1.2), delay: 400.ms, duration: 1800.ms, curve: Curves.easeOut)
-               .fadeOut(delay: 400.ms, duration: 1800.ms),
+                    width: 140,
+                    height: 140,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: VibraColors.accent.withValues(alpha: 0.4),
+                        width: 2,
+                      ),
+                    ),
+                  )
+                  .animate(onPlay: (c) => c.repeat())
+                  .scale(
+                    begin: const Offset(0.5, 0.5),
+                    end: const Offset(1.2, 1.2),
+                    delay: 400.ms,
+                    duration: 1800.ms,
+                    curve: Curves.easeOut,
+                  )
+                  .fadeOut(delay: 400.ms, duration: 1800.ms),
 
               // Logo in the middle
               Container(
@@ -135,13 +157,15 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
           ),
           const SizedBox(height: 40),
           Text(
-            AppLocalizations.of(context)!.socialMatchScanningTitle,
-            style: VibraTextStyles.labelLarge.copyWith(
-              color: VibraColors.accent,
-              letterSpacing: 4.0,
-              fontWeight: FontWeight.w700,
-            ),
-          ).animate(onPlay: (c) => c.repeat(reverse: true)).fadeIn(duration: 1.seconds),
+                AppLocalizations.of(context)!.socialMatchScanningTitle,
+                style: VibraTextStyles.labelLarge.copyWith(
+                  color: VibraColors.accent,
+                  letterSpacing: 4.0,
+                  fontWeight: FontWeight.w700,
+                ),
+              )
+              .animate(onPlay: (c) => c.repeat(reverse: true))
+              .fadeIn(duration: 1.seconds),
           const SizedBox(height: 8),
           Text(
             AppLocalizations.of(context)!.socialMatchScanningSubtitle,
@@ -155,7 +179,12 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
     );
   }
 
-  Widget _buildMatchStack(BuildContext context, ThemeData theme, String myAvatar, List<MatchedUserPreview> matches) {
+  Widget _buildMatchStack(
+    BuildContext context,
+    ThemeData theme,
+    String myAvatar,
+    List<MatchedUserPreview> matches,
+  ) {
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -172,7 +201,7 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
               ),
             ),
           ),
-          
+
         Positioned.fill(
           child: Dismissible(
             key: ValueKey(matches.first.user.id),
@@ -191,11 +220,16 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
     );
   }
 
-  Widget _buildMatchCard(BuildContext context, ThemeData theme, String myAvatar, MatchedUserPreview match) {
+  Widget _buildMatchCard(
+    BuildContext context,
+    ThemeData theme,
+    String myAvatar,
+    MatchedUserPreview match,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     final scoreNormalized = match.compatibility / 100.0;
     final displayName = match.user.displayName ?? match.user.username;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: VibraColors.surface,
@@ -220,7 +254,9 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
               decoration: BoxDecoration(
                 color: VibraColors.accent.withValues(alpha: 0.15),
                 borderRadius: VibraSpacing.borderFull,
-                border: Border.all(color: VibraColors.accent.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: VibraColors.accent.withValues(alpha: 0.3),
+                ),
               ),
               child: Text(
                 l10n.socialMatchNewAffinity,
@@ -233,7 +269,7 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
             ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.5, end: 0),
           ),
           const SizedBox(height: 16),
-          
+
           // Contenuto scrollabile centrale per evitare overflow su schermi piccoli
           Expanded(
             child: SingleChildScrollView(
@@ -248,20 +284,28 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
                       size: 180,
                       strokeWidth: 14,
                     ),
-                  ).animate().scaleXY(begin: 0.8, end: 1.0, duration: 600.ms, curve: Curves.easeOutBack),
-                  
+                  ).animate().scaleXY(
+                    begin: 0.8,
+                    end: 1.0,
+                    duration: 600.ms,
+                    curve: Curves.easeOutBack,
+                  ),
+
                   const SizedBox(height: 16),
-                  
+
                   // Widget Match Comparison
                   VibraMatchComparison(
-                    myImageUrl: myAvatar,
-                    theirImageUrl: match.user.avatarUrl ?? '',
-                    theirDisplayName: displayName,
-                    score: scoreNormalized,
-                  ).animate().fadeIn(delay: 300.ms, duration: 500.ms).slideY(begin: 0.2, end: 0),
-                  
+                        myImageUrl: myAvatar,
+                        theirImageUrl: match.user.avatarUrl ?? '',
+                        theirDisplayName: displayName,
+                        score: scoreNormalized,
+                      )
+                      .animate()
+                      .fadeIn(delay: 300.ms, duration: 500.ms)
+                      .slideY(begin: 0.2, end: 0),
+
                   const SizedBox(height: 12),
-                  
+
                   // Nome
                   Center(
                     child: Text(
@@ -272,14 +316,16 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
                     ).animate().fadeIn(delay: 400.ms),
                   ),
                   const SizedBox(height: 12),
-                  
+
                   // Motivazione del match
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: VibraColors.surfaceElevated,
-                      borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
+                      borderRadius: BorderRadius.circular(
+                        VibraSpacing.radiusMedium,
+                      ),
                       border: Border.all(color: VibraColors.glassBorder),
                     ),
                     child: Column(
@@ -296,11 +342,17 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
                         if (match.topArtists.isNotEmpty) ...[
                           Row(
                             children: [
-                              const Icon(Icons.music_note_rounded, size: 16, color: VibraColors.accent),
+                              const Icon(
+                                Icons.music_note_rounded,
+                                size: 16,
+                                color: VibraColors.accent,
+                              ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  l10n.socialMatchListenBoth(match.topArtists.take(2).join(", ")),
+                                  l10n.socialMatchListenBoth(
+                                    match.topArtists.take(2).join(", "),
+                                  ),
                                   style: VibraTextStyles.bodyMedium,
                                 ),
                               ),
@@ -310,11 +362,18 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
                         ],
                         Row(
                           children: [
-                            const Icon(Icons.location_on_rounded, size: 16, color: VibraColors.primary),
+                            const Icon(
+                              Icons.location_on_rounded,
+                              size: 16,
+                              color: VibraColors.primary,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                l10n.socialMatchCityEvents(match.city, match.attendingEvents.toString()),
+                                l10n.socialMatchCityEvents(
+                                  match.city,
+                                  match.attendingEvents.toString(),
+                                ),
                                 style: VibraTextStyles.bodyMedium,
                               ),
                             ),
@@ -323,20 +382,28 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
                       ],
                     ),
                   ).animate().fadeIn(delay: 500.ms),
-                  
+
                   const SizedBox(height: 8),
-                  
+
                   // Anteprima profilo button
                   Center(
                     child: TextButton.icon(
                       onPressed: () {
-                        context.pushNamed(RouteNames.userProfile, extra: match.user.id);
+                        context.pushNamed(
+                          RouteNames.userProfile,
+                          extra: match.user.id,
+                        );
                       },
                       icon: const Icon(Icons.person_search_rounded, size: 18),
-                      label: Text(AppLocalizations.of(context)!.socialMatchViewProfile),
+                      label: Text(
+                        AppLocalizations.of(context)!.socialMatchViewProfile,
+                      ),
                       style: TextButton.styleFrom(
                         foregroundColor: VibraColors.textSecondary,
-                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 4,
+                          horizontal: 12,
+                        ),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
@@ -347,9 +414,9 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Azioni
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -373,12 +440,18 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(AppLocalizations.of(context)!.socialMatchIgnore, style: VibraTextStyles.labelSmall.copyWith(color: VibraColors.textDisabled, fontSize: 10)),
+                  Text(
+                    AppLocalizations.of(context)!.socialMatchIgnore,
+                    style: VibraTextStyles.labelSmall.copyWith(
+                      color: VibraColors.textDisabled,
+                      fontSize: 10,
+                    ),
+                  ),
                 ],
               ).animate().fadeIn(delay: 600.ms),
-              
+
               const SizedBox(width: 16),
-              
+
               // Bottone Vibra
               Expanded(
                 child: VibraPillButton(

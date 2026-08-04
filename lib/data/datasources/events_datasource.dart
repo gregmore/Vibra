@@ -31,11 +31,9 @@ class TicketmasterDatasource implements EventsDatasource {
   final Dio _dio;
   final String _apiKey;
 
-  TicketmasterDatasource({
-    required Dio dio,
-    required String apiKey,
-  })  : _dio = dio, // ignore: prefer_initializing_formals
-        _apiKey = apiKey; // ignore: prefer_initializing_formals
+  TicketmasterDatasource({required Dio dio, required String apiKey})
+    : _dio = dio, // ignore: prefer_initializing_formals
+      _apiKey = apiKey; // ignore: prefer_initializing_formals
 
   @override
   Future<List<Map<String, dynamic>>> searchByLocation({
@@ -66,8 +64,11 @@ class TicketmasterDatasource implements EventsDatasource {
           },
         );
 
-        VibraLogger.api('GET', 'Ticketmaster events by location (page $currentPage)',
-            statusCode: response.statusCode);
+        VibraLogger.api(
+          'GET',
+          'Ticketmaster events by location (page $currentPage)',
+          statusCode: response.statusCode,
+        );
 
         final data = response.data as Map<String, dynamic>?;
         if (data == null) break;
@@ -117,15 +118,16 @@ class TicketmasterDatasource implements EventsDatasource {
         },
       );
 
-      VibraLogger.api('GET', 'Ticketmaster events by artist',
-          statusCode: response.statusCode);
+      VibraLogger.api(
+        'GET',
+        'Ticketmaster events by artist',
+        statusCode: response.statusCode,
+      );
 
       final embedded = response.data['_embedded'] as Map<String, dynamic>?;
       if (embedded == null) return [];
 
-      return List<Map<String, dynamic>>.from(
-        embedded['events'] as List? ?? [],
-      );
+      return List<Map<String, dynamic>>.from(embedded['events'] as List? ?? []);
     } on DioException catch (e) {
       VibraLogger.error('Errore Ticketmaster searchByArtist', error: e);
       throw ServerException(
@@ -144,8 +146,11 @@ class TicketmasterDatasource implements EventsDatasource {
         queryParameters: {'apikey': _apiKey, 'locale': '*'},
       );
 
-      VibraLogger.api('GET', 'Ticketmaster event detail: $externalId',
-          statusCode: response.statusCode);
+      VibraLogger.api(
+        'GET',
+        'Ticketmaster event detail: $externalId',
+        statusCode: response.statusCode,
+      );
 
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {

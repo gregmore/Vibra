@@ -38,7 +38,10 @@ class EventsAggregatorDatasource {
         );
         results.addAll(ticketmasterRaw.map(_fromTicketmaster));
       } catch (e) {
-        VibraLogger.warning('Ticketmaster non disponibile: $e', tag: 'EventsAgg');
+        VibraLogger.warning(
+          'Ticketmaster non disponibile: $e',
+          tag: 'EventsAgg',
+        );
       }
     }
 
@@ -76,7 +79,10 @@ class EventsAggregatorDatasource {
         );
         results.addAll(ticketmasterRaw.map(_fromTicketmaster));
       } catch (e) {
-        VibraLogger.warning('Ticketmaster non disponibile: $e', tag: 'EventsAgg');
+        VibraLogger.warning(
+          'Ticketmaster non disponibile: $e',
+          tag: 'EventsAgg',
+        );
       }
     }
 
@@ -84,10 +90,15 @@ class EventsAggregatorDatasource {
     final bandsintownLocal = bandsintown;
     if (bandsintownLocal != null) {
       try {
-        final raw = await bandsintownLocal.getArtistEvents(artistName: artistName);
+        final raw = await bandsintownLocal.getArtistEvents(
+          artistName: artistName,
+        );
         results.addAll(raw.map(_fromBandsintown));
       } catch (e) {
-        VibraLogger.warning('Bandsintown non disponibile: $e', tag: 'EventsAgg');
+        VibraLogger.warning(
+          'Bandsintown non disponibile: $e',
+          tag: 'EventsAgg',
+        );
       }
     }
 
@@ -103,12 +114,17 @@ class EventsAggregatorDatasource {
 
     for (final event in events) {
       // Create a composite key based on normalized name and date (YYYY-MM-DD)
-      final normalizedName = event.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
-      final dateKey = '${event.eventDate.year}-${event.eventDate.month}-${event.eventDate.day}';
-      final cityKey = event.city?.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '') ?? '';
-      
+      final normalizedName = event.name.toLowerCase().replaceAll(
+        RegExp(r'[^a-z0-9]'),
+        '',
+      );
+      final dateKey =
+          '${event.eventDate.year}-${event.eventDate.month}-${event.eventDate.day}';
+      final cityKey =
+          event.city?.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '') ?? '';
+
       final key = '${normalizedName}_${dateKey}_$cityKey';
-      
+
       // If we already have this event, prefer Ticketmaster as it usually has more details and images
       if (uniqueEvents.containsKey(key)) {
         if (event.source == 'ticketmaster') {
@@ -140,8 +156,9 @@ class EventsAggregatorDatasource {
 
       final embedded = json['_embedded'] as Map<String, dynamic>?;
       final attractions = embedded?['attractions'] as List<dynamic>?;
-      final firstAttraction =
-          attractions != null && attractions.isNotEmpty ? attractions.first : null;
+      final firstAttraction = attractions != null && attractions.isNotEmpty
+          ? attractions.first
+          : null;
       final artistName = (firstAttraction as Map?)?['name'] as String?;
 
       final venues = embedded?['venues'] as List<dynamic>?;
@@ -173,34 +190,47 @@ class EventsAggregatorDatasource {
       }
 
       final classifications = json['classifications'] as List<dynamic>?;
-      String? description = json['info'] as String? ?? json['description'] as String?;
+      String? description =
+          json['info'] as String? ?? json['description'] as String?;
       final pleaseNote = json['pleaseNote'] as String?;
-      final ticketLimit = (json['ticketLimit'] as Map<String, dynamic>?)?['info'] as String?;
-      final accessibility = (json['accessibility'] as Map<String, dynamic>?)?['info'] as String?;
-      final promoterName = (json['promoter'] as Map<String, dynamic>?)?['name'] as String?;
+      final ticketLimit =
+          (json['ticketLimit'] as Map<String, dynamic>?)?['info'] as String?;
+      final accessibility =
+          (json['accessibility'] as Map<String, dynamic>?)?['info'] as String?;
+      final promoterName =
+          (json['promoter'] as Map<String, dynamic>?)?['name'] as String?;
 
       final List<String> extraInfo = [];
-      if (description != null && description.trim().isNotEmpty) extraInfo.add(description.trim());
-      if (pleaseNote != null && pleaseNote.trim().isNotEmpty) extraInfo.add('📝 Nota: ${pleaseNote.trim()}');
-      if (ticketLimit != null && ticketLimit.trim().isNotEmpty) extraInfo.add('🎫 Limite biglietti: ${ticketLimit.trim()}');
-      if (accessibility != null && accessibility.trim().isNotEmpty) extraInfo.add('♿ Accessibilità: ${accessibility.trim()}');
-      if (promoterName != null && promoterName.trim().isNotEmpty) extraInfo.add('⭐ Promoter: ${promoterName.trim()}');
+      if (description != null && description.trim().isNotEmpty)
+        extraInfo.add(description.trim());
+      if (pleaseNote != null && pleaseNote.trim().isNotEmpty)
+        extraInfo.add('📝 Nota: ${pleaseNote.trim()}');
+      if (ticketLimit != null && ticketLimit.trim().isNotEmpty)
+        extraInfo.add('🎫 Limite biglietti: ${ticketLimit.trim()}');
+      if (accessibility != null && accessibility.trim().isNotEmpty)
+        extraInfo.add('♿ Accessibilità: ${accessibility.trim()}');
+      if (promoterName != null && promoterName.trim().isNotEmpty)
+        extraInfo.add('⭐ Promoter: ${promoterName.trim()}');
 
       description = extraInfo.isNotEmpty ? extraInfo.join('\n\n') : null;
-      
+
       if (classifications != null && classifications.isNotEmpty) {
         final cls = classifications.first as Map<String, dynamic>?;
         if (cls != null) {
-          final genre = (cls['genre'] as Map<String, dynamic>?)?['name'] as String?;
-          final subGenre = (cls['subGenre'] as Map<String, dynamic>?)?['name'] as String?;
-          
+          final genre =
+              (cls['genre'] as Map<String, dynamic>?)?['name'] as String?;
+          final subGenre =
+              (cls['subGenre'] as Map<String, dynamic>?)?['name'] as String?;
+
           final parts = <String>[];
           if (genre != null && genre != 'Undefined') parts.add(genre);
           if (subGenre != null && subGenre != 'Undefined') parts.add(subGenre);
-          
+
           if (parts.isNotEmpty) {
             final genreStr = '[${parts.join(' / ')}]';
-            description = description != null ? '$genreStr\n$description' : genreStr;
+            description = description != null
+                ? '$genreStr\n$description'
+                : genreStr;
           }
         }
       }
@@ -221,7 +251,9 @@ class EventsAggregatorDatasource {
         ticketUrl: url,
         priceMin: priceMin,
         priceMax: priceMax,
-        status: (json['dates']?['status'] as Map<String, dynamic>?)?['code'] as String?,
+        status:
+            (json['dates']?['status'] as Map<String, dynamic>?)?['code']
+                as String?,
         imageUrl: imageUrl,
         description: description,
         createdAt: null,
@@ -240,48 +272,55 @@ class EventsAggregatorDatasource {
       final results = resultsPage?['results'] as Map<String, dynamic>?;
       final events = results?['event'] as List<dynamic>? ?? const [];
 
-      return events.map((e) {
-        final m = e as Map<String, dynamic>;
-        final externalId = (m['id'] ?? '').toString();
-        final displayName = (m['displayName'] ?? 'Evento') as String;
-        final start = m['start'] as Map<String, dynamic>?;
-        final date = start?['datetime'] as String? ?? start?['date'] as String?;
-        final eventDate = date != null ? DateTime.parse(date) : DateTime.now();
+      return events
+          .map((e) {
+            final m = e as Map<String, dynamic>;
+            final externalId = (m['id'] ?? '').toString();
+            final displayName = (m['displayName'] ?? 'Evento') as String;
+            final start = m['start'] as Map<String, dynamic>?;
+            final date =
+                start?['datetime'] as String? ?? start?['date'] as String?;
+            final eventDate = date != null
+                ? DateTime.parse(date)
+                : DateTime.now();
 
-        final venue = m['venue'] as Map<String, dynamic>?;
-        final venueName = venue?['displayName'] as String?;
-        final metroArea = venue?['metroArea'] as Map<String, dynamic>?;
-        final city = metroArea?['displayName'] as String?;
-        final country = (metroArea?['country'] as Map?)?['displayName'] as String?;
-        final lat = (metroArea?['lat'] as num?)?.toDouble();
-        final lng = (metroArea?['lng'] as num?)?.toDouble();
+            final venue = m['venue'] as Map<String, dynamic>?;
+            final venueName = venue?['displayName'] as String?;
+            final metroArea = venue?['metroArea'] as Map<String, dynamic>?;
+            final city = metroArea?['displayName'] as String?;
+            final country =
+                (metroArea?['country'] as Map?)?['displayName'] as String?;
+            final lat = (metroArea?['lat'] as num?)?.toDouble();
+            final lng = (metroArea?['lng'] as num?)?.toDouble();
 
-        final performance = m['performance'] as List<dynamic>?;
-        final artistName = performance != null && performance.isNotEmpty
-            ? (performance.first as Map<String, dynamic>)['displayName'] as String?
-            : null;
+            final performance = m['performance'] as List<dynamic>?;
+            final artistName = performance != null && performance.isNotEmpty
+                ? (performance.first as Map<String, dynamic>)['displayName']
+                      as String?
+                : null;
 
-        return EventModel(
-          id: '00000000-0000-0000-0000-000000000000',
-          externalId: externalId,
-          source: 'songkick',
-          name: displayName,
-          artistName: artistName,
-          artistSpotifyId: null,
-          venueName: venueName,
-          city: city,
-          country: country,
-          latitude: lat,
-          longitude: lng,
-          eventDate: eventDate,
-          ticketUrl: m['uri'] as String?,
-          priceMin: null,
-          priceMax: null,
-          imageUrl: null,
-          description: null,
-          createdAt: null,
-        );
-      }).toList(growable: false);
+            return EventModel(
+              id: '00000000-0000-0000-0000-000000000000',
+              externalId: externalId,
+              source: 'songkick',
+              name: displayName,
+              artistName: artistName,
+              artistSpotifyId: null,
+              venueName: venueName,
+              city: city,
+              country: country,
+              latitude: lat,
+              longitude: lng,
+              eventDate: eventDate,
+              ticketUrl: m['uri'] as String?,
+              priceMin: null,
+              priceMax: null,
+              imageUrl: null,
+              description: null,
+              createdAt: null,
+            );
+          })
+          .toList(growable: false);
     } catch (e) {
       VibraLogger.warning('Mapping Songkick fallito: $e', tag: 'EventsAgg');
       return const [];

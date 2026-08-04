@@ -82,7 +82,9 @@ class Event {
     imageUrl: json['imageUrl'] as String?,
     description: json['description'] as String?,
     status: json['status'] as String?,
-    createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : null,
+    createdAt: json['createdAt'] != null
+        ? DateTime.parse(json['createdAt'] as String)
+        : null,
   );
 }
 
@@ -101,4 +103,3 @@ class EventAttendee {
   final String status;
   final DateTime? createdAt;
 }
-

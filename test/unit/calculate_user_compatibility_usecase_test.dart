@@ -14,9 +14,7 @@ void main() {
           MusicArtistPreference(id: 'a1', name: 'A1', score: 100),
         ],
         topTracks: const [],
-        topGenres: const [
-          GenrePreference(genre: 'house', weight: 1),
-        ],
+        topGenres: const [GenrePreference(genre: 'house', weight: 1)],
         lastSyncedAt: null,
       );
 
@@ -27,9 +25,7 @@ void main() {
           MusicArtistPreference(id: 'a2', name: 'A2', score: 100),
         ],
         topTracks: const [],
-        topGenres: const [
-          GenrePreference(genre: 'metal', weight: 1),
-        ],
+        topGenres: const [GenrePreference(genre: 'metal', weight: 1)],
         lastSyncedAt: null,
       );
 
@@ -103,4 +99,3 @@ void main() {
     });
   });
 }
-

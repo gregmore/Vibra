@@ -39,7 +39,8 @@ class SettingsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final currentLocale = ref.watch(localeStateProvider);
     final profile = ref.watch(myProfileProvider);
-    final hasSpotify = profile.spotifyId != null && profile.spotifyId!.isNotEmpty;
+    final hasSpotify =
+        profile.spotifyId != null && profile.spotifyId!.isNotEmpty;
 
     String langName = l10n.settingsLanguageSystem;
     if (currentLocale != null) {
@@ -198,9 +199,14 @@ class SettingsScreen extends ConsumerWidget {
                     activeTrackColor: VibraColors.accent.withValues(alpha: 0.5),
                     inactiveThumbColor: VibraColors.textSecondary,
                     inactiveTrackColor: VibraColors.surfaceVariant,
-                    title: Text(_getOptionLabel(context, entry.key), style: VibraTextStyles.bodyMedium),
+                    title: Text(
+                      _getOptionLabel(context, entry.key),
+                      style: VibraTextStyles.bodyMedium,
+                    ),
                     onChanged: (value) {
-                      ref.read(settingsStateProvider.notifier).toggle(entry.key, value);
+                      ref
+                          .read(settingsStateProvider.notifier)
+                          .toggle(entry.key, value);
                     },
                   );
                 }).toList(),
@@ -208,7 +214,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: VibraSpacing.xl),
-          
+
           // Lingua / Language Selection Setting
           Container(
             decoration: BoxDecoration(
@@ -221,351 +227,640 @@ class SettingsScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
               clipBehavior: Clip.antiAlias,
               child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.language_rounded, color: VibraColors.textPrimary),
-                  title: Text(l10n.settingsLanguage, style: VibraTextStyles.bodyMedium),
-                  subtitle: Text(langName, style: VibraTextStyles.bodySmall.copyWith(color: VibraColors.textSecondary)),
-                  onTap: () async {
-                    final String? selectedLanguage = await showDialog<String?>(
-                      context: context,
-                      builder: (context) => Dialog(
-                        backgroundColor: VibraColors.surfaceElevated,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-                          side: const BorderSide(color: VibraColors.glassBorder),
+                children: [
+                  ListTile(
+                    leading: const Icon(
+                      Icons.language_rounded,
+                      color: VibraColors.textPrimary,
+                    ),
+                    title: Text(
+                      l10n.settingsLanguage,
+                      style: VibraTextStyles.bodyMedium,
+                    ),
+                    subtitle: Text(
+                      langName,
+                      style: VibraTextStyles.bodySmall.copyWith(
+                        color: VibraColors.textSecondary,
+                      ),
+                    ),
+                    onTap: () async {
+                      final String?
+                      selectedLanguage = await showDialog<String?>(
+                        context: context,
+                        builder: (context) => Dialog(
+                          backgroundColor: VibraColors.surfaceElevated,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              VibraSpacing.radiusMedium,
+                            ),
+                            side: const BorderSide(
+                              color: VibraColors.glassBorder,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(VibraSpacing.md),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  l10n.settingsLanguage,
+                                  style: VibraTextStyles.titleMedium,
+                                ),
+                                const SizedBox(height: VibraSpacing.md),
+                                Flexible(
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      children: [
+                                        ListTile(
+                                          title: Text(
+                                            l10n.settingsLanguageSystem,
+                                            style: VibraTextStyles.bodyMedium,
+                                          ),
+                                          onTap: () =>
+                                              Navigator.pop(context, ''),
+                                        ),
+                                        ListTile(
+                                          title: Text(
+                                            l10n.langEnglish,
+                                            style: VibraTextStyles.bodyMedium,
+                                          ),
+                                          onTap: () =>
+                                              Navigator.pop(context, 'en'),
+                                        ),
+                                        ListTile(
+                                          title: Text(
+                                            l10n.langItalian,
+                                            style: VibraTextStyles.bodyMedium,
+                                          ),
+                                          onTap: () =>
+                                              Navigator.pop(context, 'it'),
+                                        ),
+                                        ListTile(
+                                          title: Text(
+                                            l10n.langSpanish,
+                                            style: VibraTextStyles.bodyMedium,
+                                          ),
+                                          onTap: () =>
+                                              Navigator.pop(context, 'es'),
+                                        ),
+                                        ListTile(
+                                          title: Text(
+                                            l10n.langFrench,
+                                            style: VibraTextStyles.bodyMedium,
+                                          ),
+                                          onTap: () =>
+                                              Navigator.pop(context, 'fr'),
+                                        ),
+                                        ListTile(
+                                          title: Text(
+                                            l10n.langGerman,
+                                            style: VibraTextStyles.bodyMedium,
+                                          ),
+                                          onTap: () =>
+                                              Navigator.pop(context, 'de'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(VibraSpacing.md),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(l10n.settingsLanguage, style: VibraTextStyles.titleMedium),
-                              const SizedBox(height: VibraSpacing.md),
-                              Flexible(
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    children: [
-                                      ListTile(title: Text(l10n.settingsLanguageSystem, style: VibraTextStyles.bodyMedium), onTap: () => Navigator.pop(context, '')),
-                                      ListTile(title: Text(l10n.langEnglish, style: VibraTextStyles.bodyMedium), onTap: () => Navigator.pop(context, 'en')),
-                                      ListTile(title: Text(l10n.langItalian, style: VibraTextStyles.bodyMedium), onTap: () => Navigator.pop(context, 'it')),
-                                      ListTile(title: Text(l10n.langSpanish, style: VibraTextStyles.bodyMedium), onTap: () => Navigator.pop(context, 'es')),
-                                      ListTile(title: Text(l10n.langFrench, style: VibraTextStyles.bodyMedium), onTap: () => Navigator.pop(context, 'fr')),
-                                      ListTile(title: Text(l10n.langGerman, style: VibraTextStyles.bodyMedium), onTap: () => Navigator.pop(context, 'de')),
-                                    ],
+                      );
+                      if (selectedLanguage != null) {
+                        await ref
+                            .read(localeStateProvider.notifier)
+                            .setLocale(
+                              selectedLanguage.isEmpty
+                                  ? null
+                                  : selectedLanguage,
+                            );
+                      }
+                    },
+                  ),
+                  const Divider(height: 1, color: VibraColors.glassBorder),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.graphic_eq_rounded,
+                      color: Color(0xFF1DB954),
+                    ),
+                    title: Text(
+                      l10n.settingsSpotifyAccount,
+                      style: VibraTextStyles.bodyMedium,
+                    ),
+                    subtitle: Text(
+                      hasSpotify
+                          ? l10n.settingsSpotifyConnected(
+                              profile.spotifyId ?? '',
+                            )
+                          : l10n.settingsSpotifyDisconnected,
+                      style: VibraTextStyles.bodySmall.copyWith(
+                        color: VibraColors.textSecondary,
+                      ),
+                    ),
+                    trailing: hasSpotify
+                        ? Text(
+                            l10n.settingsSpotifyDisconnect,
+                            style: VibraTextStyles.labelLarge.copyWith(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.chevron_right_rounded,
+                            color: VibraColors.textSecondary,
+                          ),
+                    onTap: () async {
+                      if (hasSpotify) {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: VibraColors.surfaceElevated,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                VibraSpacing.radiusMedium,
+                              ),
+                              side: const BorderSide(
+                                color: VibraColors.glassBorder,
+                              ),
+                            ),
+                            title: Text(
+                              l10n.settingsSpotifyDisconnectConfirmTitle,
+                              style: VibraTextStyles.titleMedium,
+                            ),
+                            content: Text(
+                              l10n.settingsSpotifyDisconnectConfirmBody,
+                              style: VibraTextStyles.bodyMedium.copyWith(
+                                color: VibraColors.textSecondary,
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                child: Text(
+                                  l10n.settingsCancel,
+                                  style: VibraTextStyles.labelLarge.copyWith(
+                                    color: VibraColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.redAccent,
+                                ),
+                                child: Text(
+                                  l10n.settingsSpotifyDisconnect,
+                                  style: VibraTextStyles.labelLarge.copyWith(
+                                    color: Colors.redAccent,
                                   ),
                                 ),
                               ),
                             ],
                           ),
+                        );
+                        if (confirm == true) {
+                          await ref
+                              .read(spotifyAuthProvider.notifier)
+                              .disconnectSpotify();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  l10n.settingsSpotifyDisconnectedSuccess,
+                                ),
+                              ),
+                            );
+                          }
+                        }
+                      } else {
+                        context.push('/spotify-connect');
+                      }
+                    },
+                  ),
+                  const Divider(height: 1, color: VibraColors.glassBorder),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final pushEnabled = ref.watch(pushEnabledProvider);
+                      return SwitchListTile(
+                        secondary: const Icon(
+                          Icons.notifications_active_outlined,
+                          color: VibraColors.textPrimary,
                         ),
-                      ),
-                    );
-                    if (selectedLanguage != null) {
-                      await ref.read(localeStateProvider.notifier).setLocale(
-                        selectedLanguage.isEmpty ? null : selectedLanguage,
-                      );
-                    }
-                  },
-                ),
-                const Divider(height: 1, color: VibraColors.glassBorder),
-                ListTile(
-                  leading: const Icon(
-                    Icons.graphic_eq_rounded,
-                    color: Color(0xFF1DB954),
-                  ),
-                  title: Text(l10n.settingsSpotifyAccount, style: VibraTextStyles.bodyMedium),
-                  subtitle: Text(
-                    hasSpotify
-                        ? l10n.settingsSpotifyConnected(profile.spotifyId ?? '')
-                        : l10n.settingsSpotifyDisconnected,
-                    style: VibraTextStyles.bodySmall.copyWith(color: VibraColors.textSecondary),
-                  ),
-                  trailing: hasSpotify
-                      ? Text(
-                          l10n.settingsSpotifyDisconnect,
-                          style: VibraTextStyles.labelLarge.copyWith(
-                            color: Colors.redAccent,
-                            fontWeight: FontWeight.bold,
+                        title: Text(
+                          l10n.settingsNotifications,
+                          style: VibraTextStyles.bodyMedium,
+                        ),
+                        subtitle: Text(
+                          l10n.settingsNotificationsSub,
+                          style: VibraTextStyles.bodySmall.copyWith(
+                            color: VibraColors.textSecondary,
                           ),
-                        )
-                      : const Icon(Icons.chevron_right_rounded, color: VibraColors.textSecondary),
-                  onTap: () async {
-                    if (hasSpotify) {
+                        ),
+                        value: pushEnabled,
+                        onChanged: (val) {
+                          ref.read(pushEnabledProvider.notifier).toggle(val);
+                        },
+                      );
+                    },
+                  ),
+
+                  const Divider(height: 1, color: VibraColors.glassBorder),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.group_add_outlined,
+                      color: VibraColors.textPrimary,
+                    ),
+                    title: Text(
+                      l10n.settingsGenerateCompatibleUsers,
+                      style: VibraTextStyles.bodyMedium,
+                    ),
+                    subtitle: Text(
+                      l10n.settingsGenerateCompatibleUsersSub,
+                      style: VibraTextStyles.bodySmall.copyWith(
+                        color: VibraColors.textSecondary,
+                      ),
+                    ),
+                    onTap: () async {
+                      try {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              l10n.settingsGenerateCompatibleUsersLoading,
+                            ),
+                          ),
+                        );
+                        final supabase = ref
+                            .read(supabaseDatasourceProvider)
+                            .client;
+                        final res = await supabase.functions.invoke(
+                          'seed-compatible-users',
+                        );
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                res.data['message'] ??
+                                    l10n.settingsGenerateCompatibleUsersSuccess,
+                              ),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(l10n.settingsError(e.toString())),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: VibraSpacing.xl),
+          Container(
+            decoration: BoxDecoration(
+              color: VibraColors.surfaceElevated,
+              borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
+              border: Border.all(color: VibraColors.glassBorder),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(
+                      Icons.policy_outlined,
+                      color: VibraColors.textPrimary,
+                    ),
+                    title: Text(
+                      l10n.settingsPrivacyPolicy,
+                      style: VibraTextStyles.bodyMedium,
+                    ),
+                    subtitle: Text(
+                      l10n.settingsPrivacyPolicySub,
+                      style: VibraTextStyles.bodySmall.copyWith(
+                        color: VibraColors.textSecondary,
+                      ),
+                    ),
+                    onTap: () => context.push('/privacy-policy'),
+                  ),
+                  const Divider(height: 1, color: VibraColors.glassBorder),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.gavel_rounded,
+                      color: VibraColors.textPrimary,
+                    ),
+                    title: Text(
+                      l10n.settingsTermsOfService,
+                      style: VibraTextStyles.bodyMedium,
+                    ),
+                    subtitle: Text(
+                      l10n.settingsTermsOfServiceSub,
+                      style: VibraTextStyles.bodySmall.copyWith(
+                        color: VibraColors.textSecondary,
+                      ),
+                    ),
+                    onTap: () => context.push('/terms-of-service'),
+                  ),
+                  const Divider(height: 1, color: VibraColors.glassBorder),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.support_agent_rounded,
+                      color: VibraColors.textPrimary,
+                    ),
+                    title: Text(
+                      l10n.settingsSupport,
+                      style: VibraTextStyles.bodyMedium,
+                    ),
+                    subtitle: Text(
+                      l10n.settingsSupportSub,
+                      style: VibraTextStyles.bodySmall.copyWith(
+                        color: VibraColors.textSecondary,
+                      ),
+                    ),
+                    onTap: () => context.push('/support'),
+                  ),
+                  const Divider(height: 1, color: VibraColors.glassBorder),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.info_outline_rounded,
+                      color: VibraColors.textPrimary,
+                    ),
+                    title: Text(
+                      l10n.settingsAbout,
+                      style: VibraTextStyles.bodyMedium,
+                    ),
+                    subtitle: Text(
+                      l10n.settingsAboutSub,
+                      style: VibraTextStyles.bodySmall.copyWith(
+                        color: VibraColors.textSecondary,
+                      ),
+                    ),
+                    onTap: () => context.push('/about'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: VibraSpacing.xl),
+          Container(
+            decoration: BoxDecoration(
+              color: VibraColors.surfaceElevated,
+              borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
+              border: Border.all(color: VibraColors.glassBorder),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(
+                      Icons.logout_rounded,
+                      color: VibraColors.textPrimary,
+                    ),
+                    title: Text(
+                      l10n.settingsLogout,
+                      style: VibraTextStyles.bodyMedium,
+                    ),
+                    onTap: () async {
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (context) => AlertDialog(
                           backgroundColor: VibraColors.surfaceElevated,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-                            side: const BorderSide(color: VibraColors.glassBorder),
+                            borderRadius: BorderRadius.circular(
+                              VibraSpacing.radiusMedium,
+                            ),
+                            side: const BorderSide(
+                              color: VibraColors.glassBorder,
+                            ),
                           ),
-                          title: Text(l10n.settingsSpotifyDisconnectConfirmTitle, style: VibraTextStyles.titleMedium),
+                          title: Text(
+                            l10n.settingsLogoutConfirmTitle,
+                            style: VibraTextStyles.titleMedium,
+                          ),
                           content: Text(
-                            l10n.settingsSpotifyDisconnectConfirmBody,
-                            style: VibraTextStyles.bodyMedium.copyWith(color: VibraColors.textSecondary),
+                            l10n.settingsLogoutConfirmBody,
+                            style: VibraTextStyles.bodyMedium.copyWith(
+                              color: VibraColors.textSecondary,
+                            ),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(false),
-                              child: Text(l10n.settingsCancel, style: VibraTextStyles.labelLarge.copyWith(color: VibraColors.textPrimary)),
+                              child: Text(
+                                l10n.settingsCancel,
+                                style: VibraTextStyles.labelLarge.copyWith(
+                                  color: VibraColors.textPrimary,
+                                ),
+                              ),
                             ),
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(true),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.redAccent,
+                              child: Text(
+                                l10n.settingsLogout,
+                                style: VibraTextStyles.labelLarge.copyWith(
+                                  color: VibraColors.accent,
+                                ),
                               ),
-                              child: Text(l10n.settingsSpotifyDisconnect, style: VibraTextStyles.labelLarge.copyWith(color: Colors.redAccent)),
                             ),
                           ],
                         ),
                       );
-                      if (confirm == true) {
-                        await ref.read(spotifyAuthProvider.notifier).disconnectSpotify();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.settingsSpotifyDisconnectedSuccess),
-                            ),
-                          );
+                      if (confirm == true && context.mounted) {
+                        try {
+                          await ref
+                              .read(generalAuthProvider.notifier)
+                              .signOut();
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  l10n.settingsLogoutError(e.toString()),
+                                ),
+                              ),
+                            );
+                          }
                         }
                       }
-                    } else {
-                      context.push('/spotify-connect');
-                    }
-                  },
-                ),
-                const Divider(height: 1, color: VibraColors.glassBorder),
-                Consumer(
-                  builder: (context, ref, child) {
-                    final pushEnabled = ref.watch(pushEnabledProvider);
-                    return SwitchListTile(
-                      secondary: const Icon(Icons.notifications_active_outlined, color: VibraColors.textPrimary),
-                      title: Text(l10n.settingsNotifications, style: VibraTextStyles.bodyMedium),
-                      subtitle: Text(l10n.settingsNotificationsSub, style: VibraTextStyles.bodySmall.copyWith(color: VibraColors.textSecondary)),
-                      value: pushEnabled,
-                      onChanged: (val) {
-                        ref.read(pushEnabledProvider.notifier).toggle(val);
-                      },
-                    );
-                  },
-                ),
-
-                const Divider(height: 1, color: VibraColors.glassBorder),
-                ListTile(
-                  leading: const Icon(Icons.group_add_outlined, color: VibraColors.textPrimary),
-                  title: Text(l10n.settingsGenerateCompatibleUsers, style: VibraTextStyles.bodyMedium),
-                  subtitle: Text(l10n.settingsGenerateCompatibleUsersSub, style: VibraTextStyles.bodySmall.copyWith(color: VibraColors.textSecondary)),
-                  onTap: () async {
-                    try {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.settingsGenerateCompatibleUsersLoading)),
+                    },
+                  ),
+                  const Divider(height: 1, color: VibraColors.glassBorder),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.phonelink_erase_rounded,
+                      color: VibraColors.textPrimary,
+                    ),
+                    title: Text(
+                      l10n.settingsLogoutAll,
+                      style: VibraTextStyles.bodyMedium,
+                    ),
+                    onTap: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          backgroundColor: VibraColors.surfaceElevated,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              VibraSpacing.radiusMedium,
+                            ),
+                            side: const BorderSide(
+                              color: VibraColors.glassBorder,
+                            ),
+                          ),
+                          title: Text(
+                            l10n.settingsLogoutAllConfirmTitle,
+                            style: VibraTextStyles.titleMedium,
+                          ),
+                          content: Text(
+                            l10n.settingsLogoutAllConfirmBody,
+                            style: VibraTextStyles.bodyMedium.copyWith(
+                              color: VibraColors.textSecondary,
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: Text(
+                                l10n.settingsCancel,
+                                style: VibraTextStyles.labelLarge.copyWith(
+                                  color: VibraColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: Text(
+                                l10n.settingsLogoutAll,
+                                style: VibraTextStyles.labelLarge.copyWith(
+                                  color: VibraColors.accent,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       );
-                      final supabase = ref.read(supabaseDatasourceProvider).client;
-                      final res = await supabase.functions.invoke('seed-compatible-users');
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(res.data['message'] ?? l10n.settingsGenerateCompatibleUsersSuccess)),
-                        );
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(l10n.settingsError(e.toString())), backgroundColor: Colors.red),
-                        );
-                      }
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-          const SizedBox(height: VibraSpacing.xl),
-          Container(
-            decoration: BoxDecoration(
-              color: VibraColors.surfaceElevated,
-              borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-              border: Border.all(color: VibraColors.glassBorder),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-              clipBehavior: Clip.antiAlias,
-              child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.policy_outlined, color: VibraColors.textPrimary),
-                  title: Text(l10n.settingsPrivacyPolicy, style: VibraTextStyles.bodyMedium),
-                  subtitle: Text(l10n.settingsPrivacyPolicySub, style: VibraTextStyles.bodySmall.copyWith(color: VibraColors.textSecondary)),
-                  onTap: () => context.push('/privacy-policy'),
-                ),
-                const Divider(height: 1, color: VibraColors.glassBorder),
-                ListTile(
-                  leading: const Icon(Icons.gavel_rounded, color: VibraColors.textPrimary),
-                  title: Text(l10n.settingsTermsOfService, style: VibraTextStyles.bodyMedium),
-                  subtitle: Text(l10n.settingsTermsOfServiceSub, style: VibraTextStyles.bodySmall.copyWith(color: VibraColors.textSecondary)),
-                  onTap: () => context.push('/terms-of-service'),
-                ),
-                const Divider(height: 1, color: VibraColors.glassBorder),
-                ListTile(
-                  leading: const Icon(Icons.support_agent_rounded, color: VibraColors.textPrimary),
-                  title: Text(l10n.settingsSupport, style: VibraTextStyles.bodyMedium),
-                  subtitle: Text(l10n.settingsSupportSub, style: VibraTextStyles.bodySmall.copyWith(color: VibraColors.textSecondary)),
-                  onTap: () => context.push('/support'),
-                ),
-                const Divider(height: 1, color: VibraColors.glassBorder),
-                ListTile(
-                  leading: const Icon(Icons.info_outline_rounded, color: VibraColors.textPrimary),
-                  title: Text(l10n.settingsAbout, style: VibraTextStyles.bodyMedium),
-                  subtitle: Text(l10n.settingsAboutSub, style: VibraTextStyles.bodySmall.copyWith(color: VibraColors.textSecondary)),
-                  onTap: () => context.push('/about'),
-                ),
-              ],
-            ),
-          ),
-        ),
-          const SizedBox(height: VibraSpacing.xl),
-          Container(
-            decoration: BoxDecoration(
-              color: VibraColors.surfaceElevated,
-              borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-              border: Border.all(color: VibraColors.glassBorder),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-              clipBehavior: Clip.antiAlias,
-              child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.logout_rounded, color: VibraColors.textPrimary),
-                  title: Text(l10n.settingsLogout, style: VibraTextStyles.bodyMedium),
-                  onTap: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        backgroundColor: VibraColors.surfaceElevated,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-                          side: const BorderSide(color: VibraColors.glassBorder),
-                        ),
-                        title: Text(l10n.settingsLogoutConfirmTitle, style: VibraTextStyles.titleMedium),
-                        content: Text(l10n.settingsLogoutConfirmBody, style: VibraTextStyles.bodyMedium.copyWith(color: VibraColors.textSecondary)),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: Text(l10n.settingsCancel, style: VibraTextStyles.labelLarge.copyWith(color: VibraColors.textPrimary)),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: Text(l10n.settingsLogout, style: VibraTextStyles.labelLarge.copyWith(color: VibraColors.accent)),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirm == true && context.mounted) {
-                      try {
-                        await ref.read(generalAuthProvider.notifier).signOut();
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.settingsLogoutError(e.toString()))),
-                          );
+                      if (confirm == true && context.mounted) {
+                        try {
+                          await ref
+                              .read(generalAuthProvider.notifier)
+                              .signOut(scope: SignOutScope.global);
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  l10n.settingsLogoutError(e.toString()),
+                                ),
+                              ),
+                            );
+                          }
                         }
                       }
-                    }
-                  },
-                ),
-                const Divider(height: 1, color: VibraColors.glassBorder),
-                ListTile(
-                  leading: const Icon(Icons.phonelink_erase_rounded, color: VibraColors.textPrimary),
-                  title: Text(l10n.settingsLogoutAll, style: VibraTextStyles.bodyMedium),
-                  onTap: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        backgroundColor: VibraColors.surfaceElevated,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-                          side: const BorderSide(color: VibraColors.glassBorder),
-                        ),
-                        title: Text(l10n.settingsLogoutAllConfirmTitle, style: VibraTextStyles.titleMedium),
-                        content: Text(l10n.settingsLogoutAllConfirmBody, style: VibraTextStyles.bodyMedium.copyWith(color: VibraColors.textSecondary)),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: Text(l10n.settingsCancel, style: VibraTextStyles.labelLarge.copyWith(color: VibraColors.textPrimary)),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: Text(l10n.settingsLogoutAll, style: VibraTextStyles.labelLarge.copyWith(color: VibraColors.accent)),
-                          ),
-                        ],
+                    },
+                  ),
+                  const Divider(height: 1, color: VibraColors.glassBorder),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.delete_forever_rounded,
+                      color: Colors.redAccent,
+                    ),
+                    title: Text(
+                      l10n.settingsDeleteAccount,
+                      style: VibraTextStyles.bodyMedium.copyWith(
+                        color: Colors.redAccent,
                       ),
-                    );
-                    if (confirm == true && context.mounted) {
-                      try {
-                        await ref.read(generalAuthProvider.notifier).signOut(scope: SignOutScope.global);
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.settingsLogoutError(e.toString()))),
-                          );
-                        }
-                      }
-                    }
-                  },
-                ),
-                const Divider(height: 1, color: VibraColors.glassBorder),
-                ListTile(
-                  leading: const Icon(Icons.delete_forever_rounded, color: Colors.redAccent),
-                  title: Text(l10n.settingsDeleteAccount, style: VibraTextStyles.bodyMedium.copyWith(color: Colors.redAccent)),
-                  subtitle: Text(l10n.settingsDeleteAccountConfirmBody, style: VibraTextStyles.bodySmall.copyWith(color: VibraColors.textSecondary)),
-                  onTap: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        backgroundColor: VibraColors.surfaceElevated,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-                          side: const BorderSide(color: VibraColors.glassBorder),
-                        ),
-                        title: Text(l10n.settingsDeleteAccountConfirmTitle, style: VibraTextStyles.titleMedium),
-                        content: Text(l10n.settingsDeleteAccountConfirmBody, style: VibraTextStyles.bodyMedium.copyWith(color: VibraColors.textSecondary)),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: Text(l10n.settingsCancel, style: VibraTextStyles.labelLarge.copyWith(color: VibraColors.textPrimary)),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            style: TextButton.styleFrom(foregroundColor: Colors.red),
-                            child: Text(l10n.settingsDelete, style: VibraTextStyles.labelLarge.copyWith(color: Colors.red)),
-                          ),
-                        ],
+                    ),
+                    subtitle: Text(
+                      l10n.settingsDeleteAccountConfirmBody,
+                      style: VibraTextStyles.bodySmall.copyWith(
+                        color: VibraColors.textSecondary,
                       ),
-                    );
-                    if (confirm == true && context.mounted) {
-                      try {
-                        await ref.read(generalAuthProvider.notifier).deleteAccount();
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.settingsDeleteAccountError),
-                              backgroundColor: Colors.redAccent,
+                    ),
+                    onTap: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          backgroundColor: VibraColors.surfaceElevated,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              VibraSpacing.radiusMedium,
                             ),
-                          );
+                            side: const BorderSide(
+                              color: VibraColors.glassBorder,
+                            ),
+                          ),
+                          title: Text(
+                            l10n.settingsDeleteAccountConfirmTitle,
+                            style: VibraTextStyles.titleMedium,
+                          ),
+                          content: Text(
+                            l10n.settingsDeleteAccountConfirmBody,
+                            style: VibraTextStyles.bodyMedium.copyWith(
+                              color: VibraColors.textSecondary,
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: Text(
+                                l10n.settingsCancel,
+                                style: VibraTextStyles.labelLarge.copyWith(
+                                  color: VibraColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.red,
+                              ),
+                              child: Text(
+                                l10n.settingsDelete,
+                                style: VibraTextStyles.labelLarge.copyWith(
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true && context.mounted) {
+                        try {
+                          await ref
+                              .read(generalAuthProvider.notifier)
+                              .deleteAccount();
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(l10n.settingsDeleteAccountError),
+                                backgroundColor: Colors.redAccent,
+                              ),
+                            );
+                          }
                         }
                       }
-                    }
-                  },
-                ),
-              ],
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
         ],
       ),
     );

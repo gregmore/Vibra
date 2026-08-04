@@ -11,9 +11,7 @@ class SupabaseLiveDatasource {
 
   final SupabaseDatasource _supabase;
 
-  Stream<List<LiveMessageModel>> streamLiveMessages({
-    required String eventId,
-  }) {
+  Stream<List<LiveMessageModel>> streamLiveMessages({required String eventId}) {
     final stream = _supabase.client
         .from(DbTables.liveMessages)
         .stream(primaryKey: ['id'])
@@ -31,16 +29,16 @@ class SupabaseLiveDatasource {
     required String content,
   }) async {
     final user = _supabase.currentUser;
-    if (user == null) throw const app_exceptions.AuthException(message: 'Utente non autenticato');
+    if (user == null)
+      throw const app_exceptions.AuthException(
+        message: 'Utente non autenticato',
+      );
 
-    final row = await _supabase.insert(
-      DbTables.liveMessages,
-      {
-        'event_id': eventId,
-        'user_id': user.id,
-        'content': content,
-      },
-    );
+    final row = await _supabase.insert(DbTables.liveMessages, {
+      'event_id': eventId,
+      'user_id': user.id,
+      'content': content,
+    });
     return LiveMessageModel.fromJson(row);
   }
 
@@ -59,4 +57,3 @@ class SupabaseLiveDatasource {
     );
   }
 }
-

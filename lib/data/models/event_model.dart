@@ -31,4 +31,3 @@ abstract class EventModel with _$EventModel {
   factory EventModel.fromJson(Map<String, dynamic> json) =>
       _$EventModelFromJson(json);
 }
-

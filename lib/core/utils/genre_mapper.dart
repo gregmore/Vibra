@@ -16,7 +16,10 @@ class GenreMapper {
     if (s.contains('pop')) {
       return 'Pop';
     }
-    if (s.contains('house') || s.contains('techno') || s.contains('edm') || s.contains('electronic')) {
+    if (s.contains('house') ||
+        s.contains('techno') ||
+        s.contains('edm') ||
+        s.contains('electronic')) {
       return 'Dance/Electronic';
     }
     if (s.contains('jazz') || s.contains('blues')) {
@@ -34,8 +37,8 @@ class GenreMapper {
     if (s.contains('r&b') || s.contains('soul')) {
       return 'R&B';
     }
-    
-    // Se non troviamo match chiari, restituiamo il genere originale normalizzato 
+
+    // Se non troviamo match chiari, restituiamo il genere originale normalizzato
     // (Ticketmaster potrebbe comunque usarlo per query generiche via keyword)
     return spotifyGenre;
   }

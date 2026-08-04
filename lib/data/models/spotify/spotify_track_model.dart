@@ -8,7 +8,8 @@ abstract class SpotifyTrackModel with _$SpotifyTrackModel {
   const factory SpotifyTrackModel({
     required String id,
     required String name,
-    @JsonKey(name: 'artists') @Default(<SpotifyTrackArtistModel>[])
+    @JsonKey(name: 'artists')
+    @Default(<SpotifyTrackArtistModel>[])
     List<SpotifyTrackArtistModel> artists,
     int? popularity,
   }) = _SpotifyTrackModel;
@@ -27,4 +28,3 @@ abstract class SpotifyTrackArtistModel with _$SpotifyTrackArtistModel {
   factory SpotifyTrackArtistModel.fromJson(Map<String, dynamic> json) =>
       _$SpotifyTrackArtistModelFromJson(json);
 }
-

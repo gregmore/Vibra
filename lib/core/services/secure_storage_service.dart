@@ -4,7 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// Usato per token sensibili (Spotify refresh token, ecc.).
 class SecureStorageService {
   SecureStorageService({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
 
@@ -17,4 +17,3 @@ class SecureStorageService {
 
   Future<void> deleteAll() => _storage.deleteAll();
 }
-

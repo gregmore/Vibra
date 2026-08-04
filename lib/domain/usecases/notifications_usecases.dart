@@ -24,4 +24,3 @@ class MarkNotificationAsReadUseCase
     return _repository.markAsRead(params);
   }
 }
-

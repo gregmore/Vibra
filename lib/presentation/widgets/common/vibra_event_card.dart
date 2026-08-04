@@ -44,11 +44,13 @@ class VibraEventCard extends ConsumerWidget {
         imageUrl: event.imageUrl ?? '',
         height: 280,
         onTap: () {
-          ref.read(logEventInteractionUseCaseProvider).execute(
-            event: event,
-            interactionType: 'view',
-            scoreAtTime: matchScore?.toDouble(),
-          );
+          ref
+              .read(logEventInteractionUseCaseProvider)
+              .execute(
+                event: event,
+                interactionType: 'view',
+                scoreAtTime: matchScore?.toDouble(),
+              );
           onTap?.call();
         },
         child: Stack(
@@ -59,29 +61,43 @@ class VibraEventCard extends ConsumerWidget {
               children: [
                 if (matchScore != null) ...[
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: VibraSpacing.sm, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _getBadgeColor(context, matchScore!).withValues(alpha: 0.1),
-                      border: Border.all(
-                        color: _getBadgeColor(context, matchScore!),
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(VibraSpacing.radiusFull),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _getBadgeColor(context, matchScore!).withValues(alpha: 0.5),
-                          blurRadius: 8,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: VibraSpacing.sm,
+                          vertical: 6,
                         ),
-                      ],
-                    ),
-                    child: Text(
-                      '$matchScore% MATCH',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: _getBadgeColor(context, matchScore!),
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ).animate().fadeIn(duration: VibraSpacing.animNormal).slideX(begin: -0.2, end: 0),
+                        decoration: BoxDecoration(
+                          color: _getBadgeColor(
+                            context,
+                            matchScore!,
+                          ).withValues(alpha: 0.1),
+                          border: Border.all(
+                            color: _getBadgeColor(context, matchScore!),
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            VibraSpacing.radiusFull,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _getBadgeColor(
+                                context,
+                                matchScore!,
+                              ).withValues(alpha: 0.5),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          '$matchScore% MATCH',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: _getBadgeColor(context, matchScore!),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(duration: VibraSpacing.animNormal)
+                      .slideX(begin: -0.2, end: 0),
                   const SizedBox(height: VibraSpacing.sm),
                 ],
                 Text(event.name, style: theme.textTheme.titleLarge),
@@ -98,11 +114,13 @@ class VibraEventCard extends ConsumerWidget {
                   child: VibraPillButton(
                     text: AppLocalizations.of(context)!.eventDetailBuyTickets,
                     onPressed: () {
-                      ref.read(logEventInteractionUseCaseProvider).execute(
-                        event: event,
-                        interactionType: 'click_ticket',
-                        scoreAtTime: matchScore?.toDouble(),
-                      );
+                      ref
+                          .read(logEventInteractionUseCaseProvider)
+                          .execute(
+                            event: event,
+                            interactionType: 'click_ticket',
+                            scoreAtTime: matchScore?.toDouble(),
+                          );
                       onTap?.call();
                     },
                   ),
@@ -113,10 +131,15 @@ class VibraEventCard extends ConsumerWidget {
               top: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: VibraSpacing.md, vertical: VibraSpacing.sm),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: VibraSpacing.md,
+                  vertical: VibraSpacing.sm,
+                ),
                 decoration: BoxDecoration(
                   color: VibraColors.surfaceElevated.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
+                  borderRadius: BorderRadius.circular(
+                    VibraSpacing.radiusMedium,
+                  ),
                   border: Border.all(color: VibraColors.glassBorder),
                 ),
                 child: Text(
@@ -133,14 +156,19 @@ class VibraEventCard extends ConsumerWidget {
     } else {
       card = VibraGlassmorphicCard(
         onTap: () {
-          ref.read(logEventInteractionUseCaseProvider).execute(
-            event: event,
-            interactionType: 'view',
-            scoreAtTime: matchScore?.toDouble(),
-          );
+          ref
+              .read(logEventInteractionUseCaseProvider)
+              .execute(
+                event: event,
+                interactionType: 'view',
+                scoreAtTime: matchScore?.toDouble(),
+              );
           onTap?.call();
         },
-        margin: const EdgeInsets.symmetric(horizontal: VibraSpacing.xl, vertical: VibraSpacing.sm),
+        margin: const EdgeInsets.symmetric(
+          horizontal: VibraSpacing.xl,
+          vertical: VibraSpacing.sm,
+        ),
         child: Row(
           children: [
             ClipRRect(
@@ -149,11 +177,11 @@ class VibraEventCard extends ConsumerWidget {
                 width: 72,
                 height: 72,
                 child: event.imageUrl != null && event.imageUrl!.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: event.imageUrl!,
-                          fit: BoxFit.cover,
-                          memCacheWidth: 200,
-                          placeholder: (context, url) => Shimmer.fromColors(
+                    ? CachedNetworkImage(
+                        imageUrl: event.imageUrl!,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 200,
+                        placeholder: (context, url) => Shimmer.fromColors(
                           baseColor: VibraColors.shimmerBase,
                           highlightColor: VibraColors.shimmerHighlight,
                           child: Container(color: Colors.white),
@@ -168,10 +196,15 @@ class VibraEventCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(event.name, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  Text(
+                    event.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 6),
                   Text(
-                    event.city ?? AppLocalizations.of(context)!.eventCardLocation,
+                    event.city ??
+                        AppLocalizations.of(context)!.eventCardLocation,
                     style: theme.textTheme.bodySmall,
                   ),
                 ],
@@ -185,17 +218,28 @@ class VibraEventCard extends ConsumerWidget {
                 if (matchScore != null)
                   Container(
                     margin: const EdgeInsets.only(top: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
-                      color: _getBadgeColor(context, matchScore!).withValues(alpha: 0.1),
+                      color: _getBadgeColor(
+                        context,
+                        matchScore!,
+                      ).withValues(alpha: 0.1),
                       border: Border.all(
                         color: _getBadgeColor(context, matchScore!),
                         width: 1,
                       ),
-                      borderRadius: BorderRadius.circular(VibraSpacing.radiusSmall),
+                      borderRadius: BorderRadius.circular(
+                        VibraSpacing.radiusSmall,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: _getBadgeColor(context, matchScore!).withValues(alpha: 0.5),
+                          color: _getBadgeColor(
+                            context,
+                            matchScore!,
+                          ).withValues(alpha: 0.5),
                           blurRadius: 6,
                         ),
                       ],
@@ -215,8 +259,7 @@ class VibraEventCard extends ConsumerWidget {
       );
     }
 
-    return card.animate()
-      .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
+    return card.animate().slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
   }
 
   Widget _fallbackPoster() {

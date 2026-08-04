@@ -12,7 +12,10 @@ import '../../data/datasources/supabase_datasource.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Configura log minimali o inizializza servizi essenziali
-  VibraLogger.info('Handling a background message: ${message.messageId}', tag: 'Push');
+  VibraLogger.info(
+    'Handling a background message: ${message.messageId}',
+    tag: 'Push',
+  );
 }
 
 /// Bootstrap best-effort per push notifications.
@@ -59,7 +62,9 @@ class PushNotificationsBootstrap {
         tag: 'Push',
       );
 
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      FirebaseMessaging.onBackgroundMessage(
+        _firebaseMessagingBackgroundHandler,
+      );
 
       if (!supabase.isAuthenticated) {
         VibraLogger.warning(
@@ -87,7 +92,9 @@ class PushNotificationsBootstrap {
         }
       });
 
-      _authStateSub = supabase.client.auth.onAuthStateChange.listen((data) async {
+      _authStateSub = supabase.client.auth.onAuthStateChange.listen((
+        data,
+      ) async {
         final event = data.event;
         if (event == AuthChangeEvent.signedIn) {
           try {
@@ -98,7 +105,10 @@ class PushNotificationsBootstrap {
           } catch (e) {
             final errorString = e.toString();
             if (errorString.contains('apns-token-not-set')) {
-              VibraLogger.info('APNS token non disponibile post-login (comune su Simulatori iOS).', tag: 'Push');
+              VibraLogger.info(
+                'APNS token non disponibile post-login (comune su Simulatori iOS).',
+                tag: 'Push',
+              );
             } else {
               VibraLogger.error(
                 'Errore durante il recupero del token FCM post-login',
@@ -116,10 +126,7 @@ class PushNotificationsBootstrap {
           tag: 'Push',
         );
       } else {
-        VibraLogger.warning(
-          'Push bootstrap fallito: $error',
-          tag: 'Push',
-        );
+        VibraLogger.warning('Push bootstrap fallito: $error', tag: 'Push');
         VibraLogger.debug(stackTrace.toString(), tag: 'Push');
       }
     }
@@ -141,7 +148,10 @@ class PushNotificationsBootstrap {
       'fcm_token': isPushEnabled ? token : null,
     }, onConflict: 'id');
 
-    VibraLogger.info('Token FCM sincronizzato su Supabase (abilitato: $isPushEnabled)', tag: 'Push');
+    VibraLogger.info(
+      'Token FCM sincronizzato su Supabase (abilitato: $isPushEnabled)',
+      tag: 'Push',
+    );
   }
 
   static Future<void> dispose() async {
@@ -152,4 +162,3 @@ class PushNotificationsBootstrap {
     _started = false;
   }
 }
-

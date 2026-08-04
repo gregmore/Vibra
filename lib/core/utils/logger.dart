@@ -53,19 +53,11 @@ class VibraLogger {
   /// Log per chiamate API — traccia le richieste HTTP.
   static void api(String method, String url, {int? statusCode}) {
     final status = statusCode != null ? ' → $statusCode' : '';
-    dev.log(
-      '$method $url$status',
-      name: '$_tag API',
-      level: 500,
-    );
+    dev.log('$method $url$status', name: '$_tag API', level: 500);
   }
 
   /// Log per navigazione — traccia i cambi di schermata.
   static void navigation(String route) {
-    dev.log(
-      route,
-      name: '$_tag Nav',
-      level: 500,
-    );
+    dev.log(route, name: '$_tag Nav', level: 500);
   }
 }

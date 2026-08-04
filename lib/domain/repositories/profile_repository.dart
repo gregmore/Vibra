@@ -12,4 +12,3 @@ abstract class ProfileRepository {
 
   void validateUsername(String username);
 }
-

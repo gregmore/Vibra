@@ -23,4 +23,3 @@ class DirectMessage {
   final DateTime? readAt;
   final DateTime? createdAt;
 }
-

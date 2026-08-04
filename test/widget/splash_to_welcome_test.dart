@@ -44,4 +44,3 @@ void main() {
     expect(find.text('Connetti i tuoi gusti'), findsOneWidget);
   });
 }
-

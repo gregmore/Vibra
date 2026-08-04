@@ -57,16 +57,20 @@ void main() {
       // 250km = 0 score
       // Range: 225km
       // Decrease per km = 100 / 225 = 0.444
-      
+
       final result1 = usecase.call(
-        artistMatchScore: 0, genreMatchScore: 0, popularityScore: 0,
+        artistMatchScore: 0,
+        genreMatchScore: 0,
+        popularityScore: 0,
         distanceKm: 26,
       );
       // 100 - (1 * (100/225)) = 99.56
       expect(result1.proximityScore, 99.56);
 
       final result2 = usecase.call(
-        artistMatchScore: 0, genreMatchScore: 0, popularityScore: 0,
+        artistMatchScore: 0,
+        genreMatchScore: 0,
+        popularityScore: 0,
         distanceKm: 249,
       );
       // 100 - (224 * (100/225)) = 0.44
@@ -76,16 +80,16 @@ void main() {
     test('valori clampati per input negativi o oltre 100', () {
       final result = usecase.call(
         artistMatchScore: 150, // clamped to 100
-        genreMatchScore: -20,  // clamped to 0
-        distanceKm: -10,       // clamped proximity to 100
-        popularityScore: 999,  // clamped to 100
+        genreMatchScore: -20, // clamped to 0
+        distanceKm: -10, // clamped proximity to 100
+        popularityScore: 999, // clamped to 100
       );
 
       expect(result.artistMatchScore, 100.0);
       expect(result.genreMatchScore, 0.0);
       expect(result.proximityScore, 100.0);
       expect(result.popularityScore, 100.0);
-      
+
       // Total: 100*0.5 + 0 + 100*0.15 + 100*0.10 = 50 + 0 + 15 + 10 = 75.0
       expect(result.totalScore, 75.0);
     });

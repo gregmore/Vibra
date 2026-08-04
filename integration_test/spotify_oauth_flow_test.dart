@@ -15,7 +15,9 @@ import 'package:vibra/data/models/spotify_token_model.dart';
 import '../test/helpers/test_http_overrides.dart';
 
 class MockFlutterAppAuth extends Mock implements FlutterAppAuth {}
+
 class MockSpotifyAuthRepository extends Mock implements SpotifyAuthRepository {}
+
 class MockSpotifyAuthDatasource extends Mock implements SpotifyAuthDatasource {}
 
 void main() {
@@ -75,9 +77,9 @@ void main() {
       ),
     );
 
-    when(() => mockAuthDatasource.syncMusicProfile()).thenAnswer(
-      (_) async => <String, dynamic>{'status': 'success'},
-    );
+    when(
+      () => mockAuthDatasource.syncMusicProfile(),
+    ).thenAnswer((_) async => <String, dynamic>{'status': 'success'});
 
     await tester.pumpWidget(
       ProviderScope(

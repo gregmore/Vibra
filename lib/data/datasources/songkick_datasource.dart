@@ -7,10 +7,7 @@ import '../../core/utils/logger.dart';
 /// Datasource Songkick.
 /// Nota: la Discovery API di Songkick usa key via query param `apikey`.
 class SongkickDatasource {
-  SongkickDatasource({
-    required this.dio,
-    required this.apiKey,
-  });
+  SongkickDatasource({required this.dio, required this.apiKey});
 
   final Dio dio;
   final String apiKey;
@@ -33,7 +30,11 @@ class SongkickDatasource {
           'page': page,
         },
       );
-      VibraLogger.api('GET', 'Songkick events', statusCode: response.statusCode);
+      VibraLogger.api(
+        'GET',
+        'Songkick events',
+        statusCode: response.statusCode,
+      );
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
       VibraLogger.error('Errore Songkick searchEvents', error: e);
@@ -45,4 +46,3 @@ class SongkickDatasource {
     }
   }
 }
-

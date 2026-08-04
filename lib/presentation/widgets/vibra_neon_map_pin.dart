@@ -28,21 +28,14 @@ class VibraNeonMapPin extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: color.withValues(alpha: 0.2),
-          border: Border.all(
-            color: color,
-            width: isSelected ? 2.0 : 1.0,
-          ),
+          border: Border.all(color: color, width: isSelected ? 2.0 : 1.0),
           boxShadow: [
             if (isSelected) VibraShadows.neonGlow(color, intensity: 0.35),
             VibraShadows.buttonElevation,
           ],
         ),
         child: Center(
-          child: Icon(
-            icon,
-            color: color,
-            size: isSelected ? 24 : 18,
-          ),
+          child: Icon(icon, color: color, size: isSelected ? 24 : 18),
         ),
       ),
     );

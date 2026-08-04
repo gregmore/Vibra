@@ -12,7 +12,7 @@ void main() {
 
       // NOTA: Questo test richiede un setup complesso con due utenti loggati,
       // oppure un mock della ricezione messaggi da Supabase Realtime.
-      
+
       /*
       // 1. Vai alla sezione Amici
       await tester.tap(find.byKey(const Key('nav_social')));

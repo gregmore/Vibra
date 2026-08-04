@@ -14,20 +14,32 @@ class MyEventsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allEvents = [...ref.watch(myEventsProvider).going, ...ref.watch(savedEventsProvider)];
-    
+    final allEvents = [
+      ...ref.watch(myEventsProvider).going,
+      ...ref.watch(savedEventsProvider),
+    ];
+
     // Rimuovi duplicati (se un evento è sia going che saved per qualche motivo)
     final uniqueEvents = <String, Event>{};
     for (final e in allEvents) {
       uniqueEvents[e.id] = e;
     }
-    
+
     final now = DateTime.now();
-    final upcoming = uniqueEvents.values.where((e) => e.eventDate.isAfter(now) || e.eventDate.isAtSameMomentAs(now)).toList()
-      ..sort((a, b) => a.eventDate.compareTo(b.eventDate));
-      
-    final past = uniqueEvents.values.where((e) => e.eventDate.isBefore(now)).toList()
-      ..sort((a, b) => b.eventDate.compareTo(a.eventDate)); // Più recenti prima
+    final upcoming =
+        uniqueEvents.values
+            .where(
+              (e) =>
+                  e.eventDate.isAfter(now) || e.eventDate.isAtSameMomentAs(now),
+            )
+            .toList()
+          ..sort((a, b) => a.eventDate.compareTo(b.eventDate));
+
+    final past =
+        uniqueEvents.values.where((e) => e.eventDate.isBefore(now)).toList()
+          ..sort(
+            (a, b) => b.eventDate.compareTo(a.eventDate),
+          ); // Più recenti prima
 
     final l10n = AppLocalizations.of(context)!;
 
@@ -38,7 +50,8 @@ class MyEventsScreen extends ConsumerWidget {
           const SliverPadding(padding: EdgeInsets.only(top: 8, bottom: 24)),
           SliverToBoxAdapter(
             child: VibraSectionHeader(
-              title: 'In Arrivo', // Sarebbe ideale estrarlo in l10n, hardcoded temporaneamente
+              title:
+                  'In Arrivo', // Sarebbe ideale estrarlo in l10n, hardcoded temporaneamente
               subtitle: l10n.myEventsGoingSubtitle,
             ),
           ),
@@ -57,7 +70,8 @@ class MyEventsScreen extends ConsumerWidget {
                 return VibraEventCard(
                   event: upcoming[index],
                   compact: true,
-                  onTap: () => context.push('/event-detail', extra: upcoming[index]),
+                  onTap: () =>
+                      context.push('/event-detail', extra: upcoming[index]),
                 );
               },
             ),
@@ -83,7 +97,8 @@ class MyEventsScreen extends ConsumerWidget {
                 return VibraEventCard(
                   event: past[index],
                   compact: true,
-                  onTap: () => context.push('/event-detail', extra: past[index]),
+                  onTap: () =>
+                      context.push('/event-detail', extra: past[index]),
                 );
               },
             ),
@@ -93,7 +108,11 @@ class MyEventsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, {required IconData icon, required String message}) {
+  Widget _buildEmptyState(
+    BuildContext context, {
+    required IconData icon,
+    required String message,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       child: Column(

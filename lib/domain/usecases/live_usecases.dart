@@ -13,10 +13,7 @@ class StreamLiveMessagesUseCase {
 }
 
 class SendLiveMessageParams {
-  const SendLiveMessageParams({
-    required this.eventId,
-    required this.content,
-  });
+  const SendLiveMessageParams({required this.eventId, required this.content});
 
   final String eventId;
   final String content;
@@ -36,4 +33,3 @@ class SendLiveMessageUseCase
     );
   }
 }
-

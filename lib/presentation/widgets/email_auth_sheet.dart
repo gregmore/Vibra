@@ -61,11 +61,18 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
       }
     } else if (authState.status == GeneralAuthStatus.error) {
       if (mounted) {
-        final isSuccessInfo = authState.errorMessage?.contains('Registrazione completata') ?? false;
+        final isSuccessInfo =
+            authState.errorMessage?.contains('Registrazione completata') ??
+            false;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(authState.errorMessage ?? AppLocalizations.of(context)!.authGenericError),
-            backgroundColor: isSuccessInfo ? VibraColors.green : VibraColors.error,
+            content: Text(
+              authState.errorMessage ??
+                  AppLocalizations.of(context)!.authGenericError,
+            ),
+            backgroundColor: isSuccessInfo
+                ? VibraColors.green
+                : VibraColors.error,
             duration: Duration(seconds: isSuccessInfo ? 6 : 4),
           ),
         );
@@ -138,7 +145,10 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                         decoration: InputDecoration(
                           labelText: l10n.authUsername,
                           labelStyle: const TextStyle(color: Colors.white60),
-                          prefixIcon: const Icon(Icons.person_outline_rounded, color: Colors.white60),
+                          prefixIcon: const Icon(
+                            Icons.person_outline_rounded,
+                            color: Colors.white60,
+                          ),
                           filled: true,
                           fillColor: Colors.white.withValues(alpha: 0.05),
                           enabledBorder: OutlineInputBorder(
@@ -147,7 +157,9 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: VibraColors.accent),
+                            borderSide: const BorderSide(
+                              color: VibraColors.accent,
+                            ),
                           ),
                         ),
                         validator: (value) {
@@ -166,7 +178,10 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                       decoration: InputDecoration(
                         labelText: l10n.authEmail,
                         labelStyle: const TextStyle(color: Colors.white60),
-                        prefixIcon: const Icon(Icons.email_outlined, color: Colors.white60),
+                        prefixIcon: const Icon(
+                          Icons.email_outlined,
+                          color: Colors.white60,
+                        ),
                         filled: true,
                         fillColor: Colors.white.withValues(alpha: 0.05),
                         enabledBorder: OutlineInputBorder(
@@ -175,7 +190,9 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: VibraColors.accent),
+                          borderSide: const BorderSide(
+                            color: VibraColors.accent,
+                          ),
                         ),
                       ),
                       validator: (value) {
@@ -196,13 +213,20 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                       decoration: InputDecoration(
                         labelText: l10n.authPassword,
                         labelStyle: const TextStyle(color: Colors.white60),
-                        prefixIcon: const Icon(Icons.lock_outline_rounded, color: Colors.white60),
+                        prefixIcon: const Icon(
+                          Icons.lock_outline_rounded,
+                          color: Colors.white60,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                            _obscurePassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
                             color: Colors.white60,
                           ),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
                         ),
                         filled: true,
                         fillColor: Colors.white.withValues(alpha: 0.05),
@@ -212,7 +236,9 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: VibraColors.accent),
+                          borderSide: const BorderSide(
+                            color: VibraColors.accent,
+                          ),
                         ),
                       ),
                       validator: (value) {
@@ -230,7 +256,9 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: authState.status == GeneralAuthStatus.loading ? null : _submit,
+                        onPressed: authState.status == GeneralAuthStatus.loading
+                            ? null
+                            : _submit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: VibraColors.primary,
                           foregroundColor: Colors.white,
@@ -244,12 +272,17 @@ class _EmailAuthSheetState extends ConsumerState<EmailAuthSheet> {
                                 height: 24,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.5,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : Text(
                                 _isSignUp ? l10n.authRegister : l10n.authLogin,
-                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                       ),
                     ),

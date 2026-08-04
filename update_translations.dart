@@ -4,7 +4,9 @@ import 'dart:io';
 
 void main(List<String> args) async {
   if (args.length < 6) {
-    print('Usage: dart update_translations.dart <key> <en> <it> <es> <fr> <de>');
+    print(
+      'Usage: dart update_translations.dart <key> <en> <it> <es> <fr> <de>',
+    );
     return;
   }
 
@@ -29,7 +31,7 @@ void main(List<String> args) async {
     final content = await file.readAsString();
     final json = jsonDecode(content) as Map<String, dynamic>;
     json[key] = value;
-    
+
     final formatted = const JsonEncoder.withIndent('  ').convert(json);
     await file.writeAsString(formatted);
     print('Updated $lang');

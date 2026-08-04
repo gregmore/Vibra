@@ -15,10 +15,7 @@ class SpotifyDatasource {
   final Dio dio;
   final FlutterAppAuth appAuth;
 
-  SpotifyDatasource({
-    required this.dio,
-    required this.appAuth,
-  });
+  SpotifyDatasource({required this.dio, required this.appAuth});
 
   String? _accessToken;
   String? _refreshToken;
@@ -64,8 +61,7 @@ class SpotifyDatasource {
 
       return {
         'access_token': result.accessToken!,
-        if (result.refreshToken != null)
-          'refresh_token': result.refreshToken!,
+        if (result.refreshToken != null) 'refresh_token': result.refreshToken!,
       };
     } catch (e) {
       if (e is AuthException) rethrow;
@@ -79,9 +75,7 @@ class SpotifyDatasource {
   /// Rinnova il token di accesso usando il refresh token.
   Future<String> refreshAccessToken() async {
     if (_refreshToken == null) {
-      throw const AuthException(
-        message: 'Nessun refresh token disponibile',
-      );
+      throw const AuthException(message: 'Nessun refresh token disponibile');
     }
 
     try {
@@ -185,12 +179,12 @@ class SpotifyDatasource {
     Map<String, dynamic>? queryParams,
   }) async {
     try {
-      final response = await dio.get(
-        endpoint,
-        queryParameters: queryParams,
+      final response = await dio.get(endpoint, queryParameters: queryParams);
+      VibraLogger.api(
+        'GET',
+        '${ApiConstants.spotifyApiBase}$endpoint',
+        statusCode: response.statusCode,
       );
-      VibraLogger.api('GET', '${ApiConstants.spotifyApiBase}$endpoint',
-          statusCode: response.statusCode);
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
       // Token scaduto — tentativo di refresh automatico

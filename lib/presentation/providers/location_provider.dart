@@ -26,7 +26,9 @@ final userLocationProvider = FutureProvider<UserLocation>((ref) async {
     }
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
-      VibraLogger.warning('GPS permission denied, using default location (Milano)');
+      VibraLogger.warning(
+        'GPS permission denied, using default location (Milano)',
+      );
       return UserLocation.milano;
     }
 

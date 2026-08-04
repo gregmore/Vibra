@@ -38,8 +38,8 @@ extension StringExtensions on String {
 
   /// Restituisce true se la stringa è un'email valida.
   bool get isValidEmail => RegExp(
-        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-      ).hasMatch(this);
+    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+  ).hasMatch(this);
 }
 
 /// Extension su [BuildContext] per accesso rapido a tema e dimensioni.
@@ -71,9 +71,7 @@ extension BuildContextExtensions on BuildContext {
             ? Theme.of(this).colorScheme.error
             : Theme.of(this).colorScheme.primary,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

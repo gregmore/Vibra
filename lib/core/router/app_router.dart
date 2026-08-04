@@ -43,22 +43,17 @@ class AppRouter {
       refreshListenable: GoRouterRefreshStream(
         Supabase.instance.client.auth.onAuthStateChange,
       ),
-      observers: <NavigatorObserver>[
-        _NavigationObserver(),
-      ],
+      observers: <NavigatorObserver>[_NavigationObserver()],
       redirect: (context, state) {
-        final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
+        final isTest = WidgetsBinding.instance.runtimeType.toString().contains(
+          'Test',
+        );
         if (isTest) return null;
 
         final currentUser = Supabase.instance.client.auth.currentUser;
         final path = state.uri.path;
 
-        const publicPaths = {
-          '/',
-          '/welcome',
-          '/login',
-          '/spotify-connect',
-        };
+        const publicPaths = {'/', '/welcome', '/login', '/spotify-connect'};
 
         final isPublic = publicPaths.contains(path);
         final isAuthenticated = currentUser != null;
@@ -70,18 +65,22 @@ class AppRouter {
         if (isAuthenticated) {
           final profile = ref.read(myProfileProvider);
           final bool profileLoaded = profile.id.isNotEmpty;
-          final bool isLegacyUser = profile.createdAt != null && profile.createdAt!.isBefore(DateTime(2026, 7, 27));
+          final bool isLegacyUser =
+              profile.createdAt != null &&
+              profile.createdAt!.isBefore(DateTime(2026, 7, 27));
 
           // Se il profilo è caricato e l'onboarding non è completo (e non è un account legacy)
           if (profileLoaded && !profile.onboardingCompleted && !isLegacyUser) {
-             if (path != '/onboarding') {
-                return '/onboarding';
-             }
-             return null;
+            if (path != '/onboarding') {
+              return '/onboarding';
+            }
+            return null;
           }
 
           if (path == '/' || path == '/welcome' || path == '/login') {
-            if (profileLoaded && !profile.onboardingCompleted && !isLegacyUser) {
+            if (profileLoaded &&
+                !profile.onboardingCompleted &&
+                !isLegacyUser) {
               return '/onboarding';
             }
             return '/home';
@@ -90,159 +89,160 @@ class AppRouter {
 
         return null;
       },
-    routes: <RouteBase>[
-      GoRoute(
-        path: '/',
-        name: RouteNames.splash,
-        builder: (context, state) => const SplashScreen(),
-      ),
-      GoRoute(
-        path: '/welcome',
-        name: RouteNames.welcome,
-        builder: (context, state) => const WelcomeScreen(),
-      ),
-      GoRoute(
-        path: '/login',
-        name: RouteNames.login,
-        builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
-        path: '/spotify-connect',
-        name: RouteNames.spotifyConnect,
-        builder: (context, state) => const SpotifyConnectScreen(),
-      ),
-      GoRoute(
-        path: '/onboarding',
-        name: 'onboarding',
-        builder: (context, state) => const OnboardingWizardScreen(),
-      ),
-      StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) =>
-            VibraShellScreen(navigationShell: navigationShell),
-        branches: [
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/home',
-                name: RouteNames.home,
-                builder: (context, state) => const HomeScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/explore',
-                name: RouteNames.explore,
-                builder: (context, state) {
-                  final initialQuery = state.uri.queryParameters['q'];
-                  return ExploreScreen(initialQuery: initialQuery);
-                },
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/social-match',
-                name: RouteNames.socialMatch,
-                builder: (context, state) => const SocialMatchScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/social',
-                name: RouteNames.social,
-                builder: (context, state) => const FriendsScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/profile',
-                name: RouteNames.profile,
-                builder: (context, state) => const MyProfileScreen(),
-              ),
-            ],
-          ),
-        ],
-      ),
-      GoRoute(
-        path: '/event-detail',
-        name: RouteNames.eventDetail,
-        builder: (context, state) => EventDetailScreen(event: state.extra as Event?),
-      ),
-      GoRoute(
-        path: '/user-profile',
-        name: RouteNames.userProfile,
-        builder: (context, state) {
-          final extra = state.extra;
-          if (extra is String) {
-            return UserProfileScreen(userId: extra);
-          }
-          return const UserProfileScreen();
-        },
-      ),
-      GoRoute(
-        path: '/friends',
-        name: RouteNames.friends,
-        builder: (context, state) => const FriendsScreen(),
-      ),
-      GoRoute(
-        path: '/chat',
-        name: RouteNames.chat,
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
-          return ChatScreen(
-            otherUserId: extra?['otherUserId'] as String? ?? '',
-            otherDisplayName: extra?['otherDisplayName'] as String? ?? 'Chat',
-          );
-        },
-      ),
-      GoRoute(
-        path: '/music-stats',
-        name: RouteNames.musicStats,
-        builder: (context, state) => const MusicStatsScreen(),
-      ),
-      GoRoute(
-        path: '/my-events',
-        name: RouteNames.myEvents,
-        builder: (context, state) => const MyEventsScreen(),
-      ),
-      GoRoute(
-        path: '/settings',
-        name: RouteNames.settings,
-        builder: (context, state) => const SettingsScreen(),
-      ),
-      GoRoute(
-        path: '/edit-profile',
-        name: RouteNames.editProfile,
-        builder: (context, state) => const EditProfileScreen(),
-      ),
-      GoRoute(
-        path: '/privacy-policy',
-        name: RouteNames.privacyPolicy,
-        builder: (context, state) => const PrivacyPolicyScreen(),
-      ),
-      GoRoute(
-        path: '/terms-of-service',
-        name: RouteNames.termsOfService,
-        builder: (context, state) => const TermsOfServiceScreen(),
-      ),
-      GoRoute(
-        path: '/support',
-        name: RouteNames.support,
-        builder: (context, state) => const SupportScreen(),
-      ),
-      GoRoute(
-        path: '/about',
-        name: RouteNames.about,
-        builder: (context, state) => const AboutScreen(),
-      ),
-    ],
+      routes: <RouteBase>[
+        GoRoute(
+          path: '/',
+          name: RouteNames.splash,
+          builder: (context, state) => const SplashScreen(),
+        ),
+        GoRoute(
+          path: '/welcome',
+          name: RouteNames.welcome,
+          builder: (context, state) => const WelcomeScreen(),
+        ),
+        GoRoute(
+          path: '/login',
+          name: RouteNames.login,
+          builder: (context, state) => const LoginScreen(),
+        ),
+        GoRoute(
+          path: '/spotify-connect',
+          name: RouteNames.spotifyConnect,
+          builder: (context, state) => const SpotifyConnectScreen(),
+        ),
+        GoRoute(
+          path: '/onboarding',
+          name: 'onboarding',
+          builder: (context, state) => const OnboardingWizardScreen(),
+        ),
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) =>
+              VibraShellScreen(navigationShell: navigationShell),
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/home',
+                  name: RouteNames.home,
+                  builder: (context, state) => const HomeScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/explore',
+                  name: RouteNames.explore,
+                  builder: (context, state) {
+                    final initialQuery = state.uri.queryParameters['q'];
+                    return ExploreScreen(initialQuery: initialQuery);
+                  },
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/social-match',
+                  name: RouteNames.socialMatch,
+                  builder: (context, state) => const SocialMatchScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/social',
+                  name: RouteNames.social,
+                  builder: (context, state) => const FriendsScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/profile',
+                  name: RouteNames.profile,
+                  builder: (context, state) => const MyProfileScreen(),
+                ),
+              ],
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/event-detail',
+          name: RouteNames.eventDetail,
+          builder: (context, state) =>
+              EventDetailScreen(event: state.extra as Event?),
+        ),
+        GoRoute(
+          path: '/user-profile',
+          name: RouteNames.userProfile,
+          builder: (context, state) {
+            final extra = state.extra;
+            if (extra is String) {
+              return UserProfileScreen(userId: extra);
+            }
+            return const UserProfileScreen();
+          },
+        ),
+        GoRoute(
+          path: '/friends',
+          name: RouteNames.friends,
+          builder: (context, state) => const FriendsScreen(),
+        ),
+        GoRoute(
+          path: '/chat',
+          name: RouteNames.chat,
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            return ChatScreen(
+              otherUserId: extra?['otherUserId'] as String? ?? '',
+              otherDisplayName: extra?['otherDisplayName'] as String? ?? 'Chat',
+            );
+          },
+        ),
+        GoRoute(
+          path: '/music-stats',
+          name: RouteNames.musicStats,
+          builder: (context, state) => const MusicStatsScreen(),
+        ),
+        GoRoute(
+          path: '/my-events',
+          name: RouteNames.myEvents,
+          builder: (context, state) => const MyEventsScreen(),
+        ),
+        GoRoute(
+          path: '/settings',
+          name: RouteNames.settings,
+          builder: (context, state) => const SettingsScreen(),
+        ),
+        GoRoute(
+          path: '/edit-profile',
+          name: RouteNames.editProfile,
+          builder: (context, state) => const EditProfileScreen(),
+        ),
+        GoRoute(
+          path: '/privacy-policy',
+          name: RouteNames.privacyPolicy,
+          builder: (context, state) => const PrivacyPolicyScreen(),
+        ),
+        GoRoute(
+          path: '/terms-of-service',
+          name: RouteNames.termsOfService,
+          builder: (context, state) => const TermsOfServiceScreen(),
+        ),
+        GoRoute(
+          path: '/support',
+          name: RouteNames.support,
+          builder: (context, state) => const SupportScreen(),
+        ),
+        GoRoute(
+          path: '/about',
+          name: RouteNames.about,
+          builder: (context, state) => const AboutScreen(),
+        ),
+      ],
     );
   }
 }

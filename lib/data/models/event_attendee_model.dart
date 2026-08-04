@@ -16,4 +16,3 @@ abstract class EventAttendeeModel with _$EventAttendeeModel {
   factory EventAttendeeModel.fromJson(Map<String, dynamic> json) =>
       _$EventAttendeeModelFromJson(json);
 }
-

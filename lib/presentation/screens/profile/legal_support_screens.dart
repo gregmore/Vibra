@@ -5,10 +5,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
 
 class _InfoSection {
-  const _InfoSection({
-    required this.title,
-    required this.body,
-  });
+  const _InfoSection({required this.title, required this.body});
 
   final String title;
   final String body;
@@ -106,18 +103,9 @@ class TermsOfServiceScreen extends StatelessWidget {
       title: l10n.legalTermsTitle,
       subtitle: l10n.legalTermsSubtitle,
       sections: [
-        _InfoSection(
-          title: l10n.legalTermsSec1,
-          body: l10n.legalTermsBody1,
-        ),
-        _InfoSection(
-          title: l10n.legalTermsSec2,
-          body: l10n.legalTermsBody2,
-        ),
-        _InfoSection(
-          title: l10n.legalTermsSec3,
-          body: l10n.legalTermsBody3,
-        ),
+        _InfoSection(title: l10n.legalTermsSec1, body: l10n.legalTermsBody1),
+        _InfoSection(title: l10n.legalTermsSec2, body: l10n.legalTermsBody2),
+        _InfoSection(title: l10n.legalTermsSec3, body: l10n.legalTermsBody3),
         _InfoSection(
           title: l10n.legalTermsSec4,
           body: l10n.legalTermsBody4(AppConstants.legalEmail),
@@ -166,16 +154,19 @@ class AboutScreen extends StatelessWidget {
       sections: [
         _InfoSection(
           title: l10n.legalAboutSec1,
-          body: l10n.legalAboutBody1(AppConstants.appVersion, AppConstants.appBuildNumber),
+          body: l10n.legalAboutBody1(
+            AppConstants.appVersion,
+            AppConstants.appBuildNumber,
+          ),
         ),
         _InfoSection(
           title: l10n.legalAboutSec2,
-          body: l10n.legalAboutBody2(AppConstants.androidPackageName, AppConstants.iOSBundleId),
+          body: l10n.legalAboutBody2(
+            AppConstants.androidPackageName,
+            AppConstants.iOSBundleId,
+          ),
         ),
-        _InfoSection(
-          title: l10n.legalAboutSec3,
-          body: l10n.legalAboutBody3,
-        ),
+        _InfoSection(title: l10n.legalAboutSec3, body: l10n.legalAboutBody3),
         _InfoSection(
           title: l10n.legalAboutSec4,
           body: l10n.legalAboutBody4(AppConstants.supportEmail),

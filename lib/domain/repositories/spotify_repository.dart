@@ -5,10 +5,7 @@ abstract class SpotifyRepository {
 
   Future<void> loadTokensIntoDatasource();
 
-  Future<MusicProfile> buildMusicProfilePayload({
-    required String userId,
-  });
+  Future<MusicProfile> buildMusicProfilePayload({required String userId});
 
   Future<void> refreshTokenIfPossible();
 }
-

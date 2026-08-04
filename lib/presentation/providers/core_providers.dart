@@ -63,11 +63,13 @@ final dioProvider = Provider<Dio>((ref) {
 
 final appAuthProvider = Provider<FlutterAppAuth>((ref) => FlutterAppAuth());
 
-final supabaseDatasourceProvider =
-    Provider<SupabaseDatasource>((ref) => SupabaseDatasource());
+final supabaseDatasourceProvider = Provider<SupabaseDatasource>(
+  (ref) => SupabaseDatasource(),
+);
 
-final secureStorageProvider =
-    Provider<SecureStorageService>((ref) => SecureStorageService());
+final secureStorageProvider = Provider<SecureStorageService>(
+  (ref) => SecureStorageService(),
+);
 
 final spotifyTokenStorageProvider = Provider<SpotifyTokenStorage>((ref) {
   return SpotifyTokenStorage(ref.watch(secureStorageProvider));
@@ -98,27 +100,31 @@ final bandsintownDatasourceProvider = Provider<BandsintownDatasource?>((ref) {
   return BandsintownDatasource(dio: ref.watch(dioProvider), appId: appId);
 });
 
-final eventsAggregatorDatasourceProvider =
-    Provider<EventsAggregatorDatasource>((ref) {
-  return EventsAggregatorDatasource(
-    ticketmaster: ref.watch(ticketmasterDatasourceProvider),
-    songkick: ref.watch(songkickDatasourceProvider),
-    bandsintown: ref.watch(bandsintownDatasourceProvider),
-  );
-});
+final eventsAggregatorDatasourceProvider = Provider<EventsAggregatorDatasource>(
+  (ref) {
+    return EventsAggregatorDatasource(
+      ticketmaster: ref.watch(ticketmasterDatasourceProvider),
+      songkick: ref.watch(songkickDatasourceProvider),
+      bandsintown: ref.watch(bandsintownDatasourceProvider),
+    );
+  },
+);
 
-final supabaseProfileDatasourceProvider =
-    Provider<SupabaseProfileDatasource>((ref) {
+final supabaseProfileDatasourceProvider = Provider<SupabaseProfileDatasource>((
+  ref,
+) {
   return SupabaseProfileDatasource(ref.watch(supabaseDatasourceProvider));
 });
 
-final supabaseEventsDatasourceProvider =
-    Provider<SupabaseEventsDatasource>((ref) {
+final supabaseEventsDatasourceProvider = Provider<SupabaseEventsDatasource>((
+  ref,
+) {
   return SupabaseEventsDatasource(ref.watch(supabaseDatasourceProvider));
 });
 
-final supabaseSocialDatasourceProvider =
-    Provider<SupabaseSocialDatasource>((ref) {
+final supabaseSocialDatasourceProvider = Provider<SupabaseSocialDatasource>((
+  ref,
+) {
   return SupabaseSocialDatasource(ref.watch(supabaseDatasourceProvider));
 });
 
@@ -128,8 +134,10 @@ final supabaseLiveDatasourceProvider = Provider<SupabaseLiveDatasource>((ref) {
 
 final supabaseNotificationsDatasourceProvider =
     Provider<SupabaseNotificationsDatasource>((ref) {
-  return SupabaseNotificationsDatasource(ref.watch(supabaseDatasourceProvider));
-});
+      return SupabaseNotificationsDatasource(
+        ref.watch(supabaseDatasourceProvider),
+      );
+    });
 
 // ─────────────────────────────────────────────────────────────
 // Repositories (data layer)
@@ -161,9 +169,12 @@ final liveRepositoryProvider = Provider<LiveRepository>((ref) {
   return LiveRepositoryImpl(ref.watch(supabaseLiveDatasourceProvider));
 });
 
-final notificationsRepositoryProvider =
-    Provider<NotificationsRepository>((ref) {
-  return NotificationsRepositoryImpl(ref.watch(supabaseNotificationsDatasourceProvider));
+final notificationsRepositoryProvider = Provider<NotificationsRepository>((
+  ref,
+) {
+  return NotificationsRepositoryImpl(
+    ref.watch(supabaseNotificationsDatasourceProvider),
+  );
 });
 
 final spotifyAuthDatasourceProvider = Provider<SpotifyAuthDatasource>((ref) {
@@ -192,16 +203,22 @@ class SpotifyAuthInterceptor extends Interceptor {
       }
 
       try {
-        final session = await ref.read(spotifyAuthRepositoryProvider).refreshSession();
-        
+        final session = await ref
+            .read(spotifyAuthRepositoryProvider)
+            .refreshSession();
+
         final requestOptions = err.requestOptions;
-        requestOptions.headers['Authorization'] = 'Bearer ${session.accessToken}';
-        
+        requestOptions.headers['Authorization'] =
+            'Bearer ${session.accessToken}';
+
         final dio = ref.read(dioProvider);
         final response = await dio.fetch(requestOptions);
         return handler.resolve(response);
       } catch (e) {
-        VibraLogger.error('Errore durante il refresh automatico nel Dio interceptor', error: e);
+        VibraLogger.error(
+          'Errore durante il refresh automatico nel Dio interceptor',
+          error: e,
+        );
       }
     }
     super.onError(err, handler);

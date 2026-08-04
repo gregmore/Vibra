@@ -9,7 +9,8 @@ abstract class SpotifyPlaylistModel with _$SpotifyPlaylistModel {
     required String id,
     required String name,
     @JsonKey(name: 'tracks') SpotifyPlaylistTracksModel? tracks,
-    @JsonKey(name: 'images') @Default(<SpotifyPlaylistImageModel>[])
+    @JsonKey(name: 'images')
+    @Default(<SpotifyPlaylistImageModel>[])
     List<SpotifyPlaylistImageModel> images,
   }) = _SpotifyPlaylistModel;
 
@@ -19,9 +20,8 @@ abstract class SpotifyPlaylistModel with _$SpotifyPlaylistModel {
 
 @freezed
 abstract class SpotifyPlaylistTracksModel with _$SpotifyPlaylistTracksModel {
-  const factory SpotifyPlaylistTracksModel({
-    int? total,
-  }) = _SpotifyPlaylistTracksModel;
+  const factory SpotifyPlaylistTracksModel({int? total}) =
+      _SpotifyPlaylistTracksModel;
 
   factory SpotifyPlaylistTracksModel.fromJson(Map<String, dynamic> json) =>
       _$SpotifyPlaylistTracksModelFromJson(json);
@@ -38,4 +38,3 @@ abstract class SpotifyPlaylistImageModel with _$SpotifyPlaylistImageModel {
   factory SpotifyPlaylistImageModel.fromJson(Map<String, dynamic> json) =>
       _$SpotifyPlaylistImageModelFromJson(json);
 }
-

@@ -35,7 +35,7 @@ void main() {
   @override
   Widget build(BuildContext context) {
 ''';
-  
+
   if (!content.contains('_buildZoomButton')) {
     content = content.replaceAll(
       '  @override\n  Widget build(BuildContext context) {',

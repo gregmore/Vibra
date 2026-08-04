@@ -25,7 +25,8 @@ class VibraLogo extends StatelessWidget {
       child: CustomPaint(
         painter: _VibraLogoPainter(
           strokeWidth: strokeWidth,
-          gradient: gradient ??
+          gradient:
+              gradient ??
               const LinearGradient(
                 colors: [VibraColors.primary, VibraColors.accent],
                 begin: Alignment.centerLeft,
@@ -38,10 +39,7 @@ class VibraLogo extends StatelessWidget {
 }
 
 class _VibraLogoPainter extends CustomPainter {
-  _VibraLogoPainter({
-    required this.strokeWidth,
-    required this.gradient,
-  });
+  _VibraLogoPainter({required this.strokeWidth, required this.gradient});
 
   final double strokeWidth;
   final Gradient gradient;
@@ -97,6 +95,7 @@ class _VibraLogoPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _VibraLogoPainter oldDelegate) {
-    return oldDelegate.strokeWidth != strokeWidth || oldDelegate.gradient != gradient;
+    return oldDelegate.strokeWidth != strokeWidth ||
+        oldDelegate.gradient != gradient;
   }
 }
