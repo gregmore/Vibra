@@ -201,16 +201,21 @@ class EventsAggregatorDatasource {
           (json['promoter'] as Map<String, dynamic>?)?['name'] as String?;
 
       final List<String> extraInfo = [];
-      if (description != null && description.trim().isNotEmpty)
+      if (description != null && description.trim().isNotEmpty) {
         extraInfo.add(description.trim());
-      if (pleaseNote != null && pleaseNote.trim().isNotEmpty)
+      }
+      if (pleaseNote != null && pleaseNote.trim().isNotEmpty) {
         extraInfo.add('📝 Nota: ${pleaseNote.trim()}');
-      if (ticketLimit != null && ticketLimit.trim().isNotEmpty)
+      }
+      if (ticketLimit != null && ticketLimit.trim().isNotEmpty) {
         extraInfo.add('🎫 Limite biglietti: ${ticketLimit.trim()}');
-      if (accessibility != null && accessibility.trim().isNotEmpty)
+      }
+      if (accessibility != null && accessibility.trim().isNotEmpty) {
         extraInfo.add('♿ Accessibilità: ${accessibility.trim()}');
-      if (promoterName != null && promoterName.trim().isNotEmpty)
+      }
+      if (promoterName != null && promoterName.trim().isNotEmpty) {
         extraInfo.add('⭐ Promoter: ${promoterName.trim()}');
+      }
 
       description = extraInfo.isNotEmpty ? extraInfo.join('\n\n') : null;
 

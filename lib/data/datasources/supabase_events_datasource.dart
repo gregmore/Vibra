@@ -121,8 +121,9 @@ class SupabaseEventsDatasource {
     required String status,
   }) async {
     final user = _supabase.currentUser;
-    if (user == null)
+    if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
+    }
 
     if (status == 'none') {
       await _supabase.client.from(DbTables.eventAttendees).delete().match({

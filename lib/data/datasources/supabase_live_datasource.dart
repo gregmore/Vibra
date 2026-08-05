@@ -29,10 +29,11 @@ class SupabaseLiveDatasource {
     required String content,
   }) async {
     final user = _supabase.currentUser;
-    if (user == null)
+    if (user == null) {
       throw const app_exceptions.AuthException(
         message: 'Utente non autenticato',
       );
+    }
 
     final row = await _supabase.insert(DbTables.liveMessages, {
       'event_id': eventId,

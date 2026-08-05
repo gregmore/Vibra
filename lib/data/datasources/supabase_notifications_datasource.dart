@@ -11,8 +11,9 @@ class SupabaseNotificationsDatasource {
 
   Future<List<NotificationModel>> listMyNotifications({int limit = 50}) async {
     final user = _supabase.currentUser;
-    if (user == null)
+    if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
+    }
 
     final rows = await _supabase.select(
       DbTables.notifications,

@@ -16,8 +16,9 @@ class SupabaseSocialDatasource {
     required String receiverId,
   }) async {
     final user = _supabase.currentUser;
-    if (user == null)
+    if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
+    }
 
     try {
       final row = await _supabase.insert(DbTables.friendships, {
@@ -47,8 +48,9 @@ class SupabaseSocialDatasource {
     required String status, // accepted|rejected
   }) async {
     final user = _supabase.currentUser;
-    if (user == null)
+    if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
+    }
 
     final row = await _supabase.update(
       DbTables.friendships,
@@ -61,8 +63,9 @@ class SupabaseSocialDatasource {
 
   Future<List<FriendshipModel>> listMyFriendships({String? status}) async {
     final user = _supabase.currentUser;
-    if (user == null)
+    if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
+    }
 
     try {
       var query = _supabase.client
@@ -93,8 +96,9 @@ class SupabaseSocialDatasource {
     Map<String, dynamic>? metadata,
   }) async {
     final user = _supabase.currentUser;
-    if (user == null)
+    if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
+    }
 
     final row = await _supabase.insert(DbTables.messages, {
       'sender_id': user.id,
@@ -108,8 +112,9 @@ class SupabaseSocialDatasource {
 
   Future<void> blockUser({required String blockedId}) async {
     final user = _supabase.currentUser;
-    if (user == null)
+    if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
+    }
     await _supabase.insert('blocked_users', {
       'blocker_id': user.id,
       'blocked_id': blockedId,
@@ -123,8 +128,9 @@ class SupabaseSocialDatasource {
     String? messageId,
   }) async {
     final user = _supabase.currentUser;
-    if (user == null)
+    if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
+    }
     await _supabase.insert('reports', {
       'reporter_id': user.id,
       'reported_id': reportedId,
@@ -136,8 +142,9 @@ class SupabaseSocialDatasource {
 
   Future<void> softDeleteChat({required String otherUserId}) async {
     final user = _supabase.currentUser;
-    if (user == null)
+    if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
+    }
 
     // We append our user ID to deleted_by array for messages between us and the other user
     // The query finds messages where sender is A and receiver is B, or vice-versa
@@ -152,8 +159,9 @@ class SupabaseSocialDatasource {
     required String reaction,
   }) async {
     final user = _supabase.currentUser;
-    if (user == null)
+    if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
+    }
 
     // Using an RPC to update jsonb is better, or doing a select then update
     await _supabase.client.rpc(
@@ -171,8 +179,9 @@ class SupabaseSocialDatasource {
     int limit = 50,
   }) async {
     final user = _supabase.currentUser;
-    if (user == null)
+    if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
+    }
 
     try {
       final rows = await _supabase.client
@@ -197,8 +206,9 @@ class SupabaseSocialDatasource {
 
   Future<List<Map<String, dynamic>>> listMyMatches({int limit = 20}) async {
     final user = _supabase.currentUser;
-    if (user == null)
+    if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
+    }
 
     try {
       final rows = await _supabase.client
@@ -238,8 +248,9 @@ class SupabaseSocialDatasource {
 
   Stream<List<MessageModel>> streamMessagesWith({required String otherUserId}) {
     final user = _supabase.currentUser;
-    if (user == null)
+    if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
+    }
 
     final stream = _supabase.client
         .from(DbTables.messages)

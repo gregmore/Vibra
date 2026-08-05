@@ -178,8 +178,9 @@ class _VibraGlassmorphicImageCardState
                   final isTest = WidgetsBinding.instance.runtimeType
                       .toString()
                       .contains('Test');
-                  if (isTest)
+                  if (isTest) {
                     return Container(color: VibraColors.surfaceVariant);
+                  }
                   return Container(
                     color: VibraColors.surfaceVariant,
                     child: const Center(

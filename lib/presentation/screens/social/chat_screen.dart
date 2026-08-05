@@ -234,10 +234,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     .call(widget.otherUserId);
                 if (mounted) {
                   if (context.mounted) Navigator.pop(context); // Close chat
-                  if (context.mounted)
+                  if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Utente bloccato')),
                     );
+                  }
                 }
               } catch (_) {}
             },

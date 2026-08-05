@@ -87,6 +87,7 @@ dev_dependencies:
     sdk: flutter
   flutter_native_splash: ^2.4.8
 
+  supabase: any
 flutter:
   uses-material-design: true
   generate: true

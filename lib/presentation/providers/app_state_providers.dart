@@ -222,8 +222,9 @@ class ProfileController extends StateNotifier<AppUser> {
     if (displayName != null) updates['display_name'] = displayName;
     if (bio != null) updates['bio'] = bio;
     if (onboardingStep != null) updates['onboarding_step'] = onboardingStep;
-    if (onboardingCompleted != null)
+    if (onboardingCompleted != null) {
       updates['onboarding_completed'] = onboardingCompleted;
+    }
     if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
 
     if (updates.isNotEmpty) {
