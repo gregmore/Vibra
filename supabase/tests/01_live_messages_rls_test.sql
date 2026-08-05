@@ -20,8 +20,8 @@ VALUES (
 );
 
 -- Mock Evento (Posizionato in centro a Milano)
-INSERT INTO public.events (id, name, latitude, longitude, event_date)
-VALUES ('evt-test-1', 'Vibra Live Test', 45.4642, 9.1900, now());
+INSERT INTO public.events (id, external_id, source, name, latitude, longitude, event_date)
+VALUES ('00000000-0000-0000-0000-000000000099', 'evt-test-1', 'ticketmaster', 'Vibra Live Test', 45.4642, 9.1900, now());
 
 
 -- ==========================================
@@ -40,7 +40,7 @@ SET LOCAL request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
 SELECT lives_ok(
   $$ 
   INSERT INTO public.live_messages (event_id, user_id, content) 
-  VALUES ('evt-test-1', '00000000-0000-0000-0000-000000000001', 'Sono qui al concerto!');
+  VALUES ('00000000-0000-0000-0000-000000000099', '00000000-0000-0000-0000-000000000001', 'Sono qui al concerto!');
   $$,
   'RLS PERMIT: Utente a 443m (< 500m) può inserire un messaggio live'
 );
@@ -65,7 +65,7 @@ SET LOCAL request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
 SELECT throws_ok(
   $$ 
   INSERT INTO public.live_messages (event_id, user_id, content) 
-  VALUES ('evt-test-1', '00000000-0000-0000-0000-000000000001', 'Sono al bar lontano!');
+  VALUES ('00000000-0000-0000-0000-000000000099', '00000000-0000-0000-0000-000000000001', 'Sono al bar lontano!');
   $$,
   'new row violates row-level security policy for table "live_messages"',
   'RLS DENY: Utente a 545m (> 500m) riceve eccezione di sicurezza PostGIS'

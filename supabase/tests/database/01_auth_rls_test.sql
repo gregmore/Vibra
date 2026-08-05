@@ -10,8 +10,8 @@ insert into public.users (id, username) values
   ('11111111-1111-1111-1111-111111111111', 'user1'),
   ('22222222-2222-2222-2222-222222222222', 'user2');
 
-insert into public.events (id, name, event_date, latitude, longitude) values
-  ('12345678-1234-1234-1234-123456789012', 'Test Event', now(), 45.0, 9.0);
+insert into public.events (id, external_id, source, name, event_date, latitude, longitude) values
+  ('12345678-1234-1234-1234-123456789012', 'test-ext-1', 'ticketmaster', 'Test Event', now(), 45.0, 9.0);
 
 -- Inserisci un evento salvato da user1
 insert into event_attendees (user_id, event_id, status) values
