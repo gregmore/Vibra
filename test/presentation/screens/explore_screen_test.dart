@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 
 import 'package:vibra/domain/entities/event.dart';
 import 'package:vibra/presentation/screens/explore/explore_screen.dart';
 import 'package:vibra/presentation/providers/location_provider.dart';
 import 'package:vibra/presentation/providers/map_events_provider.dart';
+import 'package:vibra/l10n/app_localizations.dart';
 
 class MapEventsTestTracker {
   static int fetchCallCount = 0;
@@ -94,7 +96,12 @@ void main() {
         userLocationProvider.overrideWith((ref) => UserLocation.milano),
         mapEventsProvider.overrideWith(() => MockMapEventsNotifier()),
       ],
-      child: const MaterialApp(home: ExploreScreen()),
+      child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: Locale('it'),
+        home: ExploreScreen(),
+      ),
     );
   }
 
@@ -129,7 +136,7 @@ void main() {
 
         expect(find.byType(CircularProgressIndicator), findsNothing);
         expect(find.byType(FlutterMap), findsOneWidget);
-        expect(find.byType(MarkerLayer), findsOneWidget);
+        expect(find.byType(MarkerClusterLayerWidget), findsOneWidget);
       },
     );
 
