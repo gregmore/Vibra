@@ -12,7 +12,7 @@ SELECT plan(2);
 INSERT INTO auth.users (id, email) 
 VALUES ('00000000-0000-0000-0000-000000000001', 'test_user@vibra.local');
 
-INSERT INTO public.app_users (id, username, last_location) 
+INSERT INTO public.users (id, username, last_location) 
 VALUES (
     '00000000-0000-0000-0000-000000000001', 
     'TestUser', 
@@ -28,7 +28,7 @@ VALUES ('evt-test-1', 'Vibra Live Test', 45.4642, 9.1900, now());
 -- 2. SCENARIO 1: Utente a 450 metri
 -- ==========================================
 -- Spostiamo l'utente a ~443 metri di distanza (9.1957, 45.4642)
-UPDATE public.app_users 
+UPDATE public.users 
 SET last_location = ST_SetSRID(ST_MakePoint(9.1957, 45.4642), 4326) 
 WHERE id = '00000000-0000-0000-0000-000000000001';
 
@@ -53,7 +53,7 @@ SELECT lives_ok(
 RESET ROLE;
 
 -- Spostiamo l'utente a ~545 metri di distanza (9.1970, 45.4642)
-UPDATE public.app_users 
+UPDATE public.users 
 SET last_location = ST_SetSRID(ST_MakePoint(9.1970, 45.4642), 4326) 
 WHERE id = '00000000-0000-0000-0000-000000000001';
 
