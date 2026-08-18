@@ -19,6 +19,9 @@ abstract class MusicProfileModel with _$MusicProfileModel {
     @JsonKey(name: 'top_genres')
     @Default(<Map<String, dynamic>>[])
     List<Map<String, dynamic>> topGenres,
+    @JsonKey(name: 'listening_heatmap')
+    @Default(<Map<String, dynamic>>[])
+    List<Map<String, dynamic>> listeningHeatmap,
     @JsonKey(name: 'last_synced_at') DateTime? lastSyncedAt,
   }) = _MusicProfileModel;
 

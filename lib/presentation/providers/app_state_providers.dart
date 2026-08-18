@@ -641,16 +641,17 @@ final topGenresStatsProvider = Provider<List<GenrePreference>>((ref) {
 });
 
 final listeningHeatmapProvider = Provider<List<MusicStatPoint>>((ref) {
-  return [
-    MusicStatPoint(label: 'Lun', value: 0.4),
-    MusicStatPoint(label: 'Mar', value: 0.6),
-    MusicStatPoint(label: 'Mer', value: 0.3),
-    MusicStatPoint(label: 'Gio', value: 0.8),
-    MusicStatPoint(label: 'Ven', value: 1.0),
-    MusicStatPoint(label: 'Sab', value: 0.9),
-    MusicStatPoint(label: 'Dom', value: 0.5),
-  ];
+  final profile = ref.watch(myMusicProfileProvider);
+  // Se abbiamo dati reali da Spotify, li usiamo.
+  if (profile.listeningHeatmap.isNotEmpty) {
+    return profile.listeningHeatmap;
+  }
+  // Fallback: barre uniformi a zero (nessun dato disponibile).
+  // Non usiamo valori casuali/fittizi per non ingannare l'utente.
+  const days = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+  return days.map((d) => MusicStatPoint(label: d, value: 0.0)).toList();
 });
+
 
 final myEventsProvider =
     StateNotifierProvider<

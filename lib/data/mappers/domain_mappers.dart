@@ -5,6 +5,7 @@ import '../../domain/entities/event.dart';
 import '../../domain/entities/friendship.dart';
 import '../../domain/entities/live_message.dart';
 import '../../domain/entities/music_profile.dart';
+import '../../domain/entities/music_stat_point.dart';
 import '../models/event_attendee_model.dart';
 import '../models/event_model.dart';
 import '../models/friendship_model.dart';
@@ -86,6 +87,14 @@ extension MusicProfileModelToEntity on MusicProfileModel {
             ),
           )
           .toList(growable: false),
+      listeningHeatmap: listeningHeatmap
+          .map(
+            (item) => MusicStatPoint(
+              label: (item['day'] ?? '').toString(),
+              value: (item['value'] as num?)?.toDouble() ?? 0,
+            ),
+          )
+          .toList(growable: false),
       lastSyncedAt: lastSyncedAt,
     );
   }
@@ -113,6 +122,9 @@ extension MusicProfileEntityToModel on MusicProfile {
           .toList(growable: false),
       topGenres: topGenres
           .map((item) => {'genre': item.genre, 'weight': item.weight})
+          .toList(growable: false),
+      listeningHeatmap: listeningHeatmap
+          .map((p) => {'day': p.label, 'value': p.value})
           .toList(growable: false),
       lastSyncedAt: lastSyncedAt,
     );
