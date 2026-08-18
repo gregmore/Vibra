@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../router/app_router.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -65,6 +68,54 @@ class PushNotificationsBootstrap {
       FirebaseMessaging.onBackgroundMessage(
         _firebaseMessagingBackgroundHandler,
       );
+      await messaging.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
+      // Handle message in foreground
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        VibraLogger.info('Messaggio ricevuto in foreground: ${message.notification?.title}', tag: 'Push');
+        final context = AppRouter.rootNavigatorKey.currentContext;
+        if (context != null && message.notification != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${message.notification?.title ?? ''}: ${message.notification?.body ?? ''}'),
+              action: SnackBarAction(
+                label: 'APRI',
+                onPressed: () => _handleMessageClick(message, context),
+              ),
+              duration: const Duration(seconds: 4),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      });
+
+      // Handle message tap when app is in background
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        VibraLogger.info('Notifica tappata (app in background)!', tag: 'Push');
+        final context = AppRouter.rootNavigatorKey.currentContext;
+        if (context != null) {
+          _handleMessageClick(message, context);
+        }
+      });
+
+      // Handle message tap when app was terminated
+      messaging.getInitialMessage().then((RemoteMessage? message) {
+        if (message != null) {
+          VibraLogger.info('Notifica tappata (app terminata)!', tag: 'Push');
+          // Give the router some time to mount
+          Future.delayed(const Duration(milliseconds: 1500), () {
+            final context = AppRouter.rootNavigatorKey.currentContext;
+            if (context != null) {
+              _handleMessageClick(message, context);
+            }
+          });
+        }
+      });
+
 
       if (!supabase.isAuthenticated) {
         VibraLogger.warning(
@@ -129,6 +180,33 @@ class PushNotificationsBootstrap {
         VibraLogger.warning('Push bootstrap fallito: $error', tag: 'Push');
         VibraLogger.debug(stackTrace.toString(), tag: 'Push');
       }
+    }
+  }
+
+    static void _handleMessageClick(RemoteMessage message, BuildContext context) {
+    final data = message.data;
+    final type = data['type'];
+    
+    switch (type) {
+      case 'chat_message':
+        final senderId = data['sender_id'];
+        if (senderId != null) {
+          context.push('/chat', extra: {'otherUserId': senderId, 'otherDisplayName': message.notification?.title?.replaceAll('Nuovo messaggio da ', '') ?? 'Chat'});
+        }
+        break;
+      case 'friend_request':
+        context.push('/friends');
+        break;
+      case 'match':
+        context.push('/social');
+        break;
+      case 'event_alert':
+        final eventId = data['event_id'];
+        if (eventId != null) {
+          // Ideally we would fetch the event or just navigate to explore with a query
+          context.push('/explore', extra: eventId); 
+        }
+        break;
     }
   }
 

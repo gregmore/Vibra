@@ -37,8 +37,11 @@ import 'route_names.dart';
 class AppRouter {
   AppRouter._();
 
+  static final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
   static GoRouter createRouter(Ref ref) {
     return GoRouter(
+      navigatorKey: rootNavigatorKey,
       initialLocation: '/',
       debugLogDiagnostics: kDebugMode,
       refreshListenable: GoRouterRefreshStream(
