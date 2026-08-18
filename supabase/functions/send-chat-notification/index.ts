@@ -25,6 +25,16 @@ Deno.serve(async (req) => {
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 
+  // SECURITY: Verify the request is authorized (e.g. from internal webhook or cron)
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader || authHeader !== `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+
   try {
     if (req.method.toUpperCase() !== "POST") {
       return new Response(JSON.stringify({ error: "Method not allowed" }), {
