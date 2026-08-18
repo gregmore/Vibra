@@ -117,7 +117,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                 final friend = friends[index];
                 return VibraUserMatchCard(
                       user: friend,
-                      onTap: () => context.push('/user-profile', extra: friend),
+                      onTap: () => context.push('/user-profile', extra: friend.user.id),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

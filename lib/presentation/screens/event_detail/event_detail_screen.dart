@@ -260,9 +260,9 @@ class EventDetailScreen extends ConsumerWidget {
             final user = entry.value;
             return VibraUserMatchCard(
                   user: user,
-                  onTap: () => context.push('/user-profile', extra: user),
+                  onTap: () => context.push('/user-profile', extra: user.user.id),
                   trailing: FilledButton.tonal(
-                    onPressed: () => context.push('/chat'),
+                    onPressed: () => context.push('/chat', extra: {'otherUserId': user.user.id, 'otherDisplayName': user.user.displayName ?? user.user.username}),
                     style: FilledButton.styleFrom(
                       backgroundColor: VibraColors.accent,
                       foregroundColor: VibraColors.textPrimary,

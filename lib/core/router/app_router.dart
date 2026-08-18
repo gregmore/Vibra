@@ -11,6 +11,7 @@ import '../../presentation/screens/auth/spotify_connect_screen.dart';
 import '../../presentation/screens/auth/welcome_screen.dart';
 import '../../presentation/screens/event_detail/event_detail_screen.dart';
 import '../../presentation/screens/explore/explore_screen.dart';
+import '../../presentation/screens/live/live_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/onboarding/onboarding_wizard_screen.dart';
 import '../../presentation/providers/app_state_providers.dart';
@@ -28,6 +29,7 @@ import '../../domain/entities/event.dart';
 import '../../presentation/screens/social/social_match_screen.dart';
 import '../../presentation/screens/social/chat_screen.dart';
 import '../../presentation/screens/social/friends_screen.dart';
+import '../../presentation/screens/social/discover_users_screen.dart';
 import '../../presentation/screens/social/user_profile_screen.dart';
 import '../utils/logger.dart';
 import 'route_names.dart';
@@ -154,7 +156,7 @@ class AppRouter {
                 GoRoute(
                   path: '/social',
                   name: RouteNames.social,
-                  builder: (context, state) => const FriendsScreen(),
+                  builder: (context, state) => const DiscoverUsersScreen(),
                 ),
               ],
             ),
