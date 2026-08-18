@@ -24,8 +24,12 @@ Deno.serve(async (req) => {
 
   // Se è un webhook da pg_cron, possiamo verificare un token o header
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader || authHeader !== `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`) {
-      // In produzione proteggere questa route con un service_role key o un secret
+  // SECURITY: Require Service Role Key
+  if (!authHeader || authHeader !== `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
   }
 
   try {

@@ -1,3 +1,4 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
 import { clamp, haversineKm, proximityScore } from "../_shared/geo.ts";
@@ -49,13 +50,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    const body = (await req.json()) as RecommendEventsRequest;
-    if (!body?.user_id) {
-      return new Response(JSON.stringify({ error: "user_id is required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
     }
+    const userClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "", {
+      global: { headers: { Authorization: authHeader } }
+    });
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    }
+
+    const body = (await req.json()) as RecommendEventsRequest;
+    // SECURITY: Use authenticated user's ID instead of trusting the body
+    body.user_id = user.id;
 
     const limit = clamp(body.limit ?? 20, 1, 50);
 
