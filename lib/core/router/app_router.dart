@@ -11,7 +11,6 @@ import '../../presentation/screens/auth/spotify_connect_screen.dart';
 import '../../presentation/screens/auth/welcome_screen.dart';
 import '../../presentation/screens/event_detail/event_detail_screen.dart';
 import '../../presentation/screens/explore/explore_screen.dart';
-import '../../presentation/screens/live/live_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/onboarding/onboarding_wizard_screen.dart';
 import '../../presentation/providers/app_state_providers.dart';
