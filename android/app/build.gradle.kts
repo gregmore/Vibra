@@ -2,11 +2,15 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
-    // START: FlutterFire Configuration
-    id("com.google.gms.google-services")
-    // END: FlutterFire Configuration
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// The Firebase native config is intentionally not committed. Local/release builds
+// apply Google Services when the developer-provided file is available, while CI
+// can still build and run tests without production credentials.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
 }
 
 val keystoreProperties = Properties()
