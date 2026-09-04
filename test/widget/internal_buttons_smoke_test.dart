@@ -54,13 +54,25 @@ Widget buildTestApp(List<Override> overrides, Widget home) {
   final router = GoRouter(
     initialLocation: '/',
     routes: [
-      GoRoute(path: '/', builder: (_, __) => home),
-      GoRoute(path: '/privacy-policy', builder: (_, __) => const PrivacyPolicyScreen()),
-      GoRoute(path: '/terms-of-service', builder: (_, __) => const TermsOfServiceScreen()),
-      GoRoute(path: '/support', builder: (_, __) => const SupportScreen()),
-      GoRoute(path: '/about', builder: (_, __) => const AboutScreen()),
-      GoRoute(path: '/login', builder: (_, __) => const Scaffold(body: Center(child: Text('Login')))),
-      GoRoute(path: '/welcome', builder: (_, __) => const Scaffold(body: Center(child: Text('Welcome')))),
+      GoRoute(path: '/', builder: (_, _) => home),
+      GoRoute(
+        path: '/privacy-policy',
+        builder: (_, _) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        path: '/terms-of-service',
+        builder: (_, _) => const TermsOfServiceScreen(),
+      ),
+      GoRoute(path: '/support', builder: (_, _) => const SupportScreen()),
+      GoRoute(path: '/about', builder: (_, _) => const AboutScreen()),
+      GoRoute(
+        path: '/login',
+        builder: (_, _) => const Scaffold(body: Center(child: Text('Login'))),
+      ),
+      GoRoute(
+        path: '/welcome',
+        builder: (_, _) => const Scaffold(body: Center(child: Text('Welcome'))),
+      ),
     ],
   );
 
@@ -105,20 +117,15 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       await tester.pumpWidget(
-        buildTestApp(
-          [
-            myProfileProvider.overrideWith(
-              (ref) => FakeProfileController(ref),
-            ),
-            spotifyAuthProvider.overrideWith(
-              (ref) => MockSpotifyAuthNotifier(ref),
-            ),
-            generalAuthProvider.overrideWith(
-              (ref) => MockGeneralAuthNotifier(ref),
-            ),
-          ],
-          const SettingsScreen(),
-        ),
+        buildTestApp([
+          myProfileProvider.overrideWith((ref) => FakeProfileController(ref)),
+          spotifyAuthProvider.overrideWith(
+            (ref) => MockSpotifyAuthNotifier(ref),
+          ),
+          generalAuthProvider.overrideWith(
+            (ref) => MockGeneralAuthNotifier(ref),
+          ),
+        ], const SettingsScreen()),
       );
       await tester.pumpAndSettle();
 

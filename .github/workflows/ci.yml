@@ -10,9 +10,10 @@ jobs:
   flutter-test:
     name: Flutter Frontend Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -41,27 +42,27 @@ jobs:
       #   with:
       #     file: ./coverage/lcov.info
 
-      # NOTA: Per test E2E affidabili su CI
-      - name: Run E2E Integration Tests su Emulatore
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          script: flutter test integration_test/
+      # The files in integration_test are currently mock/skeleton flows. Keep
+      # Android compilation as the reliable native smoke check until those
+      # scenarios have deterministic test accounts and assertions.
+      - name: Build Android Debug APK
+        run: flutter build apk --debug
 
   supabase-test:
     name: Supabase Backend Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Setup Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
           deno-version: v1.x
 
       - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
+        uses: supabase/setup-cli@v3
         with:
           version: latest
 
@@ -73,3 +74,7 @@ jobs:
 
       - name: Run Edge Functions Unit Tests
         run: deno test --allow-all supabase/functions/calculate-match/index.test.ts
+
+      - name: Stop Supabase Local
+        if: always()
+        run: supabase stop --no-backup

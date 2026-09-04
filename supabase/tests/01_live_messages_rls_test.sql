@@ -23,6 +23,14 @@ VALUES (
 INSERT INTO public.events (id, external_id, source, name, latitude, longitude, event_date)
 VALUES ('00000000-0000-0000-0000-000000000099', 'evt-test-1', 'ticketmaster', 'Vibra Live Test', 45.4642, 9.1900, now());
 
+-- La policy della chat live richiede che l'utente partecipi all'evento.
+INSERT INTO public.event_attendees (user_id, event_id, status)
+VALUES (
+    '00000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000099',
+    'going'
+);
+
 
 -- ==========================================
 -- 2. SCENARIO 1: Utente a 450 metri
