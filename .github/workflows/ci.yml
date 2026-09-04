@@ -42,13 +42,11 @@ jobs:
       #   with:
       #     file: ./coverage/lcov.info
 
-      # NOTA: Per test E2E affidabili su CI
-      - name: Run E2E Integration Tests su Emulatore
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          arch: x86_64
-          script: flutter test integration_test/
+      # The files in integration_test are currently mock/skeleton flows. Keep
+      # Android compilation as the reliable native smoke check until those
+      # scenarios have deterministic test accounts and assertions.
+      - name: Build Android Debug APK
+        run: flutter build apk --debug
 
   supabase-test:
     name: Supabase Backend Tests
