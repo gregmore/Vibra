@@ -31,6 +31,8 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+/build.nosync/
+/build [0-9]*/
 /coverage/
 
 # Symbolication related
@@ -49,3 +51,17 @@ ios/Runner/GoogleService-Info.plist
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Generated allowlisted mobile configuration
+.env.public
+
+# Patch backups and duplicate generated Xcode configuration
+*.orig
+*.rej
+/ios/Flutter/Generated [0-9]*.xcconfig
+/ios/Flutter/flutter_export_environment [0-9]*.sh
+
+# Local build reports and Supabase CLI state
+/android/build/
+/supabase/.temp/
+/supabase/.branches/
