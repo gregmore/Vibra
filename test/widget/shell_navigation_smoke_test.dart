@@ -23,6 +23,9 @@ class MockSpotifyAuthNotifier extends SpotifyAuthNotifier {
 
 class FakeSupabaseDatasource extends Fake implements SupabaseDatasource {
   @override
+  SupabaseClient get client => Supabase.instance.client;
+
+  @override
   User? get currentUser => null; // non autenticato, mostra il welcome/login
 
   @override
@@ -76,13 +79,13 @@ void main() {
     );
 
     // Attende splash -> welcome
-    await tester.pump(const Duration(milliseconds: 1900));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 2000));
+    await tester.pump(const Duration(milliseconds: 500));
 
     // Welcome screen - cerca testo che porta al login
     expect(find.textContaining('login'), findsWidgets);
     await tester.tap(find.textContaining('login').first);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
 
     // Login screen: verifica che ci siano i pulsanti di accesso presenti
     expect(
@@ -93,5 +96,8 @@ void main() {
           : find.byType(OutlinedButton).evaluate().isNotEmpty,
       isTrue,
     );
+
+    // Let any remaining carousel timers complete
+    await tester.pump(const Duration(seconds: 5));
   });
 }

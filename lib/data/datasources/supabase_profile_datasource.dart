@@ -56,7 +56,7 @@ class SupabaseProfileDatasource {
 
     final row = await _supabase.upsert(
       DbTables.users,
-      model.toJson(),
+      model.toJson()..remove('spotify_id'),
       onConflict: 'id',
     );
     final userModel = UserModel.fromJson(row);
@@ -102,7 +102,7 @@ class SupabaseProfileDatasource {
 
       final profile = MusicProfileModel.fromJson(row);
       await CacheService.saveObject(
-        '${CacheService.keyMusicProfile}_${user.id}',
+        CacheService.musicProfileKey(user.id),
         profile.toJson(),
       );
       return profile;
@@ -113,7 +113,7 @@ class SupabaseProfileDatasource {
         stackTrace: st,
       );
       final cachedJson = CacheService.getObject(
-        '${CacheService.keyMusicProfile}_${user.id}',
+        CacheService.musicProfileKey(user.id),
       );
       if (cachedJson != null) {
         return MusicProfileModel.fromJson(cachedJson);
@@ -140,7 +140,7 @@ class SupabaseProfileDatasource {
     );
     final profile = MusicProfileModel.fromJson(row);
     await CacheService.saveObject(
-      '${CacheService.keyMusicProfile}_${user.id}',
+      CacheService.musicProfileKey(user.id),
       profile.toJson(),
     );
     VibraLogger.info('Music profile upsert completato', tag: 'SupabaseProfile');

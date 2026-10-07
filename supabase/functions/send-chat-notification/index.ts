@@ -1,6 +1,5 @@
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
-import { haversineKm } from "../_shared/geo.ts";
 import { sendFcmLegacy } from "../_shared/fcm.ts";
 
 type LiveMessageRecord = {
@@ -18,8 +17,8 @@ type WebhookPayload = {
   schema: string;
 };
 
-// Raggio d'azione in chilometri (5 km)
-const MAX_RADIUS_KM = 5.0;
+// Raggio d'azione in metri (5 km), applicato dal database con PostGIS.
+const MAX_RADIUS_METERS = 5000;
 
 Deno.serve(async (req) => {
   const preflight = handleOptions(req);
@@ -27,7 +26,8 @@ Deno.serve(async (req) => {
 
   // SECURITY: Verify the request is authorized (e.g. from internal webhook or cron)
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader || authHeader !== `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`) {
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!serviceRoleKey || authHeader !== `Bearer ${serviceRoleKey}`) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -80,15 +80,14 @@ Deno.serve(async (req) => {
 
     const senderName = senderData?.username ?? "Un utente";
 
-    // 3. Recupera tutti gli utenti che hanno un FCM token e delle coordinate recenti (escludendo il mittente)
-    // Selezioniamo a blocchi o con limite ragionevole per prototipo
+    // 3. Recupera solo i destinatari entro 5 km con ST_DWithin. La notifica
+    // in-app non dipende dal fatto che il dispositivo abbia FCM.
     const { data: users, error: usersError } = await supabase
-      .from("users")
-      .select("id, fcm_token, last_latitude, last_longitude")
-      .neq("id", record.user_id)
-      .not("fcm_token", "is", null)
-      .not("last_latitude", "is", null)
-      .not("last_longitude", "is", null);
+      .rpc("live_chat_notification_recipients", {
+        p_event_id: eventData.id,
+        p_exclude_user_id: record.user_id,
+        p_radius_meters: MAX_RADIUS_METERS,
+      });
 
     if (usersError) throw usersError;
 
@@ -104,44 +103,32 @@ Deno.serve(async (req) => {
     const notificationsToInsert = [];
 
     for (const user of (users || [])) {
-      if (!user.last_latitude || !user.last_longitude || !user.fcm_token) continue;
+      if (user.push_settings?.live_chat === false) continue;
 
-      // 4. Filtra tramite distanza Haversine
-      const distance = haversineKm(
-        eventData.latitude,
-        eventData.longitude,
-        user.last_latitude,
-        user.last_longitude
-      );
+      notificationsToInsert.push({
+        user_id: user.id,
+        type: 'live_chat',
+        title: title,
+        body: body,
+        data: {
+          event_id: eventData.id,
+          message_id: record.id,
+        },
+        read: false,
+      });
 
-      if (distance <= MAX_RADIUS_KM) {
-        // Prepara la notifica push
+      if (user.fcm_token && user.push_enabled !== false) {
         const ok = await sendFcmLegacy(
           user.fcm_token,
           title,
           body,
           {
-            type: "chat_message",
+            type: "live_chat",
             event_id: eventData.id,
             message_id: record.id,
           }
         );
-
-        if (ok) {
-          pushed++;
-          // Aggiunge la notifica in-app da inserire nel DB
-          notificationsToInsert.push({
-            user_id: user.id,
-            type: 'event_alert', // Reuse event_alert or use a new type if we add it to schema constraint
-            title: title,
-            body: body,
-            data: {
-              event_id: eventData.id,
-              message_id: record.id,
-            },
-            read: false,
-          });
-        }
+        if (ok) pushed++;
       }
     }
 

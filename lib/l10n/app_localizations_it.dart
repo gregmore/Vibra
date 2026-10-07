@@ -521,6 +521,131 @@ class AppLocalizationsIt extends AppLocalizations {
       'Privacy, notifiche, account e logout';
 
   @override
+  String get myEventsUpcoming => 'In arrivo';
+
+  @override
+  String get myEventsPast => 'Passati';
+
+  @override
+  String get myEventsPastSubtitle => 'Il tuo storico concerti';
+
+  @override
+  String get myEventsPastEmpty => 'Non hai ancora eventi passati.';
+
+  @override
+  String get myEventsSearchHint => 'Cerca eventi, artisti o luoghi';
+
+  @override
+  String get myEventsSearchEmpty => 'Nessun evento corrisponde alla ricerca.';
+
+  @override
+  String get myEventsClearSearch => 'Cancella ricerca';
+
+  @override
+  String get myEventsExplore => 'Esplora eventi';
+
+  @override
+  String get inboxUnread => 'Non letti';
+
+  @override
+  String get inboxNoResults => 'Nessuna conversazione trovata.';
+
+  @override
+  String get inboxNoResultsBody =>
+      'Prova un altro nome o rimuovi i filtri per vedere tutti i messaggi.';
+
+  @override
+  String get inboxClearFilters => 'Rimuovi filtri';
+
+  @override
+  String get homeFeedError => 'Gli eventi non si sono caricati.';
+
+  @override
+  String get homeFeedErrorBody =>
+      'Riprova tra poco. Puoi comunque esplorare la mappa.';
+
+  @override
+  String get homeFeedEmpty => 'C’è spazio per una nuova serata.';
+
+  @override
+  String get homeFeedEmptyBody =>
+      'Esplora la mappa per trovare il prossimo live.';
+
+  @override
+  String get socialSearchHint => 'Cerca persone o artisti';
+
+  @override
+  String get socialSearchEmpty => 'Nessuna persona trovata.';
+
+  @override
+  String get socialSearchEmptyBody => 'Prova un altro nome o artista.';
+
+  @override
+  String get socialDiscoverEmpty => 'Le nuove connessioni partono da qui.';
+
+  @override
+  String get socialDiscoverEmptyBody =>
+      'Completa il profilo e collega Spotify per trovare persone con gusti simili.';
+
+  @override
+  String get chatSendMessage => 'Invia messaggio';
+
+  @override
+  String get chatLoadError =>
+      'Non è stato possibile caricare la conversazione.';
+
+  @override
+  String get chatDraftRecovered =>
+      'Il messaggio non è stato inviato. Il testo è stato recuperato nel campo di scrittura.';
+
+  @override
+  String get eventLocationUnknown =>
+      'La posizione esatta non è ancora disponibile.';
+
+  @override
+  String get eventDirections => 'Indicazioni stradali';
+
+  @override
+  String get eventDirectionsError =>
+      'Non è stato possibile aprire le indicazioni.';
+
+  @override
+  String get inboxDeleteTitle => 'Eliminare la conversazione?';
+
+  @override
+  String get inboxDeleteBody =>
+      'La conversazione verrà rimossa dalla tua casella. I messaggi dell’altra persona non verranno eliminati.';
+
+  @override
+  String get inboxDeleteAction => 'Elimina conversazione';
+
+  @override
+  String get inboxDeleteSuccess => 'Conversazione eliminata.';
+
+  @override
+  String get inboxDeleteError =>
+      'La conversazione non è stata eliminata. Riprova.';
+
+  @override
+  String get commonCancel => 'Annulla';
+
+  @override
+  String get eventCopyDetails => 'Copia i dettagli dell’evento';
+
+  @override
+  String get eventCopyError => 'Non è stato possibile copiare i dettagli.';
+
+  @override
+  String get eventCancelled => 'Evento cancellato';
+
+  @override
+  String get eventTicketsOffsale => 'Biglietti non in vendita';
+
+  @override
+  String get socialMatchSendFailed =>
+      'Vibra non inviata. Riprova: il profilo è ancora disponibile.';
+
+  @override
   String get myEventsTitle => 'I miei eventi';
 
   @override

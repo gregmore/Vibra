@@ -4,7 +4,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// Usato per token sensibili (Spotify refresh token, ecc.).
 class SecureStorageService {
   SecureStorageService({FlutterSecureStorage? storage})
-    : _storage = storage ?? const FlutterSecureStorage();
+    : _storage =
+          storage ??
+          const FlutterSecureStorage(
+            iOptions: IOSOptions(
+              accessibility: KeychainAccessibility.unlocked_this_device,
+            ),
+          );
 
   final FlutterSecureStorage _storage;
 

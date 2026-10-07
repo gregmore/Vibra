@@ -1,32 +1,36 @@
 import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geocoding/geocoding.dart' as geo;
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:geocoding/geocoding.dart' as geo;
 
-import '../../../core/theme/vibra_colors.dart';
-import '../../../core/theme/vibra_shadows.dart';
 import '../../../core/theme/vibra_spacing.dart';
+import '../../../core/theme/vibra_text_styles.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../../domain/entities/event.dart';
 import '../../providers/location_provider.dart';
 import '../../providers/map_events_provider.dart';
-import '../../widgets/common/vibra_event_card.dart';
+import '../../widgets/common/vibra_button.dart';
+import '../../widgets/common/vibra_editorial_event.dart';
+import '../../widgets/common/vibra_input.dart';
+import '../../widgets/common/vibra_openstreetmap_layer.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
-import '../../widgets/common/vibra_section_header.dart';
-import '../../widgets/common/vibra_state_views.dart';
-import '../../widgets/vibra_category_filter.dart';
-import '../../widgets/vibra_neon_map_pin.dart';
-import '../../widgets/vibra_radar_pulse.dart';
+import '../../widgets/common/vibra_surface.dart';
+import '../../widgets/vibra_map_beacon.dart';
+import '../../widgets/vibra_signal_wave.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 
+/// Eventi e mappa come un unico spazio fisico, non una lista con una mini-mappa.
 class ExploreScreen extends ConsumerStatefulWidget {
-  final String? initialQuery;
-
   const ExploreScreen({super.key, this.initialQuery});
+
+  final String? initialQuery;
 
   @override
   ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
@@ -38,6 +42,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   bool _showSearchAreaButton = false;
   String _searchQuery = '';
   int selectedRadius = 25;
+  double _lastZoom = 10.5;
   String selectedGenre = '';
   Timer? _debounce;
 
@@ -50,36 +55,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           () => selectedGenre = AppLocalizations.of(context)!.exploreGenreAll,
         );
       }
-      final locAsync = ref.read(userLocationProvider);
-      if (locAsync.hasValue && locAsync.value != null) {
-        if (widget.initialQuery != null &&
-            widget.initialQuery!.trim().isNotEmpty) {
-          _searchController.text = widget.initialQuery!;
-          _searchQuery = widget.initialQuery!;
-          _handleSearchSubmit(widget.initialQuery!);
-        } else {
-          _triggerMapSearch(
-            locAsync.value!.latitude,
-            locAsync.value!.longitude,
-          );
-        }
+      final location = ref.read(userLocationProvider);
+      final initialQuery = widget.initialQuery?.trim() ?? '';
+      if (initialQuery.isNotEmpty) {
+        _searchController.text = initialQuery;
+        _searchQuery = initialQuery;
+        _handleSearchSubmit(initialQuery);
+        return;
+      }
+      final point = location.valueOrNull;
+      if (point != null) {
+        _triggerMapSearch(point.latitude, point.longitude);
       } else {
-        if (widget.initialQuery != null &&
-            widget.initialQuery!.trim().isNotEmpty) {
-          _searchController.text = widget.initialQuery!;
-          _searchQuery = widget.initialQuery!;
-          _handleSearchSubmit(widget.initialQuery!);
-        } else {
-          _triggerMapSearch(45.4642, 9.1900);
-        }
+        _triggerMapSearch(45.4642, 9.1900);
       }
     });
-  }
-
-  void _triggerMapSearch(double lat, double lon) {
-    ref
-        .read(mapEventsProvider.notifier)
-        .updateLocation(lat, lon, selectedRadius.toDouble() * 1000);
   }
 
   @override
@@ -90,6 +80,34 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     super.dispose();
   }
 
+  int _visibleRadiusKm(MapCamera camera) {
+    const distance = Distance();
+    final bounds = camera.visibleBounds;
+    final meters = math.max(
+      distance(camera.center, bounds.northEast),
+      distance(camera.center, bounds.southWest),
+    );
+    return math.max(1, (meters / 1000).ceil());
+  }
+
+  void _triggerMapSearch(double lat, double lon) {
+    final radius = _visibleRadiusKm(_mapController.camera);
+    if (selectedRadius != radius) setState(() => selectedRadius = radius);
+    ref
+        .read(mapEventsProvider.notifier)
+        .updateLocation(lat, lon, radius.toDouble() * 1000);
+  }
+
+  void _onMapPositionChanged(MapCamera camera, bool hasGesture) {
+    if ((camera.zoom - _lastZoom).abs() > 0.001) {
+      _lastZoom = camera.zoom;
+      setState(() => _showSearchAreaButton = false);
+      _triggerMapSearch(camera.center.latitude, camera.center.longitude);
+    } else if (hasGesture && !_showSearchAreaButton) {
+      setState(() => _showSearchAreaButton = true);
+    }
+  }
+
   Future<void> _handleSearchSubmit(String query) async {
     if (query.trim().isEmpty) {
       setState(() => _searchQuery = '');
@@ -97,17 +115,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     }
 
     setState(() => _searchQuery = query.trim());
-
     try {
       final locations = await geo.locationFromAddress(query);
-      if (locations.isNotEmpty) {
-        final loc = locations.first;
-        _mapController.move(LatLng(loc.latitude, loc.longitude), 12.0);
-        _triggerMapSearch(loc.latitude, loc.longitude);
-        setState(() => _searchQuery = '');
-      }
-    } catch (e) {
-      // Se non trova la città, non mostriamo un errore.
+      if (locations.isEmpty) return;
+      final location = locations.first;
+      _mapController.move(LatLng(location.latitude, location.longitude), 12);
+      _triggerMapSearch(location.latitude, location.longitude);
+      if (mounted) setState(() => _searchQuery = '');
+    } catch (_) {
+      // Il testo resta anche come filtro locale quando non è una località.
     }
   }
 
@@ -115,24 +131,20 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final l10n = AppLocalizations.of(context)!;
     if (genre == l10n.exploreGenreAll) return true;
 
-    final nameLower = event.name.toLowerCase();
-    final artistLower = (event.artistName ?? '').toLowerCase();
-    final descLower = (event.description ?? '').toLowerCase();
+    final name = event.name.toLowerCase();
+    final artist = (event.artistName ?? '').toLowerCase();
+    final description = (event.description ?? '').toLowerCase();
     final target = genre.toLowerCase();
 
-    bool matchesAny(List<String> keywords) {
-      for (final k in keywords) {
-        if (nameLower.contains(k) ||
-            artistLower.contains(k) ||
-            descLower.contains(k)) {
-          return true;
-        }
-      }
-      return false;
-    }
+    bool contains(List<String> keywords) => keywords.any(
+      (keyword) =>
+          name.contains(keyword) ||
+          artist.contains(keyword) ||
+          description.contains(keyword),
+    );
 
     if (target == 'electronic') {
-      return matchesAny([
+      return contains([
         'electronic',
         'elettronica',
         'electro',
@@ -149,10 +161,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ]);
     }
     if (target == 'house') {
-      return matchesAny(['house', 'club', 'dj', 'fred again', 'bicep']);
+      return contains(['house', 'club', 'dj', 'fred again', 'bicep']);
     }
     if (target == 'indie') {
-      return matchesAny([
+      return contains([
         'indie',
         'alternative',
         'rock',
@@ -161,7 +173,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ]);
     }
     if (target == 'rap') {
-      return matchesAny([
+      return contains([
         'rap',
         'hip hop',
         'hip-hop',
@@ -172,57 +184,39 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ]);
     }
     if (target == 'alternative') {
-      return matchesAny(['alternative', 'alt', 'indie', 'mace', 'tame impala']);
+      return contains(['alternative', 'alt', 'indie', 'mace', 'tame impala']);
     }
-
-    return matchesAny([target]);
+    return contains([target]);
   }
 
-  Color _getEventColor(Event event, BuildContext context) {
-    final artistLower = (event.artistName ?? '').toLowerCase();
-    final descLower = (event.description ?? '').toLowerCase();
-
-    if (artistLower.contains('fred again') ||
-        artistLower.contains('the blaze') ||
-        descLower.contains('electronic')) {
-      return Colors.cyanAccent;
-    }
-    if (descLower.contains('indie') || artistLower.contains('tame impala')) {
-      return Colors.amberAccent;
-    }
-    if (descLower.contains('house') || descLower.contains('club')) {
-      return Colors.orangeAccent;
-    }
-    if (descLower.contains('rap') || artistLower.contains('mace')) {
-      return Colors.pinkAccent;
-    }
-
-    return VibraColors.primary;
+  void _changeRadius(int radius) {
+    final camera = _mapController.camera;
+    final zoom =
+        (camera.zoom + math.log(_visibleRadiusKm(camera) / radius) / math.ln2)
+            .clamp(3.0, 18.0);
+    _mapController.move(_mapController.camera.center, zoom);
+    _triggerMapSearch(
+      _mapController.camera.center.latitude,
+      _mapController.camera.center.longitude,
+    );
   }
 
-  Widget _buildZoomButton(IconData icon, VoidCallback onPressed) {
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: VibraColors.surfaceElevated.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(color: VibraColors.glassBorder, width: 0.5),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: onPressed,
-          child: Icon(icon, size: 20, color: VibraColors.textPrimary),
-        ),
+  void _showEventsSheet(List<Event> events) {
+    if (events.isEmpty) return;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: false,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => _EventsSheet(
+        events: events,
+        category: selectedGenre,
+        onEventTap: (event) {
+          Navigator.of(sheetContext).pop();
+          context.push('/event-detail', extra: event);
+        },
       ),
     );
   }
@@ -230,17 +224,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final locationAsync = ref.watch(userLocationProvider);
-    final center = locationAsync.when(
-      data: (loc) => LatLng(loc.latitude, loc.longitude),
+    final t = context.vibraTokens;
+    final location = ref.watch(userLocationProvider);
+    final center = location.when(
+      data: (value) => LatLng(value.latitude, value.longitude),
       loading: () => const LatLng(45.4642, 9.1900),
-      error: (_, stack) => const LatLng(45.4642, 9.1900),
+      error: (_, _) => const LatLng(45.4642, 9.1900),
     );
-
     final eventsAsync = ref.watch(mapEventsProvider);
-    final events = eventsAsync.valueOrNull ?? [];
-
-    final radii = const [25, 50, 100, 250];
+    final events = eventsAsync.valueOrNull ?? const <Event>[];
     final genres = [
       l10n.exploreGenreAll,
       'Electronic',
@@ -249,512 +241,602 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       'Rap',
       'Alternative',
     ];
-
-    final filteredEvents = events.where((e) {
+    const radii = [25, 50, 100, 250];
+    final filteredEvents = events.where((event) {
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
         final matchesText =
-            e.name.toLowerCase().contains(query) ||
-            (e.city ?? '').toLowerCase().contains(query) ||
-            (e.venueName ?? '').toLowerCase().contains(query) ||
-            (e.description ?? '').toLowerCase().contains(query);
+            event.name.toLowerCase().contains(query) ||
+            (event.city ?? '').toLowerCase().contains(query) ||
+            (event.venueName ?? '').toLowerCase().contains(query) ||
+            (event.description ?? '').toLowerCase().contains(query);
         if (!matchesText) return false;
       }
-
-      if (!_matchesGenre(e, selectedGenre, context)) return false;
-
-      return true;
+      return _matchesGenre(event, selectedGenre, context);
     }).toList();
 
     return VibraPageScaffold(
       child: CustomScrollView(
         slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-            sliver: SliverToBoxAdapter(
-              child: Text(
-                l10n.exploreSearchEvents,
-                style: Theme.of(context).textTheme.displaySmall,
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'EVENTI, INTORNO A TE',
+                    style: VibraTextStyles.labelSmall.copyWith(
+                      color: t.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    l10n.exploreSearchEvents,
+                    style: VibraTextStyles.displaySmall,
+                  ),
+                  const SizedBox(height: 18),
+                  VibraInput(
+                    controller: _searchController,
+                    hintText: l10n.exploreSearchHint,
+                    prefixIcon: Icons.search_rounded,
+                    textInputAction: TextInputAction.search,
+                    onChanged: (value) {
+                      _debounce?.cancel();
+                      _debounce = Timer(const Duration(milliseconds: 280), () {
+                        if (mounted) {
+                          setState(() => _searchQuery = value.trim());
+                        }
+                      });
+                    },
+                    onSubmitted: _handleSearchSubmit,
+                    suffix: _searchController.text.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: 'Cancella ricerca',
+                            icon: const Icon(Icons.close_rounded),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                          ),
+                  ),
+                ],
               ),
-            ),
+            ).animate().fadeIn(duration: 320.ms),
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (val) {
-                  if (_debounce?.isActive ?? false) _debounce!.cancel();
-                  _debounce = Timer(const Duration(milliseconds: 300), () {
-                    setState(() {
-                      _searchQuery = val.trim();
-                    });
-                  });
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+              child: _MapCanvas(
+                center: center,
+                controller: _mapController,
+                events: filteredEvents,
+                isLoading: eventsAsync.isLoading,
+                showSearchArea: _showSearchAreaButton,
+                searchAreaLabel: l10n.exploreSearchInArea,
+                onMapMoved: _onMapPositionChanged,
+                onSearchArea: () {
+                  setState(() => _showSearchAreaButton = false);
+                  _triggerMapSearch(
+                    _mapController.camera.center.latitude,
+                    _mapController.camera.center.longitude,
+                  );
                 },
-                onSubmitted: _handleSearchSubmit,
-                textInputAction: TextInputAction.search,
-                decoration: InputDecoration(
-                  hintText: l10n.exploreSearchHint,
-                  prefixIcon: const Icon(
-                    Icons.search_rounded,
-                    color: VibraColors.accent,
-                  ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _searchQuery = '');
-                          },
-                        )
-                      : null,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(100),
-                    borderSide: const BorderSide(
-                      color: VibraColors.glassBorder,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(100),
-                    borderSide: const BorderSide(
-                      color: VibraColors.glassBorder,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(100),
-                    borderSide: const BorderSide(
-                      color: VibraColors.primary,
-                      width: 2,
-                    ),
-                  ),
+                onZoomIn: () {
+                  _mapController.move(
+                    _mapController.camera.center,
+                    (_mapController.camera.zoom + 1).clamp(3.0, 18.0),
+                  );
+                },
+                onZoomOut: () {
+                  _mapController.move(
+                    _mapController.camera.center,
+                    (_mapController.camera.zoom - 1).clamp(3.0, 18.0),
+                  );
+                },
+                onEventsTap: () => _showEventsSheet(filteredEvents),
+                onEventTap: (event) =>
+                    context.push('/event-detail', extra: event),
+              ),
+            ).animate().fadeIn(delay: 80.ms, duration: 380.ms),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+              child: Text(
+                'FILTRA IL SEGNALE',
+                style: VibraTextStyles.labelSmall.copyWith(
+                  color: t.textSecondary,
                 ),
               ),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 20)),
           SliverToBoxAdapter(
-            child: VibraSectionHeader(
-              title: l10n.exploreInteractiveMap,
-              subtitle: l10n.exploreLiveAroundYou,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: _FilterRail(
+                items: radii.map((radius) => '$radius km').toList(),
+                selectedIndex: radii.indexOf(selectedRadius),
+                onSelected: (index) => _changeRadius(radii[index]),
+              ),
             ),
           ),
           SliverToBoxAdapter(
-            child:
-                Container(
-                      height: 290,
-                      margin: const EdgeInsets.fromLTRB(20, 12, 20, 18),
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        borderRadius: VibraSpacing.borderLarge,
-                        border: Border.all(
-                          color: VibraColors.glassBorder,
-                          width: 1,
-                        ),
-                        boxShadow: [VibraShadows.cardElevation],
-                      ),
-                      child: Stack(
-                        children: [
-                          FlutterMap(
-                            mapController: _mapController,
-                            options: MapOptions(
-                              initialCenter: center,
-                              initialZoom: 10.5,
-                              maxZoom: 18.0,
-                              minZoom: 3.0,
-                              onPositionChanged: (position, hasGesture) {
-                                if (hasGesture) {
-                                  if (!_showSearchAreaButton) {
-                                    setState(
-                                      () => _showSearchAreaButton = true,
-                                    );
-                                  }
-                                }
-                              },
-                            ),
-                            children: [
-                              TileLayer(
-                                urlTemplate:
-                                    'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-                                userAgentPackageName: 'app.vibra.mobile',
-                              ),
-                              CircleLayer(
-                                circles: [
-                                  CircleMarker(
-                                    point: center,
-                                    radius: selectedRadius.toDouble() * 1000,
-                                    useRadiusInMeter: true,
-                                    color: VibraColors.primary.withValues(
-                                      alpha: 0.12,
-                                    ),
-                                    borderColor: VibraColors.primary.withValues(
-                                      alpha: 0.6,
-                                    ),
-                                    borderStrokeWidth: 1.5,
-                                  ),
-                                ],
-                              ),
-                              MarkerClusterLayerWidget(
-                                options: MarkerClusterLayerOptions(
-                                  spiderfyCluster: true,
-                                  showPolygon: false,
-                                  maxClusterRadius: 40,
-                                  size: const Size(40, 40),
-                                  alignment: Alignment.center,
-                                  padding: const EdgeInsets.all(50),
-                                  markers: filteredEvents.asMap().entries.map((
-                                    entry,
-                                  ) {
-                                    final index = entry.key;
-                                    final e = entry.value;
-                                    final lat = e.latitude ?? 45.4642;
-                                    final lng = e.longitude ?? 9.1900;
-                                    final pinColor = _getEventColor(e, context);
-                                    return Marker(
-                                      key: ValueKey('${e.id}_$index'),
-                                      point: LatLng(lat, lng),
-                                      width: 48,
-                                      height: 48,
-                                      child: GestureDetector(
-                                        onTap: () => context.push(
-                                          '/event-detail',
-                                          extra: e,
-                                        ),
-                                        child: VibraRadarPulse(
-                                          size: 52,
-                                          color: pinColor,
-                                          child: VibraNeonMapPin(
-                                            icon: Icons.music_note_rounded,
-                                            color: pinColor,
-                                            isSelected: true,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                  builder: (context, markers) {
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        color: VibraColors.primary,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: 2,
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: VibraColors.primary
-                                                .withValues(alpha: 0.6),
-                                            blurRadius: 10,
-                                            spreadRadius: 2,
-                                          ),
-                                        ],
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          markers.length.toString(),
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (_showSearchAreaButton)
-                            Positioned(
-                              top: 16,
-                              left: 0,
-                              right: 0,
-                              child: Center(
-                                child:
-                                    ElevatedButton.icon(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                VibraColors.surfaceElevated,
-                                            foregroundColor:
-                                                VibraColors.textPrimary,
-                                            elevation: 4,
-                                          ),
-                                          icon: const Icon(
-                                            Icons.search_rounded,
-                                            size: 18,
-                                          ),
-                                          label: Text(l10n.exploreSearchInArea),
-                                          onPressed: () {
-                                            setState(
-                                              () =>
-                                                  _showSearchAreaButton = false,
-                                            );
-                                            _triggerMapSearch(
-                                              _mapController
-                                                  .camera
-                                                  .center
-                                                  .latitude,
-                                              _mapController
-                                                  .camera
-                                                  .center
-                                                  .longitude,
-                                            );
-                                          },
-                                        )
-                                        .animate()
-                                        .fadeIn(duration: 200.ms)
-                                        .slideY(begin: -0.2, end: 0),
-                              ),
-                            ),
-                          if (eventsAsync.isLoading)
-                            Positioned(
-                              top: 16,
-                              left: 0,
-                              right: 0,
-                              child: Center(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: VibraColors.surfaceElevated,
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [VibraShadows.cardElevation],
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const SizedBox(
-                                        width: 14,
-                                        height: 14,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: VibraColors.accent,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        l10n.exploreSearchingEvents,
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ).animate().fadeIn(duration: 200.ms),
-                              ),
-                            ),
-                          Positioned(
-                            right: 12,
-                            bottom: 12,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _buildZoomButton(Icons.add_rounded, () {
-                                  final currentZoom =
-                                      _mapController.camera.zoom;
-                                  _mapController.move(
-                                    _mapController.camera.center,
-                                    (currentZoom + 1).clamp(3.0, 18.0),
-                                  );
-
-                                  final radii = const [25, 50, 100, 250];
-                                  final currentIndex = radii.indexOf(
-                                    selectedRadius,
-                                  );
-                                  if (currentIndex > 0) {
-                                    setState(
-                                      () => selectedRadius =
-                                          radii[currentIndex - 1],
-                                    );
-                                    _triggerMapSearch(
-                                      _mapController.camera.center.latitude,
-                                      _mapController.camera.center.longitude,
-                                    );
-                                  }
-                                }),
-                                const SizedBox(height: 8),
-                                _buildZoomButton(Icons.remove_rounded, () {
-                                  final currentZoom =
-                                      _mapController.camera.zoom;
-                                  _mapController.move(
-                                    _mapController.camera.center,
-                                    (currentZoom - 1).clamp(3.0, 18.0),
-                                  );
-
-                                  final radii = const [25, 50, 100, 250];
-                                  final currentIndex = radii.indexOf(
-                                    selectedRadius,
-                                  );
-                                  if (currentIndex < radii.length - 1) {
-                                    setState(
-                                      () => selectedRadius =
-                                          radii[currentIndex + 1],
-                                    );
-                                    _triggerMapSearch(
-                                      _mapController.camera.center.latitude,
-                                      _mapController.camera.center.longitude,
-                                    );
-                                  }
-                                }),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                    .animate()
-                    .fadeIn(duration: 500.ms)
-                    .scaleXY(begin: 0.96, end: 1.0, curve: Curves.easeOutBack),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: _FilterRail(
+                items: genres,
+                selectedIndex: genres.indexOf(selectedGenre),
+                onSelected: (index) =>
+                    setState(() => selectedGenre = genres[index]),
+              ),
+            ),
           ),
-
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.fromLTRB(20, 32, 20, 2),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.near_me_rounded,
-                    size: 16,
-                    color: VibraColors.accent,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    l10n.exploreSearchRadius,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                  Expanded(
+                    child: Text(
+                      '${filteredEvents.length} LIVE IN VISTA',
+                      style: VibraTextStyles.labelSmall.copyWith(
+                        color: t.textSecondary,
+                      ),
                     ),
                   ),
+                  if (_searchQuery.isNotEmpty)
+                    TextButton(
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() => _searchQuery = '');
+                      },
+                      child: const Text('Reset'),
+                    ),
                 ],
               ),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 10)),
-          SliverToBoxAdapter(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: radii
-                    .map(
-                      (radius) => Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
-                          label: Text(l10n.exploreRadius(radius.toString())),
-                          selected: selectedRadius == radius,
-                          onSelected: (_) {
-                            setState(() => selectedRadius = radius);
-
-                            double targetZoom = 10.5;
-                            if (radius <= 25) {
-                              targetZoom = 10.5;
-                            } else if (radius <= 50) {
-                              targetZoom = 9.5;
-                            } else if (radius <= 100) {
-                              targetZoom = 8.5;
-                            } else {
-                              targetZoom = 7.0;
-                            }
-
-                            _mapController.move(
-                              _mapController.camera.center,
-                              targetZoom,
-                            );
-
-                            _triggerMapSearch(
-                              _mapController.camera.center.latitude,
-                              _mapController.camera.center.longitude,
-                            );
-                          },
-                        ),
-                      ),
-                    )
-                    .toList(),
-              ),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 18)),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.graphic_eq_rounded,
-                    size: 16,
-                    color: VibraColors.accent,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    l10n.exploreMusicGenre,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 10)),
-          SliverToBoxAdapter(
-            child: VibraCategoryFilter(
-              categories: genres,
-              selectedCategory: selectedGenre,
-              onSelected: (genre) => setState(() => selectedGenre = genre),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 18)),
           if (filteredEvents.isEmpty && !eventsAsync.isLoading)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 30,
-                ),
-                child: VibraEmptyView(
-                  title: l10n.socialMatchEmptyTitle,
-                  message: _searchQuery.isNotEmpty
-                      ? 'Premi Cerca sulla tastiera per cercare "$_searchQuery" nel mondo, oppure prova con un altro nome.'
-                      : 'Proviamo ad ampliare il raggio di ricerca o a resettare i filtri.',
-                  icon: Icons.radar_rounded,
-                  actionLabel: AppLocalizations.of(
-                    context,
-                  )!.exploreShowAllEvents,
-                  onActionTap: () {
-                    setState(() {
-                      selectedGenre = l10n.exploreGenreAll;
-                      selectedRadius = 100;
-                      _searchQuery = '';
-                      _searchController.clear();
-                    });
-                    _triggerMapSearch(center.latitude, center.longitude);
-                  },
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 148),
+                child: VibraSurface(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 140,
+                        child: VibraSignalWave(
+                          height: 34,
+                          color: t.accentPrimary,
+                          secondaryColor: t.textPrimary,
+                          amplitude: 7,
+                          animate: true,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Qui il segnale è ancora basso.',
+                        style: VibraTextStyles.titleLarge,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Allarga il raggio o rimetti a fuoco i filtri.',
+                        style: VibraTextStyles.bodySmall,
+                      ),
+                      const SizedBox(height: 18),
+                      VibraButton(
+                        label: l10n.exploreShowAllEvents,
+                        tone: VibraButtonTone.signal,
+                        onPressed: () {
+                          setState(() {
+                            selectedGenre = l10n.exploreGenreAll;
+                            selectedRadius = 100;
+                            _searchQuery = '';
+                            _searchController.clear();
+                          });
+                          _triggerMapSearch(center.latitude, center.longitude);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             )
           else
-            SliverList.builder(
-              itemCount: filteredEvents.length,
-              itemBuilder: (context, index) {
-                return VibraEventCard(
-                  event: filteredEvents[index],
-                  compact: true,
-                  onTap: () => context.push(
-                    '/event-detail',
-                    extra: filteredEvents[index],
-                  ),
-                ).animate().slideY(
-                  begin: 0.08,
-                  end: 0,
-                  curve: Curves.easeOutQuad,
-                );
-              },
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 148),
+              sliver: SliverList.builder(
+                itemCount: filteredEvents.length,
+                itemBuilder: (context, index) =>
+                    VibraEventRow(
+                      event: filteredEvents[index],
+                      onTap: () => context.push(
+                        '/event-detail',
+                        extra: filteredEvents[index],
+                      ),
+                      showDivider: index != filteredEvents.length - 1,
+                    ).animate().fadeIn(
+                      delay: Duration(milliseconds: 45 * index),
+                      duration: 260.ms,
+                    ),
+              ),
             ),
-          const SliverPadding(padding: EdgeInsets.only(bottom: 160)),
         ],
+      ),
+    );
+  }
+}
+
+class _MapCanvas extends StatelessWidget {
+  const _MapCanvas({
+    required this.center,
+    required this.controller,
+    required this.events,
+    required this.isLoading,
+    required this.showSearchArea,
+    required this.searchAreaLabel,
+    required this.onMapMoved,
+    required this.onSearchArea,
+    required this.onZoomIn,
+    required this.onZoomOut,
+    required this.onEventsTap,
+    required this.onEventTap,
+  });
+
+  final LatLng center;
+  final MapController controller;
+  final List<Event> events;
+  final bool isLoading;
+  final bool showSearchArea;
+  final String searchAreaLabel;
+  final void Function(MapCamera, bool) onMapMoved;
+  final VoidCallback onSearchArea;
+  final VoidCallback onZoomIn;
+  final VoidCallback onZoomOut;
+  final VoidCallback onEventsTap;
+  final ValueChanged<Event> onEventTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.vibraTokens;
+    return SizedBox(
+      height: 410,
+      child: ClipRRect(
+        borderRadius: VibraSpacing.borderMedium,
+        child: Stack(
+          children: [
+            FlutterMap(
+              mapController: controller,
+              options: MapOptions(
+                initialCenter: center,
+                initialZoom: 10.5,
+                maxZoom: 18,
+                minZoom: 3,
+                onPositionChanged: onMapMoved,
+              ),
+              children: [
+                const VibraOpenStreetMapTileLayer(),
+                MarkerClusterLayerWidget(
+                  options: MarkerClusterLayerOptions(
+                    spiderfyCluster: true,
+                    showPolygon: false,
+                    maxClusterRadius: 42,
+                    size: const Size(44, 44),
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.all(48),
+                    markers: events.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final event = entry.value;
+                      return Marker(
+                        key: ValueKey('${event.id}_$index'),
+                        point: LatLng(
+                          event.latitude ?? 45.4642,
+                          event.longitude ?? 9.1900,
+                        ),
+                        width: 60,
+                        height: 60,
+                        child: Semantics(
+                          button: true,
+                          label: 'Apri evento ${event.name}',
+                          child: GestureDetector(
+                            onTap: () => onEventTap(event),
+                            child: VibraMapBeacon(selected: index == 0),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    builder: (context, markers) => Container(
+                      decoration: BoxDecoration(
+                        color: t.surfaceElevated,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: t.borderStrong),
+                        boxShadow: [t.elevatedShadow],
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        markers.length.toString(),
+                        style: VibraTextStyles.labelLarge.copyWith(
+                          color: t.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: t.borderStrong, width: 1),
+                    borderRadius: VibraSpacing.borderMedium,
+                  ),
+                ),
+              ),
+            ),
+            if (showSearchArea)
+              Positioned(
+                top: 14,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: VibraButton(
+                    label: searchAreaLabel,
+                    tone: VibraButtonTone.ink,
+                    leadingIcon: Icons.refresh_rounded,
+                    onPressed: onSearchArea,
+                  ),
+                ),
+              ),
+            if (isLoading)
+              Positioned(
+                top: 16,
+                left: 16,
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: t.accentPrimary,
+                  ),
+                ),
+              ),
+            Positioned(
+              right: 12,
+              top: 12,
+              child: Column(
+                children: [
+                  _MapSquareButton(
+                    icon: Icons.add_rounded,
+                    label: 'Ingrandisci mappa',
+                    onTap: onZoomIn,
+                  ),
+                  const SizedBox(height: 6),
+                  _MapSquareButton(
+                    icon: Icons.remove_rounded,
+                    label: 'Riduci ingrandimento mappa',
+                    onTap: onZoomOut,
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              left: 12,
+              right: 12,
+              bottom: 12,
+              child: VibraSurface(
+                color: t.surfaceElevated.withValues(alpha: 0.96),
+                semanticLabel: events.isEmpty
+                    ? null
+                    : 'Apri elenco di ${events.length} eventi',
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 11,
+                ),
+                onTap: events.isEmpty ? null : onEventsTap,
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 42,
+                      child: VibraSignalWave(
+                        height: 16,
+                        color: t.accentPrimary,
+                        secondaryColor: t.accentSecondary,
+                        amplitude: 3,
+                        animate: events.isNotEmpty,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        events.isEmpty
+                            ? 'Muovi la mappa per cercare un live'
+                            : '${events.length} live in questa zona',
+                        style: VibraTextStyles.labelLarge,
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_outward_rounded,
+                      size: 18,
+                      color: t.textPrimary,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EventsSheet extends StatelessWidget {
+  const _EventsSheet({
+    required this.events,
+    required this.category,
+    required this.onEventTap,
+  });
+
+  final List<Event> events;
+  final String category;
+  final ValueChanged<Event> onEventTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.vibraTokens;
+    final allLabel = AppLocalizations.of(context)!.exploreGenreAll;
+    final categoryLabel = category == allLabel ? 'Tutti i generi' : category;
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.78,
+      minChildSize: 0.45,
+      maxChildSize: 0.94,
+      expand: false,
+      builder: (context, scrollController) => Material(
+        color: t.surfaceElevated,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(VibraSpacing.radiusXL),
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 42,
+              height: 4,
+              decoration: BoxDecoration(
+                color: t.borderStrong,
+                borderRadius: VibraSpacing.borderFull,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 12, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          categoryLabel.toUpperCase(),
+                          style: VibraTextStyles.labelSmall.copyWith(
+                            color: t.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${events.length} live in questa zona',
+                          style: VibraTextStyles.titleLarge,
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Chiudi elenco eventi',
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+            ),
+            Divider(height: 1, color: t.borderDefault),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                itemCount: events.length,
+                itemBuilder: (context, index) => VibraEventRow(
+                  event: events[index],
+                  onTap: () => onEventTap(events[index]),
+                  showDivider: index != events.length - 1,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MapSquareButton extends StatelessWidget {
+  const _MapSquareButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.vibraTokens;
+    return Semantics(
+      button: true,
+      label: label,
+      child: Material(
+        color: t.surfaceElevated,
+        borderRadius: VibraSpacing.borderSmall,
+        elevation: 0,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: VibraSpacing.borderSmall,
+          child: SizedBox(
+            width: 48,
+            height: 48,
+            child: Icon(icon, color: t.textPrimary, size: 20),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterRail extends StatelessWidget {
+  const _FilterRail({
+    required this.items,
+    required this.selectedIndex,
+    required this.onSelected,
+  });
+
+  final List<String> items;
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.vibraTokens;
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: List.generate(items.length, (index) {
+          final selected = index == selectedIndex;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: Text(items[index]),
+              selected: selected,
+              onSelected: (_) => onSelected(index),
+              showCheckmark: true,
+              side: BorderSide(
+                color: selected ? t.accentPrimary : t.borderStrong,
+              ),
+              labelStyle: VibraTextStyles.labelMedium.copyWith(
+                color: selected ? t.accentPrimary : t.textSecondary,
+              ),
+            ),
+          );
+        }),
       ),
     );
   }

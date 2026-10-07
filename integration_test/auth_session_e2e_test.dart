@@ -1,68 +1,99 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:vibra/core/router/app_router.dart';
 import 'package:vibra/main.dart' as app;
+
+import 'fixtures/seeded_test_users.dart';
+
+Future<void> _pumpUntilFound(
+  WidgetTester tester,
+  Finder finder, {
+  Duration timeout = const Duration(seconds: 20),
+}) async {
+  final deadline = DateTime.now().add(timeout);
+  while (finder.evaluate().isEmpty && DateTime.now().isBefore(deadline)) {
+    await tester.pump(const Duration(milliseconds: 250));
+  }
+  expect(finder, findsWidgets);
+}
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  group('E2E Auth & Session Flow', () {
+  group('E2E seeded auth & isolation', () {
+    tearDown(() async {
+      if (SeededE2E.enabled &&
+          Supabase.instance.client.auth.currentUser != null) {
+        await Supabase.instance.client.auth.signOut(scope: SignOutScope.local);
+      }
+    });
+
     testWidgets(
-      'Login -> Salva Evento -> Logout -> Nuovo Login (Nessun residuo)',
+      'profilo completo effettua login e raggiunge Home sincronizzata',
       (tester) async {
-        app.main();
-        await tester.pumpAndSettle();
+        await SeededE2E.signInAs(SeededE2E.complete);
+        await app.bootstrapAndRun(
+          installGlobalErrorHandler: false,
+          initializeNativeServices: false,
+        );
+        await tester.pump();
 
-        // NOTA: Questo è uno scheletro di test E2E.
-        // A causa dell'autenticazione tramite provider esterni (Spotify/Supabase),
-        // i test E2E reali richiedono il mocking del client Supabase o l'uso di
-        // account di test pre-generati con password.
+        // AppRouter intentionally disables redirects under a test binding, so
+        // navigate explicitly after validating the authenticated fixture.
+        final context = AppRouter.rootNavigatorKey.currentContext!;
+        if (!context.mounted) {
+          fail('Navigator non montato dopo il bootstrap dell\'app');
+        }
+        GoRouter.of(context).go('/home');
 
-        /*
-      // 1. Login Utente A
-      await tester.enterText(find.byKey(const Key('email_field')), 'utente_a@test.com');
-      await tester.enterText(find.byKey(const Key('password_field')), 'password123');
-      await tester.tap(find.byKey(const Key('login_button')));
-      await tester.pumpAndSettle();
+        await _pumpUntilFound(
+          tester,
+          find.textContaining('Spotify sincronizzato'),
+        );
+        expect(find.textContaining('TEST Giulia Completa'), findsWidgets);
 
-      // Verifica Home
-      expect(find.text('Home'), findsOneWidget);
-
-      // 2. Salva un evento
-      await tester.tap(find.byKey(const Key('save_event_button_0')));
-      await tester.pumpAndSettle();
-
-      // 3. Verifica evento salvato nei "Miei Eventi"
-      await tester.tap(find.byKey(const Key('nav_profile')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('I miei eventi'));
-      await tester.pumpAndSettle();
-      expect(find.byType(ListTile), findsWidgets); // Almeno un evento salvato
-
-      // 4. Logout Utente A
-      await tester.tap(find.byKey(const Key('settings_button')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Esci'));
-      await tester.pumpAndSettle();
-
-      // Verifica Ritorno a Login
-      expect(find.byKey(const Key('login_button')), findsOneWidget);
-
-      // 5. Login Utente B
-      await tester.enterText(find.byKey(const Key('email_field')), 'utente_b@test.com');
-      await tester.enterText(find.byKey(const Key('password_field')), 'password123');
-      await tester.tap(find.byKey(const Key('login_button')));
-      await tester.pumpAndSettle();
-
-      // 6. Verifica "Miei Eventi" Utente B è vuoto (nessun residuo da A)
-      await tester.tap(find.byKey(const Key('nav_profile')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('I miei eventi'));
-      await tester.pumpAndSettle();
-      
-      // Assicura che la lista eventi sia vuota o mostri lo stato "nessun evento"
-      expect(find.text('Nessun evento salvato'), findsOneWidget);
-      */
+        if (!context.mounted) {
+          fail('Navigator smontato durante il caricamento');
+        }
+        GoRouter.of(context).go('/music-stats');
+        await _pumpUntilFound(tester, find.text('indie italiano'));
+        expect(find.text('pop elettronico'), findsOneWidget);
       },
+      skip: !SeededE2E.enabled,
+    );
+
+    testWidgets(
+      'utente auth-only non eredita dati privati da una sessione precedente',
+      (tester) async {
+        final completeClient = await SeededE2E.signInAs(SeededE2E.complete);
+        final completeSaved = await completeClient
+            .from('event_attendees')
+            .select('id');
+        expect(completeSaved, isNotEmpty);
+
+        final freshClient = await SeededE2E.signInAs(SeededE2E.brandNew);
+        final freshProfile = await freshClient.from('users').select('id');
+        final freshSaved = await freshClient
+            .from('event_attendees')
+            .select('id');
+        final freshMessages = await freshClient.from('messages').select('id');
+        final freshMatches = await freshClient
+            .from('user_matches')
+            .select('id');
+        final freshNotifications = await freshClient
+            .from('notifications')
+            .select('id');
+
+        // User 09 is deliberately auth-only until Vibra bootstraps the profile.
+        expect(freshProfile, isEmpty);
+        expect(freshSaved, isEmpty);
+        expect(freshMessages, isEmpty);
+        expect(freshMatches, isEmpty);
+        expect(freshNotifications, isEmpty);
+      },
+      skip: !SeededE2E.enabled,
     );
   });
 }

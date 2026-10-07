@@ -1,7 +1,10 @@
+import { rejectRevokedSession } from "../_shared/session-guard.ts";
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
 import { requireEnv } from "../_shared/env.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { decryptToken, encryptToken } from "../_shared/token-crypto.ts";
+import { loadTopGenres, SpotifyRequestError } from "./genres.ts";
 
 function createUserClient(req: Request) {
   const url = requireEnv("SUPABASE_URL");
@@ -61,12 +64,15 @@ async function spotifyGet(
     credentials.refreshToken = refreshed.refresh_token ?? credentials.refreshToken;
 
     await supabase
-      .from("users")
+      .from("spotify_connections")
       .update({
-        spotify_access_token: credentials.accessToken,
-        spotify_refresh_token: credentials.refreshToken,
+        access_token_ciphertext: await encryptToken(credentials.accessToken),
+        refresh_token_ciphertext: credentials.refreshToken
+          ? await encryptToken(credentials.refreshToken)
+          : null,
+        token_expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
       })
-      .eq("id", userId);
+      .eq("user_id", userId);
 
     response = await fetch(`https://api.spotify.com/v1${path}`, {
       headers: { Authorization: `Bearer ${credentials.accessToken}` },
@@ -75,13 +81,15 @@ async function spotifyGet(
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Spotify GET ${path} failed: ${response.status} ${text}`);
+    throw new SpotifyRequestError(response.status, `Spotify GET ${path} failed: ${response.status} ${text}`);
   }
 
   return await response.json();
 }
 
 Deno.serve(async (req) => {
+  const rejected = await rejectRevokedSession(req, "sync-music-profile");
+  if (rejected) return rejected;
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 
@@ -97,13 +105,13 @@ Deno.serve(async (req) => {
 
     const supabase = createSupabaseServiceClient();
     const { data: userRow, error: userRowError } = await supabase
-      .from("users")
-      .select("spotify_access_token, spotify_refresh_token")
-      .eq("id", authData.user.id)
+      .from("spotify_connections")
+      .select("access_token_ciphertext, refresh_token_ciphertext")
+      .eq("user_id", authData.user.id)
       .maybeSingle();
 
     if (userRowError) throw userRowError;
-    if (!userRow?.spotify_access_token) {
+    if (!userRow?.access_token_ciphertext) {
       return new Response(JSON.stringify({ error: "spotify_not_connected" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -111,8 +119,10 @@ Deno.serve(async (req) => {
     }
 
     const credentials = {
-      accessToken: userRow.spotify_access_token as string,
-      refreshToken: userRow.spotify_refresh_token as string | null,
+      accessToken: await decryptToken(userRow.access_token_ciphertext as string),
+      refreshToken: userRow.refresh_token_ciphertext
+        ? await decryptToken(userRow.refresh_token_ciphertext as string)
+        : null,
     };
 
     try {
@@ -142,67 +152,15 @@ Deno.serve(async (req) => {
         score: Math.max(100 - index, 0),
       }));
 
-      const genreCounts: Record<string, number> = {};
-      const artistsArr = (topArtistsRes.items ?? []) as any[];
-      
-      // Some Spotify accounts/regions return SimplifiedArtistObject without genres in /me/top/artists.
-      // To guarantee genres, we fetch the full artist objects using /artists?ids=...
-      let debugMsg = "DEBUG: initialized";
-      let fullArtists = artistsArr;
-      if (artistsArr.length > 0 && !artistsArr[0].genres) {
-        // Try to fetch just ONE artist to see if /artists/{id} is also forbidden
-        const firstArtistId = artistsArr.find((a: any) => typeof a.id === 'string' && a.id.length > 15)?.id;
-        
-        if (firstArtistId) {
-          try {
-            debugMsg = "DEBUG: fetching /artists/" + firstArtistId;
-            const singleArtistRes = await spotifyGet(
-              `/artists/${firstArtistId}`,
-              credentials,
-              authData.user.id,
-              supabase
-            );
-            
-            if (singleArtistRes.genres) {
-              debugMsg = "DEBUG: got single artist genres: " + JSON.stringify(singleArtistRes.genres);
-              // Since bulk is forbidden, let's just use the single artist for now to see if it works
-              fullArtists = [singleArtistRes];
-            } else {
-              debugMsg = "DEBUG: singleArtistRes has no genres";
-            }
-          } catch (e: any) {
-            const fullErr = "DEBUG ERROR: " + (e.message || String(e));
-            debugMsg = fullErr.length > 200 
-              ? "..." + fullErr.substring(fullErr.length - 197) 
-              : fullErr;
-            console.error("Failed to fetch single artist for genres", e);
-          }
-        }
-      } else if (artistsArr.length > 0) {
-        debugMsg = "DEBUG: initial artists had genres: " + JSON.stringify(artistsArr[0].genres);
-      }
-
-      for (const artist of fullArtists) {
-        const genres = (artist?.genres ?? []) as string[];
-        for (const genre of genres) {
-          const key = genre.trim().toLowerCase();
-          if (!key) continue;
-          genreCounts[key] = (genreCounts[key] ?? 0) + 1;
-        }
-      }
-
-      const sortedGenres = Object.entries(genreCounts).sort((a, b) => b[1] - a[1]);
-      const maxGenre = sortedGenres.length > 0 ? sortedGenres[0][1] : 1;
-      let topGenres = sortedGenres.map(([genre, count]) => ({
-        genre,
-        weight: Number((count / maxGenre).toFixed(4)),
-      }));
-      
-      if (topGenres.length === 0) {
-        // Fallback: if we couldn't get genres (due to Spotify API restrictions),
-        // we just leave the array empty. The UI will handle it gracefully.
-        console.log("No genres available (likely due to Spotify Extended API Access restrictions)");
-      }
+      const topGenres = await loadTopGenres(
+        topArtistsRes.items ?? [],
+        (id) => spotifyGet(
+          `/artists/${encodeURIComponent(id)}`,
+          credentials,
+          authData.user.id,
+          supabase,
+        ),
+      );
 
       const { data: profileRow } = await supabase
         .from("music_profiles")
@@ -279,6 +237,42 @@ Deno.serve(async (req) => {
         }
       }
 
+      // ── Listening Heatmap (/me/player/recently-played) ──────────────
+      // Aggreghiamo gli ascolti recenti per giorno della settimana.
+      // Spotify restituisce fino a 50 track con played_at timestamp.
+      // Giorno 0 = Lun, ..., 6 = Dom (compatibile con il display Flutter).
+      const dayLabels = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
+      const dayCounts: number[] = [0, 0, 0, 0, 0, 0, 0];
+
+      try {
+        const recentlyPlayedRes = await spotifyGet(
+          "/me/player/recently-played?limit=50",
+          credentials,
+          authData.user.id,
+          supabase
+        );
+
+        const items = (recentlyPlayedRes.items ?? []) as any[];
+        for (const item of items) {
+          const playedAt = item?.played_at;
+          if (!playedAt) continue;
+          const date = new Date(playedAt);
+          // getDay() returns 0=Sun...6=Sat; we remap to 0=Mon...6=Sun
+          const jsDay = date.getDay(); // 0=Dom, 1=Lun, ... 6=Sab
+          const remapped = jsDay === 0 ? 6 : jsDay - 1; // 0=Lun...6=Dom
+          dayCounts[remapped]++;
+        }
+      } catch (e) {
+        console.error("Failed to fetch recently-played for heatmap", e);
+        // Fallback: all zeros — UI will show empty bars
+      }
+
+      const maxCount = Math.max(...dayCounts, 1); // avoid division by zero
+      const listeningHeatmap = dayLabels.map((label, i) => ({
+        day: label,
+        value: Number((dayCounts[i] / maxCount).toFixed(4)),
+      }));
+
       const payload = {
         ...(profileRow?.id != null ? { id: profileRow.id } : {}),
         user_id: authData.user.id,
@@ -287,6 +281,7 @@ Deno.serve(async (req) => {
         top_genres: topGenres,
         audio_features: rawAudioFeatures,
         embedding: embedding,
+        listening_heatmap: listeningHeatmap,
         last_synced_at: new Date().toISOString(),
       };
 
@@ -308,10 +303,13 @@ Deno.serve(async (req) => {
         credentials.accessToken = refreshed.access_token;
         credentials.refreshToken = refreshed.refresh_token ?? credentials.refreshToken;
 
-        await supabase.from("users").update({
-          spotify_access_token: credentials.accessToken,
-          spotify_refresh_token: credentials.refreshToken,
-        }).eq("id", authData.user.id);
+        await supabase.from("spotify_connections").update({
+          access_token_ciphertext: await encryptToken(credentials.accessToken),
+          refresh_token_ciphertext: credentials.refreshToken
+            ? await encryptToken(credentials.refreshToken)
+            : null,
+          token_expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
+        }).eq("user_id", authData.user.id);
       }
 
       throw e;
@@ -319,7 +317,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     return new Response(JSON.stringify({
       error: "internal_error",
-      message: String(e?.message ?? e),
+      message: e instanceof Error ? e.message : String(e),
     }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

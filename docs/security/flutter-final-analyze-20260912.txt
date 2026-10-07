@@ -1,0 +1,7 @@
+Analyzing vibra...
+
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • integration_test/auth_session_e2e_test.dart:57:21 • use_build_context_synchronously
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/core/services/private_media_url.dart:20:5 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/core/services/private_media_url.dart:23:5 • curly_braces_in_flow_control_structures
+
+3 issues found. (ran in 22.4s)

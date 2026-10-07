@@ -50,6 +50,11 @@ final setEventAttendanceUseCaseProvider = Provider<SetEventAttendanceUseCase>((
   return SetEventAttendanceUseCase(ref.watch(eventsRepositoryProvider));
 });
 
+final getMyEventAttendanceUseCaseProvider =
+    Provider<GetMyEventAttendanceUseCase>((ref) {
+      return GetMyEventAttendanceUseCase(ref.watch(eventsRepositoryProvider));
+    });
+
 final getEventAttendeesUseCaseProvider = Provider<GetEventAttendeesUseCase>((
   ref,
 ) {
@@ -92,6 +97,12 @@ final streamConversationUseCaseProvider = Provider<StreamConversationUseCase>((
   ref,
 ) {
   return StreamConversationUseCase(ref.watch(socialRepositoryProvider));
+});
+
+final markMessagesAsReadUseCaseProvider = Provider<MarkMessagesAsReadUseCase>((
+  ref,
+) {
+  return MarkMessagesAsReadUseCase(ref.watch(socialRepositoryProvider));
 });
 
 final blockUserUseCaseProvider = Provider<BlockUserUseCase>((ref) {
@@ -142,3 +153,41 @@ final calculateEventRecommendationScoreUseCaseProvider =
     Provider<CalculateEventRecommendationScoreUseCase>((ref) {
       return const CalculateEventRecommendationScoreUseCase();
     });
+
+final deleteFriendshipUseCaseProvider = Provider<DeleteFriendshipUseCase>((
+  ref,
+) {
+  return DeleteFriendshipUseCase(ref.watch(socialRepositoryProvider));
+});
+
+final cancelFriendRequestUseCaseProvider = Provider<CancelFriendRequestUseCase>(
+  (ref) {
+    return CancelFriendRequestUseCase(ref.watch(socialRepositoryProvider));
+  },
+);
+
+final listConversationsUseCaseProvider = Provider<ListConversationsUseCase>((
+  ref,
+) {
+  return ListConversationsUseCase(ref.watch(socialRepositoryProvider));
+});
+
+final followUserUseCaseProvider = Provider<FollowUserUseCase>((ref) {
+  return FollowUserUseCase(ref.watch(socialRepositoryProvider));
+});
+
+final unfollowUserUseCaseProvider = Provider<UnfollowUserUseCase>((ref) {
+  return UnfollowUserUseCase(ref.watch(socialRepositoryProvider));
+});
+
+final getFollowStatsUseCaseProvider = Provider<GetFollowStatsUseCase>((ref) {
+  return GetFollowStatsUseCase(ref.watch(socialRepositoryProvider));
+});
+
+final getFollowersUseCaseProvider = Provider<GetFollowersUseCase>((ref) {
+  return GetFollowersUseCase(ref.watch(socialRepositoryProvider));
+});
+
+final getFollowingUseCaseProvider = Provider<GetFollowingUseCase>((ref) {
+  return GetFollowingUseCase(ref.watch(socialRepositoryProvider));
+});

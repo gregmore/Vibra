@@ -9,10 +9,20 @@ class EnvConfig {
 
   static bool _loaded = false;
 
+  // Seeded integration tests can target an isolated local/staging project
+  // without rewriting the developer's .env file. These are public client
+  // values only; a service-role key must never be passed as a dart-define.
+  static const String _e2eSupabaseUrl = String.fromEnvironment(
+    'VIBRA_E2E_SUPABASE_URL',
+  );
+  static const String _e2eSupabaseAnonKey = String.fromEnvironment(
+    'VIBRA_E2E_SUPABASE_ANON_KEY',
+  );
+
   /// Carica il file `.env` una sola volta.
   static Future<void> load() async {
     if (_loaded) return;
-    await dotenv.load(fileName: '.env');
+    await dotenv.load(fileName: '.env.public');
     _loaded = true;
   }
 
@@ -32,19 +42,24 @@ class EnvConfig {
     return value;
   }
 
-  static String get supabaseUrl => _readRequired('SUPABASE_URL');
+  static bool get isIsolatedTest => _e2eSupabaseUrl.isNotEmpty;
 
-  static String get supabaseAnonKey => _readRequired('SUPABASE_ANON_KEY');
+  static String get supabaseUrl => _e2eSupabaseUrl.isNotEmpty
+      ? _e2eSupabaseUrl
+      : _readRequired('SUPABASE_URL');
+
+  static String get supabaseAnonKey => _e2eSupabaseAnonKey.isNotEmpty
+      ? _e2eSupabaseAnonKey
+      : _readRequired('SUPABASE_ANON_KEY');
 
   static String get spotifyClientId => _readRequired('SPOTIFY_CLIENT_ID');
 
   static String get spotifyRedirectUri =>
       _readOptional('SPOTIFY_REDIRECT_URI') ?? 'com.vibra.app://callback';
 
-  static String? get ticketmasterApiKey =>
-      _readOptional('TICKETMASTER_API_KEY');
+  static String? get ticketmasterApiKey => null;
 
-  static String? get songkickApiKey => _readOptional('SONGKICK_API_KEY');
+  static String? get songkickApiKey => null;
 
   static String? get bandsintownAppId => _readOptional('BANDSINTOWN_APP_ID');
 }

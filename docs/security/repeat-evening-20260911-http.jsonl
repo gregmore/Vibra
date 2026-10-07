@@ -1,0 +1,41 @@
+{"test": "anonymous private profiles", "passed": true, "status": 401}
+{"test": "cross-user private profile read", "passed": true, "status": 200}
+{"test": "cross-user profile update", "passed": true, "status": 200}
+{"test": "forged Spotify identity", "passed": true, "status": 403}
+{"test": "forged musical profile", "passed": true, "status": 403}
+{"test": "music discovery without consent", "passed": true, "status": 200}
+{"test": "music discovery with explicit consent", "passed": true, "status": 200}
+{"test": "self-accepted friendship", "passed": true, "status": 403}
+{"test": "unrelated friendship update", "passed": true, "status": 200}
+{"test": "unrelated message read", "passed": true, "status": 200}
+{"test": "recipient rewrites sender message", "passed": true, "status": 400}
+{"test": "recipient may mark read", "passed": true, "status": 200}
+{"test": "recipient cannot substitute private media", "passed": true, "status": 403}
+{"test": "saved events isolation", "passed": true, "status": 200}
+{"test": "Spotify credentials isolation", "passed": true, "status": 200}
+{"test": "overlong bio", "passed": true, "status": 400}
+{"test": "own profile positive control", "passed": true, "status": 200}
+{"test": "retired seed endpoint", "passed": true, "status": 410}
+{"test": "embedding job restricted to backend", "passed": true, "status": 403}
+{"test": "action quota allowed 0", "passed": true, "status": 204}
+{"test": "action quota allowed 1", "passed": true, "status": 204}
+{"test": "action quota allowed 2", "passed": true, "status": 204}
+{"test": "action quota allowed 3", "passed": true, "status": 204}
+{"test": "action quota allowed 4", "passed": true, "status": 204}
+{"test": "action quota allowed 5", "passed": true, "status": 204}
+{"test": "action quota allowed 6", "passed": true, "status": 204}
+{"test": "action quota allowed 7", "passed": true, "status": 204}
+{"test": "action quota allowed 8", "passed": true, "status": 204}
+{"test": "action quota allowed 9", "passed": true, "status": 204}
+{"test": "action quota exceeded", "passed": true, "status": 429}
+{"test": "another user has independent quota", "passed": true, "status": 204}
+{"test": "logout", "passed": true, "status": 204}
+{"test": "JWT replay after logout", "passed": true, "status": 401}
+{"test": "revoked JWT cannot call definer export", "passed": true, "status": 401}
+{"test": "revoked JWT calculate-match", "passed": true, "status": 401}
+{"test": "revoked JWT recommend-events", "passed": true, "status": 401}
+{"test": "revoked JWT spotify-token-exchange", "passed": true, "status": 401}
+{"test": "revoked JWT sync-music-profile", "passed": true, "status": 401}
+{"test": "revoked JWT track-ticket-click", "passed": true, "status": 401}
+{"test": "revoked JWT spotify-disconnect", "passed": true, "status": 401}
+{"test": "revoked JWT delete-account", "passed": true, "status": 401}

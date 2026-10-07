@@ -76,15 +76,27 @@ class PushNotificationsBootstrap {
 
       // Handle message in foreground
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        VibraLogger.info('Messaggio ricevuto in foreground: ${message.notification?.title}', tag: 'Push');
+        VibraLogger.info(
+          'Messaggio ricevuto in foreground: ${message.notification?.title}',
+          tag: 'Push',
+        );
         final context = AppRouter.rootNavigatorKey.currentContext;
-        if (context != null && message.notification != null) {
+        if (context != null &&
+            context.mounted &&
+            message.notification != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${message.notification?.title ?? ''}: ${message.notification?.body ?? ''}'),
+              content: Text(
+                '${message.notification?.title ?? ''}: ${message.notification?.body ?? ''}',
+              ),
               action: SnackBarAction(
                 label: 'APRI',
-                onPressed: () => _handleMessageClick(message, context),
+                onPressed: () {
+                  final currentCtx = AppRouter.rootNavigatorKey.currentContext;
+                  if (currentCtx != null && currentCtx.mounted) {
+                    _handleMessageClick(message, currentCtx);
+                  }
+                },
               ),
               duration: const Duration(seconds: 4),
               behavior: SnackBarBehavior.floating,
@@ -97,7 +109,7 @@ class PushNotificationsBootstrap {
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         VibraLogger.info('Notifica tappata (app in background)!', tag: 'Push');
         final context = AppRouter.rootNavigatorKey.currentContext;
-        if (context != null) {
+        if (context != null && context.mounted) {
           _handleMessageClick(message, context);
         }
       });
@@ -109,13 +121,12 @@ class PushNotificationsBootstrap {
           // Give the router some time to mount
           Future.delayed(const Duration(milliseconds: 1500), () {
             final context = AppRouter.rootNavigatorKey.currentContext;
-            if (context != null) {
+            if (context != null && context.mounted) {
               _handleMessageClick(message, context);
             }
           });
         }
       });
-
 
       if (!supabase.isAuthenticated) {
         VibraLogger.warning(
@@ -183,15 +194,34 @@ class PushNotificationsBootstrap {
     }
   }
 
-    static void _handleMessageClick(RemoteMessage message, BuildContext context) {
+  static void _handleMessageClick(RemoteMessage message, BuildContext context) {
+    if (!context.mounted) return;
     final data = message.data;
+    final campaignId = data['campaign_id'];
+    if (campaignId != null && campaignId.isNotEmpty) {
+      Supabase.instance.client
+          .rpc('record_notification_open', params: {'campaign': campaignId})
+          .catchError((_) {});
+    }
     final type = data['type'];
-    
+
     switch (type) {
       case 'chat_message':
+      case 'message_request':
         final senderId = data['sender_id'];
         if (senderId != null) {
-          context.push('/chat', extra: {'otherUserId': senderId, 'otherDisplayName': message.notification?.title?.replaceAll('Nuovo messaggio da ', '') ?? 'Chat'});
+          context.push(
+            '/chat',
+            extra: {
+              'otherUserId': senderId,
+              'otherDisplayName':
+                  message.notification?.title?.replaceAll(
+                    'Nuovo messaggio da ',
+                    '',
+                  ) ??
+                  'Chat',
+            },
+          );
         }
         break;
       case 'friend_request':
@@ -200,11 +230,17 @@ class PushNotificationsBootstrap {
       case 'match':
         context.push('/social');
         break;
+      case 'live_chat':
+        context.push('/live');
+        break;
       case 'event_alert':
+      case 'artist_concert':
+      case 'retention':
+      case 'digest':
         final eventId = data['event_id'];
         if (eventId != null) {
           // Ideally we would fetch the event or just navigate to explore with a query
-          context.push('/explore', extra: eventId); 
+          context.push('/explore', extra: eventId);
         }
         break;
     }

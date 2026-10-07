@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vibra/l10n/app_localizations.dart';
-
+import 'package:flutter_animate/flutter_animate.dart';
+import '../../../core/theme/vibra_spacing.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../providers/app_state_providers.dart';
 
 import '../../widgets/common/vibra_page_scaffold.dart';
+import '../../widgets/common/vibra_input.dart';
+import '../../widgets/common/vibra_surface.dart';
 import '../../widgets/shared/user_avatar.dart';
 import '../../widgets/common/vibra_section_header.dart';
 import '../../widgets/common/vibra_user_match_card.dart';
@@ -19,74 +23,351 @@ class DiscoverUsersScreen extends ConsumerStatefulWidget {
 }
 
 class _DiscoverUsersScreenState extends ConsumerState<DiscoverUsersScreen> {
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    await Future.wait([
+      ref.read(matchedUsersProvider.notifier).refresh(),
+      ref.read(pendingFriendshipsProvider.notifier).refresh(),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final users = ref.watch(matchedUsersProvider);
+    final t = context.vibraTokens;
+    final users = ref.watch(matchedUsersProvider).where((match) {
+      return [match.user.username, match.user.displayName, ...match.topArtists]
+          .whereType<String>()
+          .any((value) => value.toLowerCase().contains(_query));
+    }).toList();
     final pending = ref.watch(pendingFriendshipsProvider);
 
     return VibraPageScaffold(
-      child: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-            sliver: SliverToBoxAdapter(
-              child: Text(
-                l10n.socialTitle,
-                style: Theme.of(context).textTheme.displaySmall,
+      child: RefreshIndicator(
+        onRefresh: _refresh,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              sliver: SliverToBoxAdapter(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    BackButton(
+                      onPressed: () {
+                        if (context.canPop()) {
+                          context.pop();
+                        } else {
+                          context.go('/social-match');
+                        }
+                      },
+                    ),
+                    Expanded(
+                      child: Text(
+                        l10n.socialTitle,
+                        style: Theme.of(context).textTheme.displaySmall,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        // Amici Shortcut
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: t.cardShadow.color,
+                                    blurRadius: t.cardShadow.blurRadius,
+                                    offset: t.cardShadow.offset,
+                                  ),
+                                ],
+                              ),
+                              child: IconButton.filledTonal(
+                                icon: const Icon(
+                                  Icons.people_alt_rounded,
+                                  size: 20,
+                                ),
+                                tooltip: 'Amici e Richieste',
+                                onPressed: () => context.push('/friends'),
+                              ),
+                            ),
+                            if (pending.isNotEmpty)
+                              Positioned(
+                                top: -2,
+                                right: -2,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: t.warning,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.amber.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        blurRadius: 6,
+                                      ),
+                                    ],
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 16,
+                                    minHeight: 16,
+                                  ),
+                                  child: Text(
+                                    '${pending.length}',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: t.onAccent,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(width: 8),
+                        // Messaggi Shortcut
+                        Builder(
+                          builder: (context) {
+                            final unreadCount = ref.watch(
+                              totalUnreadMessagesCountProvider,
+                            );
+                            final requestCount = ref
+                                .watch(messageRequestsProvider)
+                                .length;
+                            final totalBadge = unreadCount + requestCount;
+
+                            return Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: t.cardShadow.color,
+                                        blurRadius: t.cardShadow.blurRadius,
+                                        offset: t.cardShadow.offset,
+                                      ),
+                                    ],
+                                  ),
+                                  child: IconButton.filledTonal(
+                                    icon: const Icon(
+                                      Icons.chat_bubble_rounded,
+                                      size: 20,
+                                    ),
+                                    tooltip: 'Messaggi',
+                                    onPressed: () => context.push('/messages'),
+                                  ),
+                                ),
+                                if (totalBadge > 0)
+                                  Positioned(
+                                    top: -2,
+                                    right: -2,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                                .withValues(alpha: 0.5),
+                                            blurRadius: 6,
+                                          ),
+                                        ],
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 16,
+                                        minHeight: 16,
+                                      ),
+                                      child: Text(
+                                        totalBadge > 9 ? '9+' : '$totalBadge',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: t.onAccent,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ).animate().fadeIn(duration: 400.ms),
               ),
             ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 14)),
-          SliverToBoxAdapter(
-            child: VibraSectionHeader(
-              title: l10n.socialDiscoverUsers,
-              subtitle: l10n.socialHighCompatibility,
-              actionLabel: l10n.socialRequestsCount(pending.length),
-              onActionTap: () => context.push('/friends'),
+            const SliverToBoxAdapter(child: SizedBox(height: 14)),
+            SliverToBoxAdapter(
+              child: VibraSectionHeader(
+                title: l10n.socialDiscoverUsers,
+                subtitle: l10n.socialHighCompatibility,
+                actionLabel: l10n.socialRequestsCount(pending.length),
+                onActionTap: () => context.push('/friends'),
+              ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
             ),
-          ),
-          SliverList.builder(
-            itemCount: users.length,
-            itemBuilder: (context, index) {
-              final user = users[index];
-              return VibraUserMatchCard(
-                user: user,
-                onTap: () => context.push('/user-profile', extra: user.user.id),
-                trailing: IconButton(
-                  onPressed: () => context.push('/chat', extra: {'otherUserId': user.user.id, 'otherDisplayName': user.user.displayName ?? user.user.username}),
-                  icon: const Icon(Icons.chat_bubble_outline_rounded),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                child: VibraInput(
+                  controller: _searchController,
+                  hintText: l10n.socialSearchHint,
+                  prefixIcon: Icons.search_rounded,
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: (_) => FocusScope.of(context).unfocus(),
+                  onChanged: (value) =>
+                      setState(() => _query = value.trim().toLowerCase()),
+                  suffix: _searchController.text.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: l10n.myEventsClearSearch,
+                          icon: const Icon(Icons.close_rounded),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _query = '');
+                          },
+                        ),
                 ),
-              );
-            },
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 12)),
-          SliverToBoxAdapter(
-            child: VibraSectionHeader(
-              title: l10n.socialPendingFriendships,
-              subtitle: l10n.socialRequestsToManage,
+              ),
             ),
-          ),
-          SliverList.builder(
-            itemCount: pending.length,
-            itemBuilder: (context, index) {
-              final friendship = pending[index];
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 4,
+            if (users.isEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  child: VibraSurface(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _query.isEmpty
+                              ? l10n.socialDiscoverEmpty
+                              : l10n.socialSearchEmpty,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _query.isEmpty
+                              ? l10n.socialDiscoverEmptyBody
+                              : l10n.socialSearchEmptyBody,
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          icon: Icon(
+                            _query.isEmpty
+                                ? Icons.person_outline_rounded
+                                : Icons.close_rounded,
+                          ),
+                          label: Text(
+                            _query.isEmpty
+                                ? l10n.navProfile
+                                : l10n.myEventsClearSearch,
+                          ),
+                          onPressed: () {
+                            if (_query.isEmpty) {
+                              context.push('/profile');
+                            } else {
+                              _searchController.clear();
+                              setState(() => _query = '');
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                leading: const UserAvatar(radius: 20),
-                title: Text(l10n.socialRequestFrom(friendship.requesterId)),
-                trailing: FilledButton.tonal(
-                  onPressed: () => context.push('/friends'),
-                  child: Text(l10n.socialOpen),
-                ),
-              );
-            },
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 120)),
-        ],
+              ),
+            SliverList.builder(
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                final user = users[index];
+                return VibraUserMatchCard(
+                  user: user,
+                  onTap: () =>
+                      context.push('/user-profile', extra: user.user.id),
+                  trailing: IconButton(
+                    onPressed: () => context.push(
+                      '/chat',
+                      extra: {
+                        'otherUserId': user.user.id,
+                        'otherDisplayName':
+                            user.user.displayName ?? user.user.username,
+                      },
+                    ),
+                    icon: const Icon(Icons.chat_bubble_outline_rounded),
+                  ),
+                );
+              },
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 12)),
+            SliverToBoxAdapter(
+              child: VibraSectionHeader(
+                title: l10n.socialPendingFriendships,
+                subtitle: l10n.socialRequestsToManage,
+              ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
+            ),
+            SliverList.builder(
+              itemCount: pending.length,
+              itemBuilder: (context, index) {
+                final friendship = pending[index];
+                return Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: t.surfaceElevated,
+                    borderRadius: BorderRadius.circular(
+                      VibraSpacing.radiusMedium,
+                    ),
+                    border: Border.all(color: t.borderDefault, width: 0.5),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    leading: const UserAvatar(radius: 20),
+                    title: Text(
+                      l10n.socialRequestFrom(friendship.requesterId),
+                      style: TextStyle(color: t.textPrimary),
+                    ),
+                    trailing: FilledButton.tonal(
+                      onPressed: () => context.push('/friends'),
+                      child: Text(l10n.socialOpen),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 120)),
+          ],
+        ),
       ),
     );
   }

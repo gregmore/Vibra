@@ -1016,6 +1016,234 @@ abstract class AppLocalizations {
   /// **'Privacy, notifications, account and logout'**
   String get myProfileSettingsSubtitle;
 
+  /// No description provided for @myEventsUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get myEventsUpcoming;
+
+  /// No description provided for @myEventsPast.
+  ///
+  /// In en, this message translates to:
+  /// **'Past'**
+  String get myEventsPast;
+
+  /// No description provided for @myEventsPastSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your concert history'**
+  String get myEventsPastSubtitle;
+
+  /// No description provided for @myEventsPastEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No past events yet.'**
+  String get myEventsPastEmpty;
+
+  /// No description provided for @myEventsSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search events, artists or places'**
+  String get myEventsSearchHint;
+
+  /// No description provided for @myEventsSearchEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No events match your search.'**
+  String get myEventsSearchEmpty;
+
+  /// No description provided for @myEventsClearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get myEventsClearSearch;
+
+  /// No description provided for @myEventsExplore.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore events'**
+  String get myEventsExplore;
+
+  /// No description provided for @inboxUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
+  String get inboxUnread;
+
+  /// No description provided for @inboxNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations found.'**
+  String get inboxNoResults;
+
+  /// No description provided for @inboxNoResultsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another name or clear the filters to see all messages.'**
+  String get inboxNoResultsBody;
+
+  /// No description provided for @inboxClearFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filters'**
+  String get inboxClearFilters;
+
+  /// No description provided for @homeFeedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Events could not be loaded.'**
+  String get homeFeedError;
+
+  /// No description provided for @homeFeedErrorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again shortly. You can still explore the map.'**
+  String get homeFeedErrorBody;
+
+  /// No description provided for @homeFeedEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'There’s room for a new night out.'**
+  String get homeFeedEmpty;
+
+  /// No description provided for @homeFeedEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore the map to find your next live show.'**
+  String get homeFeedEmptyBody;
+
+  /// No description provided for @socialSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search people or artists'**
+  String get socialSearchHint;
+
+  /// No description provided for @socialSearchEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No people found.'**
+  String get socialSearchEmpty;
+
+  /// No description provided for @socialSearchEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another name or artist.'**
+  String get socialSearchEmptyBody;
+
+  /// No description provided for @socialDiscoverEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'New connections start here.'**
+  String get socialDiscoverEmpty;
+
+  /// No description provided for @socialDiscoverEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your profile and connect Spotify to find people with similar tastes.'**
+  String get socialDiscoverEmptyBody;
+
+  /// No description provided for @chatSendMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Send message'**
+  String get chatSendMessage;
+
+  /// No description provided for @chatLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'The conversation could not be loaded.'**
+  String get chatLoadError;
+
+  /// No description provided for @chatDraftRecovered.
+  ///
+  /// In en, this message translates to:
+  /// **'The message was not sent. Its text has been restored in the composer.'**
+  String get chatDraftRecovered;
+
+  /// No description provided for @eventLocationUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'The exact location is not available yet.'**
+  String get eventLocationUnknown;
+
+  /// No description provided for @eventDirections.
+  ///
+  /// In en, this message translates to:
+  /// **'Get directions'**
+  String get eventDirections;
+
+  /// No description provided for @eventDirectionsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions could not be opened.'**
+  String get eventDirectionsError;
+
+  /// No description provided for @inboxDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this conversation?'**
+  String get inboxDeleteTitle;
+
+  /// No description provided for @inboxDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The conversation will be removed from your inbox. The other person’s messages will not be deleted.'**
+  String get inboxDeleteBody;
+
+  /// No description provided for @inboxDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete conversation'**
+  String get inboxDeleteAction;
+
+  /// No description provided for @inboxDeleteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation deleted.'**
+  String get inboxDeleteSuccess;
+
+  /// No description provided for @inboxDeleteError.
+  ///
+  /// In en, this message translates to:
+  /// **'The conversation was not deleted. Please try again.'**
+  String get inboxDeleteError;
+
+  /// No description provided for @commonCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get commonCancel;
+
+  /// No description provided for @eventCopyDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy event details'**
+  String get eventCopyDetails;
+
+  /// No description provided for @eventCopyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Event details could not be copied.'**
+  String get eventCopyError;
+
+  /// No description provided for @eventCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Event cancelled'**
+  String get eventCancelled;
+
+  /// No description provided for @eventTicketsOffsale.
+  ///
+  /// In en, this message translates to:
+  /// **'Tickets not on sale'**
+  String get eventTicketsOffsale;
+
+  /// No description provided for @socialMatchSendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibra was not sent. Try again: the profile is still available.'**
+  String get socialMatchSendFailed;
+
   /// No description provided for @myEventsTitle.
   ///
   /// In en, this message translates to:

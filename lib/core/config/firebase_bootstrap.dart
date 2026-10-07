@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 
 import '../../firebase_options.dart';
+import 'env_config.dart';
 import '../utils/logger.dart';
 
 /// Bootstrap Firebase opzionale.
@@ -13,7 +14,7 @@ class FirebaseBootstrap {
   static bool get isInitialized => _initialized;
 
   static Future<void> initialize() async {
-    if (_initialized) return;
+    if (_initialized || EnvConfig.isIsolatedTest) return;
 
     try {
       await Firebase.initializeApp(

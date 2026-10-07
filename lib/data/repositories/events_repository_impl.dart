@@ -78,6 +78,11 @@ class EventsRepositoryImpl implements EventsRepository {
   }
 
   @override
+  Future<String?> getMyAttendanceStatus({required Event event}) {
+    return _supabase.getMyAttendanceStatus(event.toModel());
+  }
+
+  @override
   Future<List<EventAttendee>> listAttendees({required String eventId}) async {
     final models = await _supabase.listAttendees(eventId: eventId);
     return models.map((item) => item.toEntity()).toList(growable: false);

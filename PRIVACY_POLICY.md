@@ -1,114 +1,46 @@
 # Vibra Privacy Policy
 
-Last updated: `2026-06-30`
+Last updated: `2026-08-27` · Policy version: `2026-08-27`
 
-## Overview
+This is the product-facing privacy notice for Vibra. It must be reviewed by a qualified privacy lawyer before launch, completed with the controller's legal identity/address and published at a stable public URL.
 
-Vibra helps users discover live music events, connect their music preferences, and interact with other users around concerts and live experiences.
+## What Vibra processes and why
 
-This Privacy Policy explains what data Vibra collects, why it is collected, and how it is used.
+| Data | Purpose | Basis / control | Retention |
+|---|---|---|---|
+| Account profile (email, username, display name, avatar, bio) | Create and secure the account | Service contract | Until account deletion |
+| Spotify ID and music profile (top artists/tracks/genres, listening heatmap) | Music matching and event recommendations | Explicit optional Spotify/matching choice | Until disconnect or account deletion |
+| Encrypted Spotify OAuth credentials | Refresh the voluntary Spotify connection | Service requested by the user | Until disconnect or account deletion |
+| Precise/last location | Nearby events and Live proximity | Explicit optional location choice | Cleared after 30 days without a refresh |
+| Saved events, matches, social actions and ticket clicks | Deliver features and improve recommendations | Service / optional recommendation processing | Interaction and ticket logs: 12 months; account data until deletion |
+| Direct messages | Conversation service and user safety | Service contract | Message content: 24 months, then replaced with a retention marker |
+| Live-event messages | Temporary event chat | Service contract | 30 days |
+| Push token and notification choices | Send requested service notifications | Consent/device permission | Token cleared on logout; preferences until changed or deletion |
 
-## Data We Collect
+Vibra does not use a single forced “accept all” choice. Location, Spotify matching, service notifications and marketing notifications are controlled separately in **Settings → Privacy and personal data**. Marketing is optional and never required to use Vibra. Disconnecting Spotify deletes its stored credentials and music profile; withdrawing a device permission may require changing it in the device settings.
 
-We may collect and process the following categories of personal data:
+## Sharing and processors
 
-### Account Data
-- email address
-- username
-- display name
-- profile image
-- authentication identifiers from Supabase and connected services
+We use Supabase for authentication, database, storage and edge functions; Spotify for the account connection and music data requested by the user; Firebase Cloud Messaging for push delivery; and Ticketmaster, Songkick and Bandsintown to retrieve event data. A provider processes only the data necessary for its service under its own terms and privacy notice. Vibra does not sell personal data.
 
-### Music Preference Data
-- Spotify account identifier
-- top artists
-- top tracks
-- top genres
-- music profile metadata generated from connected streaming data
+## Your rights and how to use them
 
-### Event and Social Data
-- saved events
-- attendance status
-- friendships and connection requests
-- direct messages
-- live event chat messages
-- notification preferences and in-app notification records
+From **Settings → Privacy and personal data** you can immediately generate a readable JSON export containing your profile, Spotify connection metadata (never OAuth tokens), events, messages, matches and relevant interaction logs. This automated response is immediate; requests requiring manual review are answered within one month unless GDPR law permits an extension, which we will communicate.
 
-### Location Data
-- approximate or precise location, when permission is granted
-- last known latitude and longitude for event discovery and live-mode proximity features
+You can correct profile information in the app, change optional processing at any time, disconnect Spotify, or request account deletion in Settings. For access, portability, correction, restriction, objection or a complaint, contact `privacy@vibra.app` after the controller contact is confirmed before release.
 
-### Device and Technical Data
-- push notification token
-- app diagnostics and error logs
-- basic device/platform metadata required for app security and delivery
+## Account deletion and backups
 
-## Why We Use Data
-
-We use personal data to:
-- authenticate users and secure accounts
-- connect Spotify and generate a music profile
-- recommend events relevant to music taste and proximity
-- calculate compatibility between users
-- enable chat, friendships, and live event interactions
-- deliver push and in-app notifications
-- improve reliability, safety, and product performance
-
-## Legal Bases
-
-Depending on the user’s region, Vibra processes personal data based on:
-- consent
-- performance of a contract
-- legitimate interest
-- legal obligations
-
-Location access, Spotify connection, and push notifications are permission-based and can be revoked by the user.
-
-## Third-Party Services
-
-Vibra may rely on third-party service providers including:
-- Supabase
-- Spotify
-- Firebase Cloud Messaging
-- Ticketmaster
-- Songkick
-- Bandsintown
-
-These services may process data according to their own privacy policies.
-
-## Data Retention
-
-We retain data only for as long as necessary to:
-- provide the service
-- comply with legal obligations
-- resolve disputes
-- enforce terms and security controls
-
-Users may request deletion of their account and associated data, subject to legal and operational constraints.
-
-## User Rights
-
-Depending on applicable law, users may have the right to:
-- access their personal data
-- correct inaccurate data
-- delete their data
-- object to certain processing
-- withdraw consent
-- request portability of their data
+Account deletion revokes sessions, deletes the profile, Spotify credentials, music data, saved events, recommendation logs, matches, notifications and associated application records. Direct messages sent by the deleted user are anonymized: the sender identity, text, media and message metadata are removed and a neutral marker remains for the other participant. Messages received from another person remain their data. Chat-media objects are removed before deletion. The production backup schedule must enforce a maximum 30-day backup retention; deleted data may persist only in an access-restricted backup until its scheduled expiry and is not restored into the active service except for disaster recovery.
 
 ## Security
 
-We use reasonable technical and organizational safeguards to protect user data, including authenticated backend access, managed infrastructure, and secure token handling. No system can guarantee absolute security.
+The app communicates with Supabase and providers over HTTPS/TLS. OAuth tokens are encrypted before server-side storage and are not exposed through client database policies. Row-level security isolates accounts and private data. Encryption at rest, key rotation, backup encryption, incident response and provider data-processing agreements are deployment obligations that must be verified in the production Supabase/Firebase configuration before release.
 
 ## Children
 
-Vibra is not intended for children below the minimum age required by applicable law to use the service.
+Vibra is not for people under 18. During registration users must confirm that they are at least 18. We will delete accounts identified as belonging to minors, subject to any applicable legal obligation.
 
-## Contact
+## Operational controls
 
-For privacy-related requests, provide a support contact email before publication, for example:
-
-`privacy@vibra.app`
-
-Before release, replace this placeholder with the actual contact address and publish this policy on a public URL.
-
+Run the trusted `apply_data_retention` database function daily using the production scheduler/service role, monitor failures, and document the backup retention configuration. The legal controller identity, DPO assessment, international-transfer assessment, records of processing and DPIA decision remain launch prerequisites.

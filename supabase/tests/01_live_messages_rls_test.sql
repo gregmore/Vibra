@@ -32,9 +32,13 @@ UPDATE public.users
 SET last_location = ST_SetSRID(ST_MakePoint(9.1957, 45.4642), 4326) 
 WHERE id = '00000000-0000-0000-0000-000000000001';
 
+INSERT INTO public.event_attendees (user_id,event_id,status) VALUES ('00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000099','going');
+
 -- Impostiamo il contesto JWT come se l'utente fosse loggato
+INSERT INTO auth.sessions (id,user_id) SELECT id,id FROM auth.users ON CONFLICT DO NOTHING;
 SET LOCAL role = authenticated;
 SET LOCAL request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
+SET LOCAL request.jwt.claims TO '{"sub":"00000000-0000-0000-0000-000000000001","session_id":"00000000-0000-0000-0000-000000000001","role":"authenticated"}';
 
 -- Questo inserimento DEVE avere successo
 SELECT lives_ok(
@@ -60,6 +64,7 @@ WHERE id = '00000000-0000-0000-0000-000000000001';
 -- Ri-logghiamo l'utente
 SET LOCAL role = authenticated;
 SET LOCAL request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
+SET LOCAL request.jwt.claims TO '{"sub":"00000000-0000-0000-0000-000000000001","session_id":"00000000-0000-0000-0000-000000000001","role":"authenticated"}';
 
 -- Questo inserimento DEVE fallire violando la RLS
 SELECT throws_ok(

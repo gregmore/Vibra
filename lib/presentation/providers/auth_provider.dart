@@ -6,6 +6,8 @@ import 'core_providers.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsign;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
+import 'package:flutter/painting.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:crypto/crypto.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'app_state_providers.dart';
@@ -54,6 +56,19 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
 
   bool _isGoogleSignInInitialized = false;
 
+  Future<void> _prepareSignIn() async {
+    final auth = _ref.read(supabaseDatasourceProvider).client.auth;
+    final previousTokens = _ref.read(spotifyTokenStorageProvider);
+    try {
+      if (auth.currentSession != null) {
+        await auth.signOut(scope: SignOutScope.local);
+      }
+    } finally {
+      // A failed or cancelled new login must never restore the previous user.
+      await Future.wait([previousTokens.clear(), clearLocalState()]);
+    }
+  }
+
   /// Pulisce forzatamente tutto lo stato locale (Riverpod, Cache, Spotify, Google SignIn).
   /// Deve essere chiamato al logout e PRIMA di ogni nuovo login per garantire l'isolamento degli account.
   Future<void> clearLocalState() async {
@@ -74,16 +89,28 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
     _ref.invalidate(pushEnabledProvider);
     _ref.invalidate(presenceProvider);
     _ref.invalidate(spotifyAuthProvider);
+    _ref.invalidate(spotifyDatasourceProvider);
+    _ref.invalidate(spotifyDioProvider);
 
-    await _ref.read(spotifyTokenStorageProvider).clear();
-    await CacheService.clearAll();
-    await _ref.read(localeStateProvider.notifier).setLocale(null);
+    try {
+      // Run every cleanup even if one storage backend reports an error.
+      await Future.wait([
+        _ref.read(spotifyTokenStorageProvider).clear(),
+        CacheService.clearAll(),
+        DefaultCacheManager().emptyCache(),
+      ]);
+      await _ref.read(localeStateProvider.notifier).setLocale(null);
+    } finally {
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
+      VibraLogger.clear();
+    }
   }
 
   Future<void> signInWithGoogle() async {
     try {
       state = const GeneralAuthState.loading();
-      await clearLocalState();
+      await _prepareSignIn();
       final supabase = _ref.read(supabaseDatasourceProvider);
 
       final webClientId = dotenv.env['GOOGLE_WEB_CLIENT_ID'];
@@ -135,7 +162,7 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
   Future<void> signInWithApple() async {
     try {
       state = const GeneralAuthState.loading();
-      await clearLocalState();
+      await _prepareSignIn();
       final supabase = _ref.read(supabaseDatasourceProvider);
 
       final rawNonce = supabase.client.auth.generateRawNonce();
@@ -177,7 +204,7 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
   Future<void> signInWithEmail(String email, String password) async {
     try {
       state = const GeneralAuthState.loading();
-      await clearLocalState();
+      await _prepareSignIn();
       final supabase = _ref.read(supabaseDatasourceProvider);
 
       final response = await supabase.client.auth.signInWithPassword(
@@ -211,17 +238,23 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
   Future<void> signUpWithEmail(
     String email,
     String password,
-    String username,
-  ) async {
+    String username, {
+    required bool ageConfirmed,
+  }) async {
     try {
       state = const GeneralAuthState.loading();
-      await clearLocalState();
+      await _prepareSignIn();
       final supabase = _ref.read(supabaseDatasourceProvider);
 
       final response = await supabase.client.auth.signUp(
         email: email,
         password: password,
-        data: {'username': username, 'display_name': username},
+        data: {
+          'username': username,
+          'display_name': username,
+          'age_confirmed_18': ageConfirmed,
+          'age_confirmed_at': DateTime.now().toUtc().toIso8601String(),
+        },
       );
 
       if (response.user != null) {
@@ -249,6 +282,7 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
     try {
       state = const GeneralAuthState.loading();
       final supabase = _ref.read(supabaseDatasourceProvider);
+      final previousTokens = _ref.read(spotifyTokenStorageProvider);
 
       final user = supabase.currentUser;
       if (user != null) {
@@ -265,9 +299,11 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
         }
       }
 
-      await clearLocalState();
-
-      await supabase.client.auth.signOut(scope: scope);
+      try {
+        await supabase.client.auth.signOut(scope: scope);
+      } finally {
+        await Future.wait([previousTokens.clear(), clearLocalState()]);
+      }
       state = const GeneralAuthState.idle();
     } catch (e) {
       VibraLogger.error('Errore durante il logout', error: e);
@@ -281,8 +317,9 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
       state = const GeneralAuthState.loading();
       final supabase = _ref.read(supabaseDatasourceProvider);
 
-      // Call the RPC to delete the account in Supabase
-      await supabase.client.rpc('delete_user_account');
+      // The Edge Function deletes auth.users with admin privileges: this
+      // revokes every session and cascades all user-owned data atomically.
+      await supabase.client.functions.invoke('delete-account');
 
       await clearLocalState();
 

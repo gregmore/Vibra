@@ -151,6 +151,7 @@ extension EventModelToEntity on EventModel {
       priceMax: priceMax,
       imageUrl: imageUrl,
       description: description,
+      status: status,
       createdAt: createdAt,
     );
   }
@@ -176,6 +177,7 @@ extension EventEntityToModel on Event {
       priceMax: priceMax,
       imageUrl: imageUrl,
       description: description,
+      status: status,
       createdAt: createdAt,
     );
   }

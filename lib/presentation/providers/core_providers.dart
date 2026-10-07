@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import '../../core/config/env_config.dart';
 import '../../core/constants/api_constants.dart';
@@ -45,21 +44,42 @@ final dioProvider = Provider<Dio>((ref) {
       connectTimeout: ApiConstants.connectTimeout,
       receiveTimeout: ApiConstants.receiveTimeout,
       contentType: 'application/json',
+      followRedirects: false,
     ),
   );
 
-  dio.interceptors.add(
-    PrettyDioLogger(
-      requestHeader: false,
-      requestBody: false,
-      responseBody: false,
-    ),
-  );
-
-  dio.interceptors.add(SpotifyAuthInterceptor(ref));
+  dio.interceptors.add(_SupportDiagnosticsInterceptor());
 
   return dio;
 });
+
+final spotifyDioProvider = Provider<Dio>((ref) {
+  // Spotify credentials must never enter the shared provider HTTP client.
+  final dio = Dio(
+    BaseOptions(
+      connectTimeout: ApiConstants.connectTimeout,
+      receiveTimeout: ApiConstants.receiveTimeout,
+      followRedirects: false,
+    ),
+  );
+  dio.interceptors.add(SpotifyAuthInterceptor(ref));
+  dio.interceptors.add(_SupportDiagnosticsInterceptor());
+  ref.onDispose(() => dio.close(force: true));
+  return dio;
+});
+
+class _SupportDiagnosticsInterceptor extends Interceptor {
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    final response = err.response?.statusCode;
+    VibraLogger.api(
+      err.requestOptions.method,
+      err.requestOptions.uri.path,
+      statusCode: response ?? 500,
+    );
+    super.onError(err, handler);
+  }
+}
 
 final appAuthProvider = Provider<FlutterAppAuth>((ref) => FlutterAppAuth());
 
@@ -72,12 +92,22 @@ final secureStorageProvider = Provider<SecureStorageService>(
 );
 
 final spotifyTokenStorageProvider = Provider<SpotifyTokenStorage>((ref) {
-  return SpotifyTokenStorage(ref.watch(secureStorageProvider));
+  final auth = ref.watch(supabaseDatasourceProvider).client.auth;
+  final userId = auth.currentUser?.id;
+  final subscription = auth.onAuthStateChange.listen((event) {
+    if (event.session?.user.id != userId) ref.invalidateSelf();
+  });
+  ref.onDispose(subscription.cancel);
+  return SpotifyTokenStorage(
+    ref.watch(secureStorageProvider),
+    namespace:
+        '${Uri.parse(EnvConfig.supabaseUrl).host}_${userId ?? 'signed-out'}',
+  );
 });
 
 final spotifyDatasourceProvider = Provider<SpotifyDatasource>((ref) {
   return SpotifyDatasource(
-    dio: ref.watch(dioProvider),
+    dio: ref.watch(spotifyDioProvider),
     appAuth: ref.watch(appAuthProvider),
   );
 });
@@ -197,21 +227,23 @@ class SpotifyAuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401) {
-      if (err.requestOptions.path.contains('spotify-token-exchange')) {
-        return super.onError(err, handler);
-      }
-
+    final uri = err.requestOptions.uri;
+    if (err.response?.statusCode == 401 &&
+        uri.scheme == 'https' &&
+        uri.host == 'api.spotify.com' &&
+        uri.port == 443 &&
+        err.requestOptions.extra['vibraSpotifyRetried'] != true) {
       try {
         final session = await ref
             .read(spotifyAuthRepositoryProvider)
             .refreshSession();
 
         final requestOptions = err.requestOptions;
+        requestOptions.extra['vibraSpotifyRetried'] = true;
         requestOptions.headers['Authorization'] =
             'Bearer ${session.accessToken}';
 
-        final dio = ref.read(dioProvider);
+        final dio = ref.read(spotifyDioProvider);
         final response = await dio.fetch(requestOptions);
         return handler.resolve(response);
       } catch (e) {

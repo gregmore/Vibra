@@ -1,3 +1,4 @@
+import { rejectRevokedSession } from "../_shared/session-guard.ts";
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
 import { clamp } from "../_shared/geo.ts";
@@ -7,6 +8,8 @@ type CalculateMatchRequest = {
 };
 
 Deno.serve(async (req) => {
+  const rejected = await rejectRevokedSession(req, "calculate-match");
+  if (rejected) return rejected;
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 
@@ -18,27 +21,33 @@ Deno.serve(async (req) => {
       });
     }
 
-    const body = await req.json().catch(() => ({})) as CalculateMatchRequest;
-    
-    // In a real production setup, we might extract the user_id from the Auth header if not provided in body
-    const supabase = createSupabaseServiceClient();
-
-    let targetUserId = body.user_id;
-
-    if (!targetUserId) {
-      // If no user_id, let's try to get it from auth
-      const authHeader = req.headers.get("Authorization");
-      if (authHeader) {
-         const { data: { user } } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
-         if (user) targetUserId = user.id;
-      }
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized", message: "Missing Authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    if (!targetUserId) {
-      return new Response(
-        JSON.stringify({ error: "user_id is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const supabase = createSupabaseServiceClient();
+    const body = await req.json().catch(() => ({})) as CalculateMatchRequest;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const isServiceRole = serviceRoleKey && authHeader === `Bearer ${serviceRoleKey}`;
+
+    let targetUserId: string;
+
+    if (isServiceRole && body.user_id) {
+      targetUserId = body.user_id;
+    } else {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !user) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized", message: "Invalid or expired session" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      targetUserId = user.id;
     }
 
     // 1. Fetch user profile and embedding

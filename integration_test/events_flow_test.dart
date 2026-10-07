@@ -1,41 +1,79 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:vibra/main.dart' as app;
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'fixtures/seeded_test_users.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  group('E2E Events Flow', () {
-    testWidgets('Ricerca eventi, salvataggio e verifica', (tester) async {
-      app.main();
-      await tester.pumpAndSettle();
-
-      // NOTA: Test disabilitato temporaneamente in attesa di Mock API / Local Supabase
-
-      /*
-      // 1. Apri tab "Esplora"
-      await tester.tap(find.byKey(const Key('nav_explore')));
-      await tester.pumpAndSettle();
-
-      // 2. Cerca evento per nome
-      await tester.enterText(find.byKey(const Key('search_bar')), 'Concerto Rock');
-      await tester.pumpAndSettle(const Duration(seconds: 1)); // Attesa debounce
-
-      // Verifica che appaia il risultato
-      expect(find.text('Concerto Rock'), findsWidgets);
-
-      // 3. Salva l'evento nei preferiti
-      await tester.tap(find.byKey(const Key('save_event_button')).first);
-      await tester.pumpAndSettle();
-
-      // 4. Vai nel profilo -> I miei eventi e verifica presenza
-      await tester.tap(find.byKey(const Key('nav_profile')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('I miei eventi'));
-      await tester.pumpAndSettle();
-      
-      expect(find.text('Concerto Rock'), findsOneWidget);
-      */
+  group('E2E seeded events', () {
+    tearDown(() async {
+      if (SeededE2E.enabled &&
+          Supabase.instance.client.auth.currentUser != null) {
+        await Supabase.instance.client.auth.signOut(scope: SignOutScope.local);
+      }
     });
+
+    testWidgets(
+      'fixture eventi contiene arrivo, passato, sold-out, cancellato e rinviato',
+      (_) async {
+        final client = await SeededE2E.signInAs(SeededE2E.mixedEvents);
+        final attendeeRows = List<Map<String, dynamic>>.from(
+          await client
+              .from('event_attendees')
+              .select('event_id,status')
+              .neq('status', 'not_going'),
+        );
+        expect(attendeeRows, hasLength(5));
+
+        final eventIds = attendeeRows
+            .map((row) => row['event_id'].toString())
+            .toList(growable: false);
+        final events = List<Map<String, dynamic>>.from(
+          await client
+              .from('events')
+              .select('id,name,event_date,status,is_test_data')
+              .inFilter('id', eventIds),
+        );
+
+        final now = DateTime.now();
+        expect(
+          events.any(
+            (event) =>
+                DateTime.parse(event['event_date'].toString()).isBefore(now),
+          ),
+          isTrue,
+        );
+        expect(
+          events.any(
+            (event) =>
+                DateTime.parse(event['event_date'].toString()).isAfter(now),
+          ),
+          isTrue,
+        );
+        expect(events.map((event) => event['status']), contains('offsale'));
+        expect(events.map((event) => event['status']), contains('canceled'));
+        expect(events.map((event) => event['status']), contains('postponed'));
+        expect(events.every((event) => event['is_test_data'] == true), isTrue);
+      },
+      skip: !SeededE2E.enabled,
+    );
+
+    testWidgets(
+      'profilo lontano salva solo evento della città lontana',
+      (_) async {
+        final client = await SeededE2E.signInAs(SeededE2E.farAway);
+        final rows = List<Map<String, dynamic>>.from(
+          await client
+              .from('event_attendees')
+              .select('events(name,city),status'),
+        );
+        expect(rows, hasLength(1));
+        final event = rows.single['events'] as Map<String, dynamic>;
+        expect(event['name'], 'TEST Far City Sessions');
+      },
+      skip: !SeededE2E.enabled,
+    );
   });
 }

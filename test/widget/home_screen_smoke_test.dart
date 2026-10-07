@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibra/presentation/screens/home/home_screen.dart';
 import 'package:vibra/l10n/app_localizations.dart';
+
 import '../helpers/test_http_overrides.dart';
 
 void main() {
@@ -46,11 +47,12 @@ void main() {
       ),
     );
 
-    // Wait for the fade-in animations to finish settling
-    await tester.pumpAndSettle();
+    // The signal wave intentionally loops, so don't wait for the whole tree
+    // to settle; a bounded frame advance lets the editorial entrance finish.
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Per Te'), findsOneWidget);
-    // Gli altri header ('Vicino a Te', 'Trend') vengono mostrati solo se ci sono eventi
+    // Gli altri header ('Vicino a Te', 'Trend') vengono mostrati solo se ci sono eventi.
     // Il TextField della ricerca è stato rimosso dalla home.
   });
 }

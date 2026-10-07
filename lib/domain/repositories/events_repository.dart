@@ -24,6 +24,8 @@ abstract class EventsRepository {
     required String status,
   });
 
+  Future<String?> getMyAttendanceStatus({required Event event});
+
   Future<List<EventAttendee>> listAttendees({required String eventId});
 
   Future<void> logInteraction({

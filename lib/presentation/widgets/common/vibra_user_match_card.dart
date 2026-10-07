@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../providers/app_state_providers.dart';
 import '../vibra_glassmorphic_card.dart';
 import '../vibra_neon_avatar.dart';
-import '../../../core/theme/vibra_colors.dart';
 import '../../../core/theme/vibra_spacing.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
 
 class VibraUserMatchCard extends StatelessWidget {
   const VibraUserMatchCard({
@@ -21,7 +21,8 @@ class VibraUserMatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final matchColor = VibraColors.getMatchColor(user.compatibility / 100.0);
+    final t = context.vibraTokens;
+    final matchColor = t.matchColor(user.compatibility / 100.0);
 
     return Container(
       margin: const EdgeInsets.symmetric(
@@ -30,7 +31,7 @@ class VibraUserMatchCard extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         border: Border(left: BorderSide(color: matchColor, width: 3.0)),
-        borderRadius: BorderRadius.circular(VibraSpacing.radiusLarge),
+        borderRadius: VibraSpacing.borderMedium,
       ),
       child: VibraGlassmorphicCard(
         onTap: onTap,
@@ -66,10 +67,9 @@ class VibraUserMatchCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: matchColor.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(
-                            VibraSpacing.radiusFull,
-                          ),
+                          color: t.surfaceMuted,
+                          borderRadius: VibraSpacing.borderFull,
+                          border: Border.all(color: matchColor, width: 1.5),
                         ),
                         child: Text(
                           '${user.compatibility}%',
@@ -90,10 +90,10 @@ class VibraUserMatchCard extends StatelessWidget {
                     children: user.topArtists
                         .map(
                           (artist) => Chip(
-                            avatar: const Icon(
+                            avatar: Icon(
                               Icons.music_note_rounded,
                               size: 14,
-                              color: VibraColors.primary,
+                              color: t.accentPrimary,
                             ),
                             label: Text(artist),
                             visualDensity: VisualDensity.compact,
@@ -105,7 +105,7 @@ class VibraUserMatchCard extends StatelessWidget {
                   Text(
                     '${user.attendingEvents} eventi in comune o salvati',
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                      color: t.textSecondary,
                     ),
                   ),
                 ],

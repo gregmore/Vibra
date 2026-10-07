@@ -5,8 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 
 import 'package:vibra/l10n/app_localizations.dart';
-import '../../../core/theme/vibra_colors.dart';
 import '../../../core/theme/vibra_spacing.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../../domain/usecases/live_usecases.dart';
 import '../../providers/app_state_providers.dart';
 import '../../providers/usecase_providers.dart';
@@ -58,6 +58,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final users = ref.watch(matchedUsersProvider).take(3).toList();
     final liveMessages = ref.watch(liveMessagesProvider);
     final theme = Theme.of(context);
+    final t = context.vibraTokens;
 
     return VibraPageScaffold(
       child: Column(
@@ -84,11 +85,20 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                           if (liveEnabled)
                             Container(
                                   margin: const EdgeInsets.only(left: 8),
-                                  width: 10,
-                                  height: 10,
-                                  decoration: const BoxDecoration(
-                                    color: VibraColors.accent,
-                                    shape: BoxShape.circle,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 7,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: t.accentPrimary,
+                                    borderRadius: VibraSpacing.borderFull,
+                                  ),
+                                  child: Text(
+                                    'LIVE',
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: t.onAccent,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
                                 )
                                 .animate(
@@ -113,7 +123,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                             ? 'Sei entro 500m dal venue. Chat attiva per le prossime 24h.'
                             : 'La modalità Live si attiva solo vicino al venue.',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: VibraColors.textSecondary,
+                          color: t.textSecondary,
                         ),
                       ),
                     ],
@@ -121,7 +131,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 ),
                 Switch(
                   value: liveEnabled,
-                  activeThumbColor: VibraColors.accent,
+                  activeThumbColor: t.accentPrimary,
                   onChanged: (value) => setState(() => liveEnabled = value),
                 ),
               ],
@@ -153,14 +163,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: VibraColors.surfaceElevated,
-                        borderRadius: BorderRadius.circular(
-                          VibraSpacing.radiusLarge,
-                        ),
-                        border: Border.all(
-                          color: VibraColors.glassBorder,
-                          width: 1,
-                        ),
+                        color: t.surfaceElevated,
+                        borderRadius: VibraSpacing.borderMedium,
+                        border: Border.all(color: t.borderDefault),
+                        boxShadow: [t.cardShadow],
                       ),
                       child: Row(
                         children: [
@@ -182,15 +188,16 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                   overflow: TextOverflow.ellipsis,
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: VibraColors.textPrimary,
+                                    color: t.textPrimary,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   '${user.compatibility}%',
                                   style: theme.textTheme.labelMedium?.copyWith(
-                                    color: VibraColors
-                                        .accentWarm, // using accentWarm instead of plain green
+                                    color: t.matchColor(
+                                      user.compatibility / 100,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -252,17 +259,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                   vertical: 12,
                                 ),
                                 decoration: BoxDecoration(
-                                  gradient: mine
-                                      ? LinearGradient(
-                                          colors: [
-                                            VibraColors.primary,
-                                            VibraColors.accent,
-                                          ],
-                                        )
-                                      : null,
-                                  color: mine
-                                      ? null
-                                      : VibraColors.surfaceElevated,
+                                  gradient: mine ? t.primaryGradient : null,
+                                  color: mine ? null : t.surfaceElevated,
                                   borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(
                                       VibraSpacing.radiusLarge,
@@ -283,14 +281,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                   ),
                                   border: mine
                                       ? null
-                                      : Border.all(
-                                          color: VibraColors.glassBorder,
-                                        ),
+                                      : Border.all(color: t.borderDefault),
                                 ),
                                 child: Text(
                                   message.content,
                                   style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: VibraColors.textPrimary,
+                                    color: mine ? t.onAccent : t.textPrimary,
                                   ),
                                 ),
                               )
@@ -310,8 +306,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                             child: Text(
                               timeString,
                               style: theme.textTheme.labelSmall?.copyWith(
-                                color: VibraColors.textSecondary,
-                                fontSize: 10,
+                                color: t.textSecondary,
                               ),
                             ),
                           ),
@@ -324,7 +319,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 if (!liveEnabled)
                   Positioned.fill(
                     child: Container(
-                      color: VibraColors.background.withValues(alpha: 0.85),
+                      color: t.backgroundPrimary.withValues(alpha: 0.94),
                       padding: EdgeInsets.all(VibraSpacing.pagePadding),
                       child: Center(
                         child: VibraGlassmorphicCard(
@@ -336,21 +331,21 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                               Icon(
                                 Icons.location_off_rounded,
                                 size: 64,
-                                color: VibraColors.textSecondary,
+                                color: t.textSecondary,
                               ),
                               const SizedBox(height: 16),
                               Text(
                                 AppLocalizations.of(context)!.liveModeDisabled,
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: VibraColors.textPrimary,
+                                  color: t.textPrimary,
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 'Attivala per accedere alla chat in tempo reale con gli altri partecipanti presenti al concerto.',
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: VibraColors.textSecondary,
+                                  color: t.textSecondary,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -359,8 +354,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                 onPressed: () =>
                                     setState(() => liveEnabled = true),
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: VibraColors.accent,
-                                  foregroundColor: VibraColors.textPrimary,
+                                  backgroundColor: t.accentPrimary,
+                                  foregroundColor: t.onAccent,
                                 ),
                                 child: Text(
                                   AppLocalizations.of(
@@ -389,20 +384,18 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: VibraColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(
-                        VibraSpacing.radiusFull,
-                      ),
-                      border: Border.all(color: VibraColors.glassBorder),
+                      color: t.surface,
+                      borderRadius: VibraSpacing.borderFull,
+                      border: Border.all(color: t.borderStrong),
                     ),
                     child: TextField(
                       controller: controller,
                       enabled: liveEnabled,
                       onSubmitted: (_) => _sendMessage(),
-                      style: const TextStyle(color: VibraColors.textPrimary),
-                      decoration: const InputDecoration(
+                      style: TextStyle(color: t.textPrimary),
+                      decoration: InputDecoration(
                         hintText: 'Scrivi in chat live...',
-                        hintStyle: TextStyle(color: VibraColors.textSecondary),
+                        hintStyle: TextStyle(color: t.textSecondary),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: 20,
@@ -415,18 +408,15 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 const SizedBox(width: 10),
                 Container(
                   decoration: BoxDecoration(
-                    color: liveEnabled
-                        ? VibraColors.accent
-                        : VibraColors.surfaceVariant,
+                    color: liveEnabled ? t.accentPrimary : t.surfaceMuted,
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
+                    tooltip: 'Invia messaggio live',
                     onPressed: liveEnabled ? _sendMessage : null,
                     icon: Icon(
                       Icons.send_rounded,
-                      color: liveEnabled
-                          ? Colors.white
-                          : VibraColors.textSecondary,
+                      color: liveEnabled ? t.onAccent : t.textDisabled,
                     ),
                   ),
                 ),

@@ -1,4 +1,6 @@
+import '../entities/conversation_summary.dart';
 import '../entities/direct_message.dart';
+import '../entities/follow_stats.dart';
 import '../entities/friendship.dart';
 
 abstract class SocialRepository {
@@ -8,6 +10,10 @@ abstract class SocialRepository {
     required String friendshipId,
     required String status,
   });
+
+  Future<void> deleteFriendship({required String friendshipId});
+
+  Future<void> cancelFriendRequest({required String friendshipId});
 
   Future<List<Friendship>> listMyFriendships({String? status});
 
@@ -37,4 +43,26 @@ abstract class SocialRepository {
   });
 
   Stream<List<DirectMessage>> streamMessagesWith({required String otherUserId});
+
+  Future<void> markMessagesAsRead({required String otherUserId});
+
+  Future<List<ConversationSummary>> listConversations();
+
+  Future<void> followUser({required String userId});
+
+  Future<void> unfollowUser({required String userId});
+
+  Future<FollowStats> getFollowStats({required String userId});
+
+  Future<List<Map<String, dynamic>>> getFollowers({
+    required String userId,
+    int limit = 50,
+    int offset = 0,
+  });
+
+  Future<List<Map<String, dynamic>>> getFollowing({
+    required String userId,
+    int limit = 50,
+    int offset = 0,
+  });
 }

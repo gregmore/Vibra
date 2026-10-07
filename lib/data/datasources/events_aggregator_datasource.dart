@@ -52,7 +52,6 @@ class EventsAggregatorDatasource {
         final raw = await songkickLocal.searchEvents(
           latitude: latitude,
           longitude: longitude,
-          radiusKm: radiusKm,
         );
         results.addAll(_fromSongkickSearch(raw));
       } catch (e) {
@@ -290,13 +289,20 @@ class EventsAggregatorDatasource {
                 : DateTime.now();
 
             final venue = m['venue'] as Map<String, dynamic>?;
+            final location = m['location'] as Map<String, dynamic>?;
             final venueName = venue?['displayName'] as String?;
             final metroArea = venue?['metroArea'] as Map<String, dynamic>?;
-            final city = metroArea?['displayName'] as String?;
+            final city =
+                metroArea?['displayName'] as String? ??
+                location?['city'] as String?;
             final country =
                 (metroArea?['country'] as Map?)?['displayName'] as String?;
-            final lat = (metroArea?['lat'] as num?)?.toDouble();
-            final lng = (metroArea?['lng'] as num?)?.toDouble();
+            final lat =
+                (venue?['lat'] as num?)?.toDouble() ??
+                (location?['lat'] as num?)?.toDouble();
+            final lng =
+                (venue?['lng'] as num?)?.toDouble() ??
+                (location?['lng'] as num?)?.toDouble();
 
             final performance = m['performance'] as List<dynamic>?;
             final artistName = performance != null && performance.isNotEmpty

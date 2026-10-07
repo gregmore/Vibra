@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
+import '../../widgets/vibra_glassmorphic_card.dart';
 
 class _InfoSection {
   const _InfoSection({required this.title, required this.body});
@@ -25,6 +28,7 @@ class _StaticInfoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final t = context.vibraTokens;
 
     return VibraPageScaffold(
       appBar: AppBar(title: Text(title)),
@@ -33,28 +37,37 @@ class _StaticInfoScreen extends StatelessWidget {
         children: [
           Text(
             subtitle,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
-            ),
+            style: theme.textTheme.bodyLarge?.copyWith(color: t.textSecondary),
           ),
           const SizedBox(height: 20),
-          ...sections.map(
-            (section) => Container(
-              margin: const EdgeInsets.only(bottom: 14),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface.withValues(alpha: 0.78),
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(section.title, style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  Text(section.body, style: theme.textTheme.bodyMedium),
-                ],
-              ),
-            ),
+          ...sections.asMap().entries.map(
+            (entry) =>
+                VibraGlassmorphicCard(
+                      margin: const EdgeInsets.only(bottom: 14),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            entry.value.title,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            entry.value.body,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: t.textSecondary,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                    .animate()
+                    .fadeIn(delay: (80 * entry.key).ms, duration: 400.ms)
+                    .slideY(begin: 0.03),
           ),
         ],
       ),

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="960" viewBox="0 0 1440 960" role="img" aria-labelledby="title desc">
+  <title id="title">Vibra Signal Paper visual direction</title>
+  <desc id="desc">Moodboard with the Signal Paper palette, typography, double-wave motif and editorial event layout.</desc>
+  <rect width="1440" height="960" fill="#F6F4EE"/>
+  <g fill="#151513">
+    <text x="84" y="102" font-family="Inter, sans-serif" font-size="16" font-weight="700" letter-spacing="3">VIBRA / DIREZIONE VISIVA</text>
+    <text x="78" y="228" font-family="Syne, Arial Black, sans-serif" font-size="118" font-weight="800" letter-spacing="-6">Signal</text>
+    <text x="78" y="340" font-family="Syne, Arial Black, sans-serif" font-size="118" font-weight="800" letter-spacing="-6">Paper.</text>
+    <text x="84" y="398" font-family="Inter, sans-serif" font-size="20" fill="#706F68">Un social musicale editoriale: fisico, diretto, ritmico.</text>
+  </g>
+  <g transform="translate(82 468)">
+    <rect width="96" height="64" rx="12" fill="#F6F4EE" stroke="#DCD9D0"/>
+    <rect x="110" width="96" height="64" rx="12" fill="#151513"/>
+    <rect x="220" width="96" height="64" rx="12" fill="#C9FF45"/>
+    <rect x="330" width="96" height="64" rx="12" fill="#5A57E8"/>
+    <text x="0" y="92" font-family="Inter, sans-serif" font-size="12" fill="#706F68">CANVAS</text>
+    <text x="110" y="92" font-family="Inter, sans-serif" font-size="12" fill="#706F68">INK</text>
+    <text x="220" y="92" font-family="Inter, sans-serif" font-size="12" fill="#706F68">SIGNAL</text>
+    <text x="330" y="92" font-family="Inter, sans-serif" font-size="12" fill="#706F68">ECHO</text>
+  </g>
+  <g transform="translate(84 650)">
+    <text x="0" y="0" font-family="Inter, sans-serif" font-size="12" font-weight="700" letter-spacing="2.3" fill="#706F68">LA FIRMA: DOPPIA ONDA CONTINUA</text>
+    <path d="M0 64 C54 20 96 108 154 64 S256 20 314 64 S416 108 474 64 S576 20 634 64" fill="none" stroke="#151513" stroke-width="4" stroke-linecap="round"/>
+    <path d="M0 80 C54 38 96 122 154 80 S256 38 314 80 S416 122 474 80 S576 38 634 80" fill="none" stroke="#C9FF45" stroke-width="4" stroke-linecap="round"/>
+    <text x="0" y="138" font-family="Inter, sans-serif" font-size="17" fill="#706F68">Texture · meter · loading · beacon · transizione</text>
+  </g>
+  <g transform="translate(868 76)">
+    <rect width="450" height="718" rx="28" fill="#151513"/>
+    <rect x="20" y="20" width="84" height="100" fill="#FFFEF8"/>
+    <text x="62" y="69" text-anchor="middle" font-family="Syne, Arial Black, sans-serif" font-size="31" font-weight="800" fill="#151513">26</text>
+    <text x="62" y="94" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="#706F68">SET</text>
+    <rect x="332" y="24" width="94" height="30" fill="#C9FF45"/>
+    <text x="379" y="45" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="800" fill="#151513">92% PER TE</text>
+    <g transform="translate(24 436)">
+      <path d="M0 18 C13 5 24 31 40 18 S67 5 83 18 S110 31 126 18" fill="none" stroke="#C9FF45" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M0 26 C13 14 24 37 40 26 S67 14 83 26 S110 37 126 26" fill="none" stroke="#FFFEF8" stroke-opacity=".65" stroke-width="2.5" stroke-linecap="round"/>
+      <text x="0" y="86" font-family="Syne, Arial Black, sans-serif" font-size="48" font-weight="800" letter-spacing="-2" fill="#FFFEF8">NOTTE</text>
+      <text x="0" y="132" font-family="Syne, Arial Black, sans-serif" font-size="48" font-weight="800" letter-spacing="-2" fill="#FFFEF8">RISONANTE</text>
+      <text x="0" y="174" font-family="Inter, sans-serif" font-size="17" fill="#FFFEF8" fill-opacity=".7">Milano · Fabrique · stasera</text>
+    </g>
+    <path d="M-28 620 C80 544 152 710 242 620 S404 544 486 620" fill="none" stroke="#C9FF45" stroke-opacity=".28" stroke-width="3"/>
+  </g>
+  <g transform="translate(866 836)">
+    <text x="0" y="0" font-family="Inter, sans-serif" font-size="12" font-weight="700" letter-spacing="2.3" fill="#706F68">TIPOGRAFIA</text>
+    <text x="0" y="48" font-family="Syne, Arial Black, sans-serif" font-size="34" font-weight="800" letter-spacing="-1.5" fill="#151513">Syne — display e metriche</text>
+    <text x="0" y="79" font-family="Inter, sans-serif" font-size="17" fill="#706F68">Inter — corpo, metadati e controlli</text>
+  </g>
+</svg>

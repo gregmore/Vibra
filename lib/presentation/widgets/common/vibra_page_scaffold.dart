@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/vibra_colors.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
 
 class VibraPageScaffold extends StatelessWidget {
   const VibraPageScaffold({
@@ -22,18 +22,17 @@ class VibraPageScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final t = context.vibraTokens;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: useGradient && isDark
-            ? VibraColors.backgroundGradient
-            : LinearGradient(
-                colors: [
-                  Theme.of(context).scaffoldBackgroundColor,
-                  Theme.of(context).scaffoldBackgroundColor,
-                ],
-              ),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: useGradient
+              ? [t.backgroundPrimary, t.backgroundSecondary]
+              : [t.backgroundPrimary, t.backgroundPrimary],
+        ),
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,

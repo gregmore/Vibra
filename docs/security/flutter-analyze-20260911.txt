@@ -1,0 +1,5 @@
+Analyzing vibra...
+
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • integration_test/auth_session_e2e_test.dart:57:21 • use_build_context_synchronously
+
+1 issue found. (ran in 4.7s)

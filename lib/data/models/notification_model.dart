@@ -8,7 +8,8 @@ abstract class NotificationModel with _$NotificationModel {
   const factory NotificationModel({
     required String id,
     @JsonKey(name: 'user_id') required String userId,
-    required String type, // event_alert|match|friend_request|ticket_low
+    required String type,
+    // event_alert|match|friend_request|message_request|chat_message|live_chat|ticket_low
     required String title,
     required String body,
     @Default(<String, dynamic>{}) Map<String, dynamic> data,

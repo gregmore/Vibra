@@ -1,3 +1,4 @@
+import { rejectRevokedSession } from "../_shared/session-guard.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -7,6 +8,8 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
+  const rejected = await rejectRevokedSession(req, "track-ticket-click");
+  if (rejected) return rejected;
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -35,8 +38,9 @@ Deno.serve(async (req) => {
 
     const { event_id } = await req.json();
 
-    if (!event_id) {
-      return new Response(JSON.stringify({ error: "event_id required" }), {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!event_id || typeof event_id !== "string" || !uuidRegex.test(event_id)) {
+      return new Response(JSON.stringify({ error: "invalid_event_id", message: "Valid event_id UUID is required" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
       });

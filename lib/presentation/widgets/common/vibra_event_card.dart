@@ -3,8 +3,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../../core/theme/vibra_colors.dart';
 import '../../../core/theme/vibra_spacing.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../../domain/entities/event.dart';
 import '../vibra_glassmorphic_card.dart';
 import '../vibra_pill_button.dart';
@@ -28,12 +28,13 @@ class VibraEventCard extends ConsumerWidget {
   final VoidCallback? onTap;
 
   Color _getBadgeColor(BuildContext context, int score) {
-    return VibraColors.getMatchColor(score / 100);
+    return context.vibraTokens.matchColor(score / 100);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final t = context.vibraTokens;
     final dateText =
         '${event.eventDate.day.toString().padLeft(2, '0')}/${event.eventDate.month.toString().padLeft(2, '0')}';
 
@@ -90,7 +91,7 @@ class VibraEventCard extends ConsumerWidget {
                         child: Text(
                           '$matchScore% MATCH',
                           style: theme.textTheme.labelMedium?.copyWith(
-                            color: _getBadgeColor(context, matchScore!),
+                            color: t.onImage,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -100,12 +101,15 @@ class VibraEventCard extends ConsumerWidget {
                       .slideX(begin: -0.2, end: 0),
                   const SizedBox(height: VibraSpacing.sm),
                 ],
-                Text(event.name, style: theme.textTheme.titleLarge),
+                Text(
+                  event.name,
+                  style: theme.textTheme.titleLarge?.copyWith(color: t.onImage),
+                ),
                 const SizedBox(height: 6),
                 Text(
                   '${event.venueName ?? AppLocalizations.of(context)!.eventCardTBA} · ${event.city ?? AppLocalizations.of(context)!.eventCardCity}',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.82),
+                    color: t.onImageMuted,
                   ),
                 ),
                 const SizedBox(height: VibraSpacing.lg),
@@ -136,15 +140,16 @@ class VibraEventCard extends ConsumerWidget {
                   vertical: VibraSpacing.sm,
                 ),
                 decoration: BoxDecoration(
-                  color: VibraColors.surfaceElevated.withValues(alpha: 0.6),
+                  color: t.surfaceElevated,
                   borderRadius: BorderRadius.circular(
                     VibraSpacing.radiusMedium,
                   ),
-                  border: Border.all(color: VibraColors.glassBorder),
+                  border: Border.all(color: t.borderDefault),
                 ),
                 child: Text(
                   dateText,
                   style: theme.textTheme.labelLarge?.copyWith(
+                    color: t.textPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -180,15 +185,16 @@ class VibraEventCard extends ConsumerWidget {
                     ? CachedNetworkImage(
                         imageUrl: event.imageUrl!,
                         fit: BoxFit.cover,
-                        memCacheWidth: 200,
+                        memCacheWidth: 216,
                         placeholder: (context, url) => Shimmer.fromColors(
-                          baseColor: VibraColors.shimmerBase,
-                          highlightColor: VibraColors.shimmerHighlight,
-                          child: Container(color: Colors.white),
+                          baseColor: t.shimmerBase,
+                          highlightColor: t.shimmerHighlight,
+                          child: Container(color: t.surfaceElevated),
                         ),
-                        errorWidget: (context, url, error) => _fallbackPoster(),
+                        errorWidget: (context, url, error) =>
+                            _fallbackPoster(context),
                       )
-                    : _fallbackPoster(),
+                    : _fallbackPoster(context),
               ),
             ),
             const SizedBox(width: VibraSpacing.md),
@@ -259,17 +265,25 @@ class VibraEventCard extends ConsumerWidget {
       );
     }
 
-    return card.animate().slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
+    return Semantics(
+      button: true,
+      label:
+          'Apri evento ${event.name}, $dateText${event.city == null ? '' : ', ${event.city}'}${matchScore == null ? '' : ', affinità $matchScore percento'}',
+      child: card
+          .animate(
+            target: MediaQuery.maybeOf(context)?.disableAnimations ?? false
+                ? 0
+                : 1,
+          )
+          .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
+    );
   }
 
-  Widget _fallbackPoster() {
+  Widget _fallbackPoster(BuildContext context) {
+    final t = context.vibraTokens;
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [VibraColors.primary, VibraColors.accent],
-        ),
-      ),
-      child: const Icon(Icons.multitrack_audio_rounded, color: Colors.white),
+      decoration: BoxDecoration(gradient: t.primaryGradient),
+      child: Icon(Icons.multitrack_audio_rounded, color: t.onAccent),
     );
   }
 }

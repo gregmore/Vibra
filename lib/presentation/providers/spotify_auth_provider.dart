@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/utils/logger.dart';
 import '../../core/services/cache_service.dart';
 import 'app_state_providers.dart';
+import 'app_synchronization_provider.dart';
 import 'core_providers.dart';
 import '../../core/errors/exceptions.dart';
 
@@ -67,8 +68,7 @@ class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
 
       await datasource.syncMusicProfile();
 
-      _ref.invalidate(myProfileProvider);
-      _ref.invalidate(myMusicProfileProvider);
+      await _ref.read(appSynchronizationProvider).refreshProfile();
 
       state = const SpotifyAuthStatusState.success();
       VibraLogger.info('Stato: success!');
@@ -97,23 +97,54 @@ class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
   }
 
   Future<void> syncSpotify() async {
+    if (state.status == SpotifyAuthStatus.syncingProfile ||
+        state.status == SpotifyAuthStatus.authorizing ||
+        state.status == SpotifyAuthStatus.exchangingToken) {
+      return;
+    }
     try {
       state = const SpotifyAuthStatusState.syncingProfile();
       VibraLogger.info('Stato: syncingProfile...');
+
+      final supabase = _ref.read(supabaseDatasourceProvider);
+      final user = supabase.currentUser;
+      final isTestUser = user?.appMetadata['is_test_user'] == true;
+
+      // I fixture hanno dati musicali realistici ma token Spotify volutamente
+      // non utilizzabili. Per loro "Aggiorna" rilegge il profilo seed senza
+      // effettuare chiamate esterne né trasformare un test in traffico reale.
+      if (isTestUser) {
+        if (user != null) {
+          await CacheService.remove(CacheService.musicProfileKey(user.id));
+        }
+        await _ref.read(myMusicProfileProvider.notifier).refresh();
+        state = const SpotifyAuthStatusState.success();
+        VibraLogger.info('Profilo musicale test ricaricato');
+        return;
+      }
 
       final datasource = _ref.read(spotifyAuthDatasourceProvider);
       await datasource.syncMusicProfile();
 
       // Clear cache to prevent falling back to stale data if parsing fails
-      await CacheService.remove(CacheService.keyMusicProfile);
+      if (user != null) {
+        await CacheService.remove(CacheService.musicProfileKey(user.id));
+      }
 
-      _ref.invalidate(myMusicProfileProvider);
+      await _ref.read(myMusicProfileProvider.notifier).refresh();
 
       state = const SpotifyAuthStatusState.success();
       VibraLogger.info('Stato: sync success!');
     } catch (e) {
       final errorMessage = e.toString();
       VibraLogger.error('Errore durante la sincronizzazione Spotify', error: e);
+      // Una sincronizzazione remota fallita non deve nascondere l'ultimo
+      // profilo valido già persistito nel database.
+      try {
+        await _ref.read(myMusicProfileProvider.notifier).refresh();
+      } catch (_) {
+        // Lo stato d'errore originale resta quello rilevante per l'utente.
+      }
       state = SpotifyAuthStatusState.error(errorMessage);
     }
   }
@@ -122,10 +153,14 @@ class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
     try {
       final supabase = _ref.read(supabaseDatasourceProvider);
       if (!supabase.isAuthenticated) return;
+      final redacted = VibraLogger.redact(message);
       await supabase.client.from('auth_errors_log').insert({
         'user_id': supabase.currentUser?.id,
         'error_code': 'SPOTIFY_AUTH_FAILURE',
-        'error_message': message,
+        'error_message': redacted.substring(
+          0,
+          redacted.length > 2000 ? 2000 : redacted.length,
+        ),
         'metadata': {
           'timestamp': DateTime.now().toIso8601String(),
           'platform': 'mobile',
@@ -151,12 +186,9 @@ class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
 
       await supabase.client
           .from('users')
-          .update({
-            'spotify_id': null,
-            'spotify_access_token': null,
-            'spotify_refresh_token': null,
-          })
+          .update({'spotify_id': null})
           .eq('id', currentUser.id);
+      await supabase.client.functions.invoke('spotify-disconnect');
 
       await supabase.client
           .from('music_profiles')
@@ -165,8 +197,7 @@ class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
 
       await _ref.read(spotifyTokenStorageProvider).clear();
 
-      _ref.invalidate(myProfileProvider);
-      _ref.invalidate(myMusicProfileProvider);
+      await _ref.read(appSynchronizationProvider).refreshProfile();
 
       state = const SpotifyAuthStatusState.idle();
       VibraLogger.info('Spotify scollegato con successo');

@@ -19,9 +19,11 @@ class SupabaseBootstrap {
     await Supabase.initialize(
       url: EnvConfig.supabaseUrl,
       publishableKey: EnvConfig.supabaseAnonKey,
-      authOptions: const FlutterAuthClientOptions(
+      authOptions: FlutterAuthClientOptions(
         authFlowType: AuthFlowType.pkce,
-        localStorage: SecureLocalStorage(),
+        localStorage: SecureLocalStorage(
+          projectHost: Uri.parse(EnvConfig.supabaseUrl).host,
+        ),
       ),
       realtimeClientOptions: const RealtimeClientOptions(
         logLevel: RealtimeLogLevel.info,

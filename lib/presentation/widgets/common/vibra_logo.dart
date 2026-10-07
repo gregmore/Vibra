@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/vibra_colors.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
 
 class VibraLogo extends StatelessWidget {
   const VibraLogo({
@@ -19,6 +19,7 @@ class VibraLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.vibraTokens;
     return SizedBox(
       width: width,
       height: height,
@@ -27,8 +28,8 @@ class VibraLogo extends StatelessWidget {
           strokeWidth: strokeWidth,
           gradient:
               gradient ??
-              const LinearGradient(
-                colors: [VibraColors.primary, VibraColors.accent],
+              LinearGradient(
+                colors: t.primaryGradient.colors,
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),

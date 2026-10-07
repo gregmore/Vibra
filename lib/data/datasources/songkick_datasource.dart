@@ -12,30 +12,59 @@ class SongkickDatasource {
   final Dio dio;
   final String apiKey;
 
-  /// Cerca eventi per posizione (Songkick richiede prima un metro area id).
-  /// Qui esponiamo la chiamata grezza; il mapping finale lo fa l'aggregatore.
+  /// Cerca eventi per posizione e combina fino a cinque pagine di risultati.
+  /// Songkick localizza le coordinate in una metro area e non supporta un
+  /// raggio chilometrico per questo endpoint.
   Future<Map<String, dynamic>> searchEvents({
     required double latitude,
     required double longitude,
-    int radiusKm = 50,
     int page = 1,
   }) async {
     try {
-      final response = await dio.get(
-        '${ApiConstants.songkickApiBase}/events.json',
-        queryParameters: {
-          'apikey': apiKey,
-          'location': 'geo:$latitude,$longitude',
-          'radius': radiusKm,
+      const perPage = 50;
+      const maxPages = 5;
+      final events = <dynamic>[];
+      var currentPage = page;
+      var totalEntries = 0;
+
+      while (currentPage < page + maxPages) {
+        final response = await dio.get(
+          '${ApiConstants.songkickApiBase}/events.json',
+          queryParameters: {
+            'apikey': apiKey,
+            'location': 'geo:$latitude,$longitude',
+            'page': currentPage,
+            'per_page': perPage,
+          },
+        );
+        VibraLogger.api(
+          'GET',
+          'Songkick events (page $currentPage)',
+          statusCode: response.statusCode,
+        );
+
+        final data = response.data as Map<String, dynamic>;
+        final resultsPage = data['resultsPage'] as Map<String, dynamic>?;
+        final results = resultsPage?['results'] as Map<String, dynamic>?;
+        final pageEvents = results?['event'] as List<dynamic>? ?? const [];
+        totalEntries = (resultsPage?['totalEntries'] as num?)?.toInt() ?? 0;
+        events.addAll(pageEvents);
+
+        if (pageEvents.length < perPage || events.length >= totalEntries) {
+          break;
+        }
+        currentPage++;
+      }
+
+      return {
+        'resultsPage': {
+          'results': {'event': events},
+          'totalEntries': totalEntries,
+          'perPage': perPage,
           'page': page,
+          'status': 'ok',
         },
-      );
-      VibraLogger.api(
-        'GET',
-        'Songkick events',
-        statusCode: response.statusCode,
-      );
-      return response.data as Map<String, dynamic>;
+      };
     } on DioException catch (e) {
       VibraLogger.error('Errore Songkick searchEvents', error: e);
       throw ServerException(

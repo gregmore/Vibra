@@ -1,0 +1,20 @@
+{
+  "site_url": "com.vibra.app://callback",
+  "uri_allow_list": "com.vibra.app://callback",
+  "password_min_length": 12,
+  "mailer_autoconfirm": false,
+  "external_anonymous_users_enabled": false,
+  "refresh_token_rotation_enabled": true,
+  "security_manual_linking_enabled": false,
+  "jwt_exp": 900,
+  "password_hibp_enabled": false,
+  "hook_password_verification_attempt_enabled": false,
+  "security_captcha_enabled": false,
+  "rate_limit_anonymous_users": 30,
+  "rate_limit_email_sent": 2,
+  "rate_limit_sms_sent": 30,
+  "rate_limit_token_refresh": 150,
+  "rate_limit_verify": 30,
+  "rate_limit_otp": 30,
+  "rate_limit_web3": 30
+}

@@ -21,7 +21,9 @@ jobs:
           cache: true
 
       - name: Create dummy .env for CI
-        run: touch .env
+        run: |
+          touch .env
+          python3 script/security/prepare_client_env.py
 
       - name: Install Dependencies
         run: flutter pub get

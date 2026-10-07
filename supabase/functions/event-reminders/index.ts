@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { sendFcmLegacy } from "../_shared/fcm.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -69,7 +70,7 @@ Deno.serve(async (req) => {
       throw attendeesError;
     }
 
-    const notifications: { token: string; title: string; body: string }[] = [];
+    const notifications: { userId: string; token: string; title: string; body: string; eventId: string }[] = [];
 
     // 2. Filtra gli eventi per quelli esattamente a +1 o +7 giorni o oggi
     for (const record of attendees) {
@@ -104,35 +105,34 @@ Deno.serve(async (req) => {
 
       if (title && body) {
         notifications.push({
+          userId: record.user_id,
           token: fcmToken,
           title,
           body,
+          eventId: (record.events as any).id,
         });
       }
     }
 
-    // 3. Invio notifiche (es. via FCM - richiede chiave server o Firebase Admin SDK)
-    // Per lo scope di questo esempio, limitiamoci a stamparle nei log o usare un servizio push.
-    console.log(`Prepared ${notifications.length} notifications to send.`);
-    
-    // Esempio fittizio di invio FCM
-    /*
+    let sent = 0;
     for (const notif of notifications) {
-       await fetch('https://fcm.googleapis.com/fcm/send', {
-         method: 'POST',
-         headers: {
-           'Content-Type': 'application/json',
-           'Authorization': `key=${Deno.env.get("FCM_SERVER_KEY")}`
-         },
-         body: JSON.stringify({
-           to: notif.token,
-           notification: { title: notif.title, body: notif.body }
-         })
-       });
+      // Keep an inbox record even when FCM is unavailable; this is a
+      // transactional event reminder, so it does not consume the retention cap.
+      await supabaseClient.from('notifications').insert({
+        user_id: notif.userId,
+        type: 'event_alert',
+        title: notif.title,
+        body: notif.body,
+        data: { event_id: notif.eventId, reminder: true },
+      });
+      if (await sendFcmLegacy(notif.token, notif.title, notif.body, {
+        type: 'event_alert', event_id: notif.eventId,
+      })) {
+        sent++;
+      }
     }
-    */
 
-    return new Response(JSON.stringify({ success: true, count: notifications.length }), {
+    return new Response(JSON.stringify({ success: true, count: notifications.length, sent }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

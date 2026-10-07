@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/utils/logger.dart';
 
@@ -20,6 +21,19 @@ class UserLocation {
 
 final userLocationProvider = FutureProvider<UserLocation>((ref) async {
   try {
+    // OS permission alone is not consent for Vibra's optional location
+    // processing. Do not read device coordinates until the in-app choice is on.
+    final client = Supabase.instance.client;
+    final user = client.auth.currentUser;
+    if (user == null) return UserLocation.milano;
+    final preferences = await client
+        .from('privacy_preferences')
+        .select('location_processing')
+        .eq('user_id', user.id)
+        .maybeSingle();
+    if (preferences?['location_processing'] != true) {
+      return UserLocation.milano;
+    }
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();

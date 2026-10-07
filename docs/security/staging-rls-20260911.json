@@ -1,0 +1,127 @@
+[
+  {
+    "schema": "public",
+    "table": "algorithm_config",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "auth_errors_log",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "blocked_users",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "event_attendees",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "events",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "follows",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "friendships",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "live_messages",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "messages",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "music_profile_discovery",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "music_profiles",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "notification_campaigns",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "notification_preferences",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "notifications",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "privacy_preferences",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "profile_discovery",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "reports",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "service_incidents",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "spatial_ref_sys",
+    "rls": false
+  },
+  {
+    "schema": "public",
+    "table": "spotify_connections",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "support_reports",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "ticket_clicks",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "user_interactions_log",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "user_matches",
+    "rls": true
+  },
+  {
+    "schema": "public",
+    "table": "users",
+    "rls": true
+  }
+]

@@ -1,12 +1,31 @@
 # Vibra Support
 
-## Support Contact
+## Support Contact and SLA
 
 Before release, replace these placeholders with real production contacts:
 
 - Support email: `support@vibra.app`
 - Privacy contact: `privacy@vibra.app`
 - Legal contact: `legal@vibra.app`
+
+The in-app support queue (`support_reports`) and `support@vibra.app` must be
+monitored on business days. Initial response target: **within 48 hours**.
+
+## In-app support workflow
+
+- **Centro assistenza** offers searchable FAQ grouped by Account, Eventi,
+  Chat/Match, Spotify and Privacy.
+- **Segnala un problema** creates a row in `support_reports`; screenshot
+  attachments stay in the private `support-attachments` bucket.
+- Diagnostic payloads contain app/OS version, latest failed endpoint and a
+  30-entry local log buffer. The client redacts bearer tokens, passwords,
+  token query values and UUID-like identifiers before upload. Do not add a
+  service-role key or raw HTTP request bodies to this payload.
+- Low satisfaction is routed to the same report flow. Positive feedback may
+  use the native store review dialog only after seven days, once per 90 days.
+- To communicate a confirmed incident, add an `investigating` row to
+  `service_incidents` (for example a Spotify or Ticketmaster outage). The app
+  shows its message as a global banner; mark it `resolved` when closed.
 
 ## Recommended Support Scope
 
@@ -48,4 +67,3 @@ If you ship without a website, at minimum provide:
 - a working support email
 - a working privacy policy URL
 - a working legal contact
-

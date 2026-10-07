@@ -10,6 +10,9 @@ class AppConstants {
   static const String androidPackageName = 'com.vibra.app';
   static const String iOSBundleId = 'com.vibra.app';
   static const String supportEmail = 'support@vibra.app';
+
+  /// Impegno operativo del canale di assistenza in-app e via email.
+  static const String supportResponseSla = 'entro 48 ore';
   static const String privacyEmail = 'privacy@vibra.app';
   static const String legalEmail = 'legal@vibra.app';
 
@@ -32,9 +35,10 @@ class AppConstants {
   static const double weightProximity = 0.15;
   static const double weightPopularity = 0.10;
 
-  /// Pesi dell'algoritmo di compatibilità utenti.
-  static const double weightUserArtists = 0.60;
-  static const double weightUserGenres = 0.40;
+  /// Pesi dell'algoritmo di compatibilità utenti v2.
+  static const double weightUserArtists = 0.50;
+  static const double weightUserGenres = 0.35;
+  static const double weightUserNicheBonus = 0.15;
 
   // ── Live Vibra ───────────────────────────────────────────
   /// Raggio massimo (in metri) per attivare la modalità Live.
@@ -58,7 +62,7 @@ class AppConstants {
   static const int artistScoreDecrement = 1;
 
   // ── UI ────────────────────────────────────────────────────
-  static const double cardBorderRadius = 20.0;
+  static const double cardBorderRadius = 16.0;
   static const double bottomSheetBorderRadius = 24.0;
   static const double buttonBorderRadius = 50.0;
   static const double glassmorphismBlur = 20.0;
