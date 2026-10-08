@@ -18,6 +18,8 @@ def scan(name,data):
     global total
     total+=1
     if name.endswith('/.env') or name=='.env':findings.append({'file':name,'issue':'raw environment file bundled'})
+    if 'integration_test' in name.lower() or b'IntegrationTestPlugin' in data or b'vibra_e2e_v1' in data:
+        findings.append({'file':name,'issue':'native test plugin or demo fixture bundled'})
     for key,value in secrets.items():
         if value.encode() in data or value.encode('utf-16le') in data:findings.append({'file':name,'issue':'known server secret','key_name':key})
     for jwt in re.findall(rb'eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+',data):

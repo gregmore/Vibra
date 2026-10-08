@@ -68,7 +68,7 @@ schema_paths = []
 enabled = true
 # Specifies an ordered list of seed files to load during db reset.
 # Supports glob patterns relative to supabase directory: "./seeds/*.sql"
-# Demo data is intentionally opt-in. Run a seed SQL file explicitly instead
+# Production and local resets do not load synthetic data.
 # of loading test users whenever `supabase db reset` runs.
 sql_paths = []
 
@@ -417,17 +417,6 @@ enabled = true
 # declarative_schema_path = "./database"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
-
-[functions.seed-compatible-users]
-enabled = true
-verify_jwt = false
-import_map = "./functions/seed-compatible-users/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
-entrypoint = "./functions/seed-compatible-users/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/seed-compatible-users/*.html" ]
 
 [functions.compute-event-embeddings]
 enabled = true

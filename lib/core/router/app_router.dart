@@ -56,11 +56,6 @@ class AppRouter {
       ),
       observers: <NavigatorObserver>[_NavigationObserver()],
       redirect: (context, state) {
-        final isTest = WidgetsBinding.instance.runtimeType.toString().contains(
-          'Test',
-        );
-        if (isTest) return null;
-
         final currentUser = Supabase.instance.client.auth.currentUser;
         final path = state.uri.path;
 

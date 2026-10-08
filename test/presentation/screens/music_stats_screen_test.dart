@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:vibra/domain/entities/music_profile.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 import 'package:vibra/presentation/providers/app_state_providers.dart';
@@ -59,8 +58,6 @@ class FakeSpotifyAuthNotifier extends SpotifyAuthNotifier {
 }
 
 void main() {
-  setUp(() => GoogleFonts.config.allowRuntimeFetching = false);
-
   Future<FakeSpotifyAuthNotifier> mount(
     WidgetTester tester, {
     required FakeMusicProfileController music,

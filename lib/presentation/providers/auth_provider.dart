@@ -89,8 +89,6 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
     _ref.invalidate(pushEnabledProvider);
     _ref.invalidate(presenceProvider);
     _ref.invalidate(spotifyAuthProvider);
-    _ref.invalidate(spotifyDatasourceProvider);
-    _ref.invalidate(spotifyDioProvider);
 
     try {
       // Run every cleanup even if one storage backend reports an error.

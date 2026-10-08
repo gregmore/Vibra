@@ -1,6 +1,6 @@
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
-import { sendFcmLegacy } from "../_shared/fcm.ts";
+import { sendFcm } from "../_shared/fcm.ts";
 
 type LiveMessageRecord = {
   id: string;
@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
       });
 
       if (user.fcm_token && user.push_enabled !== false) {
-        const ok = await sendFcmLegacy(
+        const ok = await sendFcm(
           user.fcm_token,
           title,
           body,

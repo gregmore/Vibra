@@ -1,6 +1,6 @@
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
-import { sendFcmLegacy } from "../_shared/fcm.ts";
+import { sendFcm } from "../_shared/fcm.ts";
 
 type WebhookPayload = {
   type: "INSERT" | "UPDATE" | "DELETE";
@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
         settings[actionKey] !== false;
 
       if (canPush) {
-        const sent = await sendFcmLegacy(targetUser.fcm_token, title, body, {
+        const sent = await sendFcm(targetUser.fcm_token, title, body, {
           type: notificationType,
           sender_id: recipient.actorId,
           record_id: String(record.id ?? ""),

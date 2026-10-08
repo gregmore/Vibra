@@ -70,8 +70,9 @@ class MapEventsNotifier extends AutoDisposeAsyncNotifier<List<Event>> {
 
   Future<void> _fetchEvents(MapEventsParams params) async {
     final previous = state.valueOrNull;
-    if (previous == null || previous.isEmpty)
+    if (previous == null || previous.isEmpty) {
       state = const AsyncValue.loading();
+    }
     final partial = <Event>[];
     void publish(List<Event> events) {
       partial.addAll(events);

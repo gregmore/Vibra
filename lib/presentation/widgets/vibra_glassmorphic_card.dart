@@ -150,12 +150,6 @@ class _VibraGlassmorphicImageCardState
                 fit: BoxFit.cover,
                 memCacheWidth: 600,
                 placeholder: (context, url) {
-                  final isTest = WidgetsBinding.instance.runtimeType
-                      .toString()
-                      .contains('Test');
-                  if (isTest) {
-                    return Container(color: t.surfaceMuted);
-                  }
                   return Container(
                     color: t.surfaceMuted,
                     child: const Center(

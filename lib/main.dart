@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -25,18 +26,19 @@ void main() async {
   await bootstrapAndRun();
 }
 
-/// Bootstrap separato per consentire ai test d'integrazione di conservare il
-/// proprio handler degli errori del framework.
-Future<void> bootstrapAndRun({
-  bool installGlobalErrorHandler = true,
-  bool initializeNativeServices = true,
-}) async {
+/// Avvia l'app con autenticazione e servizi nativi abilitati.
+Future<void> bootstrapAndRun() async {
   WidgetsFlutterBinding.ensureInitialized();
+  LicenseRegistry.addLicense(() async* {
+    for (final family in ['inter', 'syne']) {
+      final license = await rootBundle.loadString(
+        'assets/fonts/$family-OFL.txt',
+      );
+      yield LicenseEntryWithLineBreaks(['${family}_font'], license);
+    }
+  });
 
-  // Inizializza Crashlytics / Error Handler per catturare i Red Screen of Death
-  if (installGlobalErrorHandler) {
-    GlobalErrorHandler.initialize();
-  }
+  GlobalErrorHandler.initialize();
 
   // Inizializza il Caching Offline
   await CacheService.initialize();
@@ -75,11 +77,9 @@ Future<void> bootstrapAndRun({
     );
   }
 
-  if (initializeNativeServices && !EnvConfig.isIsolatedTest) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      unawaited(_initializeNativeServices());
-    });
-  }
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(_initializeNativeServices());
+  });
 
   runApp(
     ProviderScope(observers: [AppProviderObserver()], child: const VibraApp()),

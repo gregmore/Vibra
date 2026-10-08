@@ -1,4 +1,6 @@
 import java.util.Properties
+import java.security.KeyStore
+import java.security.cert.X509Certificate
 
 plugins {
     id("com.android.application")
@@ -31,7 +33,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        manifestPlaceholders["appAuthRedirectScheme"] = "com.vibra.app"
+        manifestPlaceholders["spotifyRedirectScheme"] = "com.vibra.app"
     }
 
     signingConfigs {
@@ -47,13 +49,40 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+        }
+    }
+}
+
+// Store artifacts must never fall back to the debug certificate.
+tasks.configureEach {
+    if (name in listOf("validateSigningRelease", "signReleaseBundle", "packageRelease")) {
+        doFirst {
+            val requiredKeys = listOf("keyAlias", "keyPassword", "storeFile", "storePassword")
+            val missingKeys = requiredKeys.filter { keystoreProperties.getProperty(it).isNullOrBlank() }
+            if (!keystorePropertiesFile.exists() || missingKeys.isNotEmpty()) {
+                throw GradleException("Release signing requires android/key.properties and a real upload keystore. See RELEASE.md.")
             }
-            isMinifyEnabled = false
-            isShrinkResources = false
+            val releaseStore = file(keystoreProperties.getProperty("storeFile"))
+            if (!releaseStore.isFile) {
+                throw GradleException("Release upload keystore does not exist. See RELEASE.md.")
+            }
+            if (releaseStore.name == "debug.keystore" || keystoreProperties.getProperty("keyAlias") == "androiddebugkey") {
+                throw GradleException("The Android debug key cannot sign a store release.")
+            }
+            val store = try {
+                KeyStore.getInstance(releaseStore, keystoreProperties.getProperty("storePassword").toCharArray())
+            } catch (error: Exception) {
+                throw GradleException("Cannot open the release upload keystore. Check android/key.properties.")
+            }
+            val certificate = store.getCertificate(keystoreProperties.getProperty("keyAlias")) as? X509Certificate
+                ?: throw GradleException("Release key alias does not have a signing certificate.")
+            if (certificate.subjectX500Principal.name.contains("CN=Android Debug", ignoreCase = true)) {
+                throw GradleException("The Android debug certificate cannot sign a store release.")
+            }
         }
     }
 }

@@ -1,65 +1,106 @@
-# Vibra Store Metadata Draft
+# Schede store — Vibra
 
-## App Name
-Vibra
+Versione 1.0.0, build 2. Le descrizioni seguenti sono pronte da copiare dopo
+aver completato i requisiti di [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md).
 
-## Tagline
-Don’t just hear music. Live it.
+## Italiano
 
-## Short Description
-Connect your music taste, discover live events, and meet people who match your sound.
+**Nome:** Vibra
 
-## Full Description
-Vibra connects your music identity with real-world live experiences.
+**Sottotitolo App Store:** Concerti e affinità musicali
 
-Link your music profile, discover concerts that match your taste, and explore events near you. Vibra helps you go beyond generic event listings by combining music preferences, proximity, and social discovery in one place.
+**Descrizione breve Google Play:** Scopri concerti, collega Spotify e incontra chi condivide i tuoi gusti.
 
-With Vibra you can:
-- connect Spotify and build a personal music profile
-- discover nearby concerts and live events
-- get event recommendations based on taste compatibility
-- find people with similar music preferences
-- chat with friends and event attendees
-- activate live mode during concerts and interact in real time
-- receive push and in-app notifications for relevant events
+**Testo promozionale App Store:** La tua musica, dal vivo. Trova concerti vicini, scopri affinità musicali e condividi gli eventi con le persone giuste.
 
-Vibra is built for music fans who want better recommendations, stronger community, and a more social live-event experience.
+**Parole chiave App Store:** musica,concerti,eventi,festival,live,spotify,amici,chat,affinità
 
-## Keywords
-music, concerts, live events, spotify, festival, nightlife, social, recommendations
+**Descrizione completa:**
 
-## App Store Subtitle
-Concert discovery powered by your taste
+Non ascoltare la musica. Vivila.
 
-## Promotional Text
-Discover concerts that fit your sound and connect with people who feel the same music.
+Vibra mette in contatto i tuoi gusti musicali con i concerti e le persone che
+li condividono. Collega Spotify, cerca gli eventi vicino a te e organizza la
+tua prossima serata dal vivo.
 
-## Primary Category
-Music
+• Collega Spotify per creare il tuo profilo musicale.
+• Esplora concerti e festival sulla mappa e filtra la ricerca.
+• Scopri eventi consigliati in base ai tuoi gusti.
+• Salva gli eventi e ritrovali nella tua raccolta.
+• Incontra persone con affinità musicali e chatta con loro.
+• Durante gli eventi, partecipa alla chat Live.
+• Gestisci connessioni, permessi e notifiche dalle impostazioni.
 
-## Secondary Category
-Social Networking
+Spotify e la posizione sono collegamenti facoltativi. Puoi scollegare Spotify,
+controllare la tua visibilità, esportare i tuoi dati o eliminare il tuo account
+dall'app. Per i biglietti, Vibra apre il sito del fornitore: disponibilità e
+acquisti dipendono dal servizio esterno.
 
-## Content Notes
-- user-generated content: yes
-- messaging/chat: yes
-- location usage: yes
-- account creation: yes
+Vibra è destinata a persone maggiorenni.
 
-## Required URLs Before Submission
-- Privacy Policy URL
-- Support URL
-- Marketing URL (optional but recommended)
+## English
 
-## Screenshots To Prepare
-- onboarding / Spotify connect
-- home recommendations
-- explore map
-- event detail
-- social discover users
-- live chat
-- profile / music stats
+**Name:** Vibra
 
-## Support Email Placeholder
-support@vibra.app
+**App Store subtitle:** Concerts and music connections
 
+**Google Play short description:** Discover concerts, connect Spotify and meet people who share your music taste.
+
+**App Store promotional text:** Your music, live. Find nearby concerts, discover shared music tastes and plan your next event with the right people.
+
+**App Store keywords:** music,concerts,events,festival,live,spotify,friends,chat,discovery
+
+**Full description:**
+
+Don't just listen to music. Live it.
+
+Vibra connects your music taste with live concerts and people who share it.
+Link Spotify, explore nearby events and plan your next night out.
+
+• Connect Spotify to create your music profile.
+• Explore concerts and festivals on the map and filter your search.
+• Discover event recommendations based on your taste.
+• Save events and find them in your collection.
+• Meet people with similar music preferences and chat with them.
+• Join Live chat while attending an event.
+• Manage your connections, permissions and notifications in settings.
+
+Spotify and location are optional. Disconnect Spotify, control your visibility,
+export your data or delete your account from the app. Ticket links open the
+provider's website; availability and purchases depend on that external service.
+
+Vibra is intended for adults aged 18 and over.
+
+## Categorie e dichiarazioni
+
+App Store: Music; categoria secondaria Social Networking.
+Google Play: Music & Audio, confermare nella console.
+Presenza di contenuti utenti, messaggi privati, posizione e creazione account:
+sì. Completare i questionari degli store in base alle funzioni effettive;
+il requisito di utilizzo 18+ non determina da solo il rating della console.
+
+Confermare prezzo gratuito e territori nelle console prima della pubblicazione.
+Il progetto non contiene abbonamenti o acquisti digitali in-app.
+
+## Contatti e URL
+
+Usare i valori reali in `release/store-config.json`: privacy, termini, supporto,
+richiesta eliminazione account, email monitorate e titolare. Non pubblicare i
+contatti di esempio prima della conferma del titolare.
+
+## Immagini
+
+Icona 1024×1024 e feature graphic 1024×500 sono presenti in
+`assets/branding/raster/`. Le immagini promozionali esistenti non sostituiscono
+screenshot reali dell'app. Acquisire Home, Esplora, dettaglio evento, social,
+chat e profilo con dati reali e autorizzati; mostrare le funzioni visibili nella
+versione inviata. Preparare i formati richiesti dalle console, anche iPad se
+la distribuzione lo include.
+
+## Note per la review
+
+Spiegare login email/Google/Apple, collegamento Spotify facoltativo, ricerca
+concerti, salvataggi e chat. La modalità Live richiede presenza nei pressi
+dell'evento e va descritta nelle istruzioni di review. Fornire alla review
+accesso effettivo al servizio secondo le istruzioni della console; nessun
+bypass di autenticazione e nessun seed demo sono inclusi nella release.

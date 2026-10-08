@@ -31,6 +31,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+/packages/*/build/
 /build.nosync/
 /build [0-9]*/
 /coverage/
@@ -44,6 +45,13 @@ app.*.map.json
 # Environment variables (credenziali API)
 .env
 key.properties
+*.jks
+*.keystore
+*.p12
+*.p8
+*.mobileprovision
+service-account*.json
+/release/
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 

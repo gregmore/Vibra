@@ -5,8 +5,8 @@ class AppConstants {
   // ── App ──────────────────────────────────────────────────
   static const String appName = 'Vibra';
   static const String appSlogan = 'Non ascoltare la musica. Vivila.';
-  static const String appVersion = '0.1.0';
-  static const String appBuildNumber = '1';
+  static const String appVersion = '1.0.0';
+  static const String appBuildNumber = '2';
   static const String androidPackageName = 'com.vibra.app';
   static const String iOSBundleId = 'com.vibra.app';
   static const String supportEmail = 'support@vibra.app';

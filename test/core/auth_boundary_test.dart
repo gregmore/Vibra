@@ -1,18 +1,14 @@
 import 'dart:convert';
-import 'dart:typed_data';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide Headers;
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:vibra/core/services/secure_storage_service.dart';
 import 'package:vibra/core/services/spotify_token_storage.dart';
 import 'package:vibra/data/datasources/spotify_auth_datasource.dart';
 import 'package:vibra/data/datasources/supabase_datasource.dart';
-import 'package:vibra/domain/entities/spotify_session.dart';
-import 'package:vibra/domain/repositories/spotify_auth_repository.dart';
 import 'package:vibra/presentation/providers/auth_provider.dart';
 import 'package:vibra/presentation/providers/core_providers.dart';
 
@@ -21,8 +17,6 @@ class FakeRef extends Mock implements Ref {}
 class FakeDatasource extends Mock implements SupabaseDatasource {}
 
 class FakeTokens extends Mock implements SpotifyTokenStorage {}
-
-class FakeRepository extends Mock implements SpotifyAuthRepository {}
 
 class MemorySecureStorage extends SecureStorageService {
   final values = <String, String>{};
@@ -46,30 +40,6 @@ class TestAuthNotifier extends GeneralAuthNotifier {
   Future<void> clearLocalState() async {
     cleanups++;
   }
-}
-
-class UnauthorizedAdapter implements HttpClientAdapter {
-  int calls = 0;
-  final authorizations = <Object?>[];
-  @override
-  Future<ResponseBody> fetch(
-    RequestOptions options,
-    Stream<Uint8List>? requestStream,
-    Future<void>? cancelFuture,
-  ) async {
-    calls++;
-    authorizations.add(options.headers['Authorization']);
-    return ResponseBody.fromString(
-      '{}',
-      401,
-      headers: {
-        Headers.contentTypeHeader: ['application/json'],
-      },
-    );
-  }
-
-  @override
-  void close({bool force = false}) {}
 }
 
 void main() {
@@ -172,35 +142,4 @@ void main() {
       );
     }
   });
-  for (final host in ['third-party.example', 'api.spotify.com']) {
-    test('Spotify retry is bounded and confined to $host', () async {
-      final ref = FakeRef();
-      final repo = FakeRepository();
-      final adapter = UnauthorizedAdapter();
-      final dio = Dio()..httpClientAdapter = adapter;
-      when(() => ref.read(spotifyAuthRepositoryProvider)).thenReturn(repo);
-      when(() => ref.read(spotifyDioProvider)).thenReturn(dio);
-      when(() => repo.refreshSession()).thenAnswer(
-        (_) async => const SpotifySession(
-          accessToken: 'spotify-private',
-          refreshToken: 'refresh',
-          expiresIn: 3600,
-        ),
-      );
-      dio.interceptors.add(SpotifyAuthInterceptor(ref));
-      await expectLater(
-        dio.get('https://$host/v1/me'),
-        throwsA(isA<DioException>()),
-      );
-      if (host == 'api.spotify.com') {
-        expect(adapter.calls, 2);
-        verify(() => repo.refreshSession()).called(1);
-      } else {
-        expect(adapter.calls, 1);
-        expect(adapter.authorizations, [null]);
-        verifyNever(() => repo.refreshSession());
-      }
-      dio.close();
-    });
-  }
 }

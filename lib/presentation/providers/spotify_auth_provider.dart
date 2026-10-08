@@ -108,21 +108,6 @@ class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
 
       final supabase = _ref.read(supabaseDatasourceProvider);
       final user = supabase.currentUser;
-      final isTestUser = user?.appMetadata['is_test_user'] == true;
-
-      // I fixture hanno dati musicali realistici ma token Spotify volutamente
-      // non utilizzabili. Per loro "Aggiorna" rilegge il profilo seed senza
-      // effettuare chiamate esterne né trasformare un test in traffico reale.
-      if (isTestUser) {
-        if (user != null) {
-          await CacheService.remove(CacheService.musicProfileKey(user.id));
-        }
-        await _ref.read(myMusicProfileProvider.notifier).refresh();
-        state = const SpotifyAuthStatusState.success();
-        VibraLogger.info('Profilo musicale test ricaricato');
-        return;
-      }
-
       final datasource = _ref.read(spotifyAuthDatasourceProvider);
       await datasource.syncMusicProfile();
 

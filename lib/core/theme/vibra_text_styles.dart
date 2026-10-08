@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Due sole voci: Syne rende Vibra riconoscibile, Inter rende tutto leggibile.
 class VibraTextStyles {
@@ -9,87 +8,102 @@ class VibraTextStyles {
   static const double minimumLabelFontSize = 11;
   static const double paragraphLineHeight = 1.5;
 
-  static TextStyle displayLarge = GoogleFonts.syne(
+  static final TextStyle displayLarge = const TextStyle(
+    fontFamily: 'Syne',
     fontSize: 48,
     fontWeight: FontWeight.w700,
     letterSpacing: -2.0,
     height: 0.96,
   );
-  static TextStyle displayMedium = GoogleFonts.syne(
+  static final TextStyle displayMedium = const TextStyle(
+    fontFamily: 'Syne',
     fontSize: 34,
     fontWeight: FontWeight.w700,
     letterSpacing: -1.2,
     height: 1.02,
   );
-  static TextStyle displaySmall = GoogleFonts.syne(
+  static final TextStyle displaySmall = const TextStyle(
+    fontFamily: 'Syne',
     fontSize: 28,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.8,
     height: 1.08,
   );
 
-  static TextStyle headlineLarge = GoogleFonts.syne(
+  static final TextStyle headlineLarge = const TextStyle(
+    fontFamily: 'Syne',
     fontSize: 24,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.5,
     height: 1.12,
   );
-  static TextStyle headlineMedium = GoogleFonts.syne(
+  static final TextStyle headlineMedium = const TextStyle(
+    fontFamily: 'Syne',
     fontSize: 20,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.35,
     height: 1.18,
   );
-  static TextStyle headlineSmall = GoogleFonts.syne(
+  static final TextStyle headlineSmall = const TextStyle(
+    fontFamily: 'Syne',
     fontSize: 18,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.25,
     height: 1.22,
   );
 
-  static TextStyle titleLarge = GoogleFonts.syne(
+  static final TextStyle titleLarge = const TextStyle(
+    fontFamily: 'Syne',
     fontSize: 18,
     fontWeight: FontWeight.w700,
     height: 1.22,
   );
-  static TextStyle titleMedium = GoogleFonts.syne(
+  static final TextStyle titleMedium = const TextStyle(
+    fontFamily: 'Syne',
     fontSize: 16,
     fontWeight: FontWeight.w600,
     height: 1.28,
   );
-  static TextStyle titleSmall = GoogleFonts.inter(
+  static final TextStyle titleSmall = const TextStyle(
+    fontFamily: 'Inter',
     fontSize: 14,
     fontWeight: FontWeight.w600,
     height: 1.3,
   );
 
-  static TextStyle bodyLarge = GoogleFonts.inter(
+  static final TextStyle bodyLarge = const TextStyle(
+    fontFamily: 'Inter',
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: paragraphLineHeight,
   );
-  static TextStyle bodyMedium = GoogleFonts.inter(
+  static final TextStyle bodyMedium = const TextStyle(
+    fontFamily: 'Inter',
     fontSize: 14,
     fontWeight: FontWeight.w400,
     height: paragraphLineHeight,
   );
-  static TextStyle bodySmall = GoogleFonts.inter(
+  static final TextStyle bodySmall = const TextStyle(
+    fontFamily: 'Inter',
     fontSize: minimumBodyFontSize,
     fontWeight: FontWeight.w400,
     height: 1.4,
   );
 
-  static TextStyle labelLarge = GoogleFonts.inter(
+  static final TextStyle labelLarge = const TextStyle(
+    fontFamily: 'Inter',
     fontSize: 14,
     fontWeight: FontWeight.w600,
     height: 1.25,
   );
-  static TextStyle labelMedium = GoogleFonts.inter(
+  static final TextStyle labelMedium = const TextStyle(
+    fontFamily: 'Inter',
     fontSize: 12,
     fontWeight: FontWeight.w600,
     height: 1.25,
   );
-  static TextStyle labelSmall = GoogleFonts.inter(
+  static final TextStyle labelSmall = const TextStyle(
+    fontFamily: 'Inter',
     fontSize: minimumLabelFontSize,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.7,
@@ -97,13 +111,13 @@ class VibraTextStyles {
   );
 
   // Gli score usano il display del brand, non un font tecnico separato.
-  static TextStyle scoreXL = displayLarge.copyWith(
+  static final TextStyle scoreXL = displayLarge.copyWith(
     fontSize: 64,
     letterSpacing: -3,
   );
-  static TextStyle scoreLarge = displayMedium.copyWith(fontSize: 30);
-  static TextStyle scoreMedium = displaySmall.copyWith(fontSize: 20);
-  static TextStyle scoreSmall = labelLarge;
+  static final TextStyle scoreLarge = displayMedium.copyWith(fontSize: 30);
+  static final TextStyle scoreMedium = displaySmall.copyWith(fontSize: 20);
+  static final TextStyle scoreSmall = labelLarge;
 
   static TextTheme get textTheme => TextTheme(
     displayLarge: displayLarge,

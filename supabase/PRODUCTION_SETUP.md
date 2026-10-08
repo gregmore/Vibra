@@ -7,8 +7,8 @@ Il progetto collegato a questo repository e' `dxgqovzlvmhcmpvlkxgi` (Vibra,
 ## Credenziali
 
 - Nell'app Flutter usare soltanto `SUPABASE_URL`, la publishable/anon key e i
-  client ID pubblici OAuth. Il file `.env` e' incluso negli asset: qualsiasi
-  valore al suo interno e' recuperabile da chi installa l'app.
+  client ID pubblici OAuth. Generare `.env.public` con `script/security/prepare_client_env.py`: soltanto
+  questo asset pubblico viene incluso nell'app, mai il file `.env`.
 - Conservare `SUPABASE_SERVICE_ROLE_KEY`, `SPOTIFY_CLIENT_SECRET` e le chiavi
   Firebase esclusivamente in `supabase secrets`. Non esporli nel client, nei
   log o nelle migrazioni.
@@ -17,6 +17,16 @@ Il progetto collegato a questo repository e' `dxgqovzlvmhcmpvlkxgi` (Vibra,
   `spotify_connections` come envelope AES-GCM; la tabella non ha policy per
   i client e viene raggiunta esclusivamente dalle Edge Functions.
 - Ruotare subito ogni segreto che sia stato condiviso fuori dal gestore segreti.
+
+## Push Firebase
+
+Le funzioni inviano con FCM HTTP v1. Configurare `FCM_SERVICE_ACCOUNT_JSON`
+nei secret Edge con il JSON del service account del progetto Firebase,
+autorizzato per Firebase Cloud Messaging. Abilitare la Cloud Messaging API.
+La vecchia `FCM_SERVER_KEY` non viene usata. Su iOS configurare la chiave APNs
+in Firebase e la capability Push Notifications nel profilo Apple. Verificare
+la consegna reale su dispositivo: gli in-app notification record da soli non
+dimostrano che una push sia arrivata.
 
 ## Auth Dashboard
 
@@ -66,8 +76,9 @@ campagne in `notification_campaigns` e usa la view privata
 worker applica cap, timezone e quiet hours lato server; non invia un messaggio
 di ritorno quando non trova un evento o un artista realmente rilevante.
 
-`seed-compatible-users` crea utenti demo: non va esposto in produzione. Prima
-del rilascio eliminarlo dal progetto oppure limitarlo a un ambiente di staging.
+`seed-compatible-users` e i generatori demo sono stati eliminati. Non
+ridistribuirli. Le policy di separazione dei dati restano attive per proteggere
+gli utenti reali da eventuali fixture residue.
 
 Le RPC esposte dall'app sono disponibili solo al ruolo `authenticated`; le
 funzioni trigger e le routine interne non sono invocabili tramite l'API.

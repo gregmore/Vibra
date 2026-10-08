@@ -1,6 +1,6 @@
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
-import { sendFcmLegacy } from "../_shared/fcm.ts";
+import { sendFcm } from "../_shared/fcm.ts";
 
 type User = {
   id: string; fcm_token: string | null; push_enabled: boolean | null;
@@ -34,7 +34,11 @@ Deno.serve(async (req) => {
     const db = createSupabaseServiceClient();
     const now = Date.now();
     const [{ data: users, error: usersError }, { data: events, error: eventsError }] = await Promise.all([
-      db.from("users").select("id,fcm_token,push_enabled,push_settings,last_active_at,last_latitude,last_longitude").eq("is_test_user", false).limit(1000).returns<User[]>(),
+      db.from("users")
+        .select("id,fcm_token,push_enabled,push_settings,last_active_at,last_latitude,last_longitude,privacy_preferences!inner(marketing_notifications)")
+        .eq("is_test_user", false)
+        .eq("privacy_preferences.marketing_notifications", true)
+        .limit(1000).returns<User[]>(),
       db.from("events").select("id,name,artist_name,artist_spotify_id,event_date,city,latitude,longitude").eq("is_test_data", false).gte("event_date", new Date(now).toISOString()).order("event_date").limit(1000).returns<Event[]>(),
     ]);
     if (usersError) throw usersError; if (eventsError) throw eventsError;
@@ -136,7 +140,7 @@ Deno.serve(async (req) => {
       if (campaignError) continue;
       created++;
       if (user.fcm_token) {
-        const ok = await sendFcmLegacy(user.fcm_token, title, body, { type, event_id: String(data.event_id ?? ""), campaign_id: campaign.id });
+        const ok = await sendFcm(user.fcm_token, title, body, { type, event_id: String(data.event_id ?? ""), campaign_id: campaign.id });
         if (ok) { pushed++; await db.from("notification_campaigns").update({ delivered_at: new Date().toISOString() }).eq("id", campaign.id); }
       }
     }

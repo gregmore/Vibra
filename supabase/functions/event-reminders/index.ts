@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { sendFcmLegacy } from "../_shared/fcm.ts";
+import { sendFcm } from "../_shared/fcm.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
         body: notif.body,
         data: { event_id: notif.eventId, reminder: true },
       });
-      if (await sendFcmLegacy(notif.token, notif.title, notif.body, {
+      if (await sendFcm(notif.token, notif.title, notif.body, {
         type: 'event_alert', event_id: notif.eventId,
       })) {
         sent++;

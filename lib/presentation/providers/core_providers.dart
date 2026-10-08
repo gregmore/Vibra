@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,25 +11,20 @@ import '../../domain/repositories/live_repository.dart';
 import '../../domain/repositories/notifications_repository.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../../domain/repositories/social_repository.dart';
-import '../../domain/repositories/spotify_repository.dart';
 import '../../core/router/app_router.dart';
 import '../../data/datasources/bandsintown_datasource.dart';
 import '../../data/datasources/events_aggregator_datasource.dart';
-import '../../data/datasources/spotify_datasource.dart';
 import '../../data/datasources/supabase_datasource.dart';
 import '../../data/datasources/supabase_events_datasource.dart';
 import '../../data/datasources/supabase_live_datasource.dart';
 import '../../data/datasources/supabase_notifications_datasource.dart';
 import '../../data/datasources/supabase_profile_datasource.dart';
 import '../../data/datasources/supabase_social_datasource.dart';
-import '../../data/datasources/songkick_datasource.dart';
-import '../../data/datasources/events_datasource.dart';
 import '../../data/repositories/events_repository_impl.dart';
 import '../../data/repositories/live_repository_impl.dart';
 import '../../data/repositories/notifications_repository_impl.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../data/repositories/social_repository_impl.dart';
-import '../../data/repositories/spotify_repository_impl.dart';
 import '../../data/datasources/spotify_auth_datasource.dart';
 import '../../data/repositories/spotify_auth_repository_impl.dart';
 import '../../domain/repositories/spotify_auth_repository.dart';
@@ -53,21 +47,6 @@ final dioProvider = Provider<Dio>((ref) {
   return dio;
 });
 
-final spotifyDioProvider = Provider<Dio>((ref) {
-  // Spotify credentials must never enter the shared provider HTTP client.
-  final dio = Dio(
-    BaseOptions(
-      connectTimeout: ApiConstants.connectTimeout,
-      receiveTimeout: ApiConstants.receiveTimeout,
-      followRedirects: false,
-    ),
-  );
-  dio.interceptors.add(SpotifyAuthInterceptor(ref));
-  dio.interceptors.add(_SupportDiagnosticsInterceptor());
-  ref.onDispose(() => dio.close(force: true));
-  return dio;
-});
-
 class _SupportDiagnosticsInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
@@ -80,8 +59,6 @@ class _SupportDiagnosticsInterceptor extends Interceptor {
     super.onError(err, handler);
   }
 }
-
-final appAuthProvider = Provider<FlutterAppAuth>((ref) => FlutterAppAuth());
 
 final supabaseDatasourceProvider = Provider<SupabaseDatasource>(
   (ref) => SupabaseDatasource(),
@@ -105,25 +82,6 @@ final spotifyTokenStorageProvider = Provider<SpotifyTokenStorage>((ref) {
   );
 });
 
-final spotifyDatasourceProvider = Provider<SpotifyDatasource>((ref) {
-  return SpotifyDatasource(
-    dio: ref.watch(spotifyDioProvider),
-    appAuth: ref.watch(appAuthProvider),
-  );
-});
-
-final ticketmasterDatasourceProvider = Provider<TicketmasterDatasource?>((ref) {
-  final apiKey = EnvConfig.ticketmasterApiKey;
-  if (apiKey == null || apiKey.isEmpty) return null;
-  return TicketmasterDatasource(dio: ref.watch(dioProvider), apiKey: apiKey);
-});
-
-final songkickDatasourceProvider = Provider<SongkickDatasource?>((ref) {
-  final apiKey = EnvConfig.songkickApiKey;
-  if (apiKey == null || apiKey.isEmpty) return null;
-  return SongkickDatasource(dio: ref.watch(dioProvider), apiKey: apiKey);
-});
-
 final bandsintownDatasourceProvider = Provider<BandsintownDatasource?>((ref) {
   final appId = EnvConfig.bandsintownAppId;
   if (appId == null || appId.isEmpty) return null;
@@ -133,8 +91,6 @@ final bandsintownDatasourceProvider = Provider<BandsintownDatasource?>((ref) {
 final eventsAggregatorDatasourceProvider = Provider<EventsAggregatorDatasource>(
   (ref) {
     return EventsAggregatorDatasource(
-      ticketmaster: ref.watch(ticketmasterDatasourceProvider),
-      songkick: ref.watch(songkickDatasourceProvider),
       bandsintown: ref.watch(bandsintownDatasourceProvider),
     );
   },
@@ -177,13 +133,6 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return ProfileRepositoryImpl(ref.watch(supabaseProfileDatasourceProvider));
 });
 
-final spotifyRepositoryProvider = Provider<SpotifyRepository>((ref) {
-  return SpotifyRepositoryImpl(
-    ref.watch(spotifyDatasourceProvider),
-    ref.watch(spotifyTokenStorageProvider),
-  );
-});
-
 final eventsRepositoryProvider = Provider<EventsRepository>((ref) {
   return EventsRepositoryImpl(
     externalDatasource: ref.watch(eventsAggregatorDatasourceProvider),
@@ -219,40 +168,3 @@ final spotifyAuthRepositoryProvider = Provider<SpotifyAuthRepository>((ref) {
     tokenStorage: ref.watch(spotifyTokenStorageProvider),
   );
 });
-
-class SpotifyAuthInterceptor extends Interceptor {
-  final Ref ref;
-
-  SpotifyAuthInterceptor(this.ref);
-
-  @override
-  void onError(DioException err, ErrorInterceptorHandler handler) async {
-    final uri = err.requestOptions.uri;
-    if (err.response?.statusCode == 401 &&
-        uri.scheme == 'https' &&
-        uri.host == 'api.spotify.com' &&
-        uri.port == 443 &&
-        err.requestOptions.extra['vibraSpotifyRetried'] != true) {
-      try {
-        final session = await ref
-            .read(spotifyAuthRepositoryProvider)
-            .refreshSession();
-
-        final requestOptions = err.requestOptions;
-        requestOptions.extra['vibraSpotifyRetried'] = true;
-        requestOptions.headers['Authorization'] =
-            'Bearer ${session.accessToken}';
-
-        final dio = ref.read(spotifyDioProvider);
-        final response = await dio.fetch(requestOptions);
-        return handler.resolve(response);
-      } catch (e) {
-        VibraLogger.error(
-          'Errore durante il refresh automatico nel Dio interceptor',
-          error: e,
-        );
-      }
-    }
-    super.onError(err, handler);
-  }
-}

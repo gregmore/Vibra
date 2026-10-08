@@ -43,12 +43,14 @@ jobs:
       #   with:
       #     file: ./coverage/lcov.info
 
-      # NOTA: Per test E2E affidabili su CI
-      - name: Run E2E Integration Tests su Emulatore
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          script: flutter test integration_test/
+      - name: Run Map Package Tests
+        working-directory: packages/flutter_map_marker_cluster
+        run: |
+          flutter pub get
+          flutter test
+
+      # Native device checks live in script/security/native/ as a separate
+      # harness, so the integration_test plugin stays out of the shipping app.
 
   supabase-test:
     name: Supabase Backend Tests
@@ -60,7 +62,7 @@ jobs:
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         with:
-          deno-version: v1.x
+          deno-version: v2.x
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
@@ -74,4 +76,7 @@ jobs:
         run: supabase test db
 
       - name: Run Edge Functions Unit Tests
-        run: deno test --allow-all supabase/functions/calculate-match/index.test.ts
+        run: deno test --allow-env=FCM_SERVICE_ACCOUNT_JSON supabase/functions/_shared/fcm.test.ts supabase/functions/calculate-match/index.test.ts supabase/functions/sync-music-profile/genres.test.ts
+
+      - name: Check Edge Functions
+        run: deno check supabase/functions/*/index.ts

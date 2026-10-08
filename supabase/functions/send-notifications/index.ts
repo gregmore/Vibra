@@ -2,7 +2,7 @@ import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
 import { clamp, proximityScore } from "../_shared/geo.ts";
 import { fetchSpotifyArtistsByIds } from "../_shared/spotify_app_token.ts";
-import { sendFcmLegacy } from "../_shared/fcm.ts";
+import { sendFcm } from "../_shared/fcm.ts";
 
 type UserRow = {
   id: string;
@@ -227,7 +227,7 @@ Deno.serve(async (req) => {
         if (!insertError) inserted++;
 
         if (user.fcm_token && user.push_enabled !== false) {
-          const ok = await sendFcmLegacy(
+          const ok = await sendFcm(
             user.fcm_token,
             title,
             body,
