@@ -19,9 +19,10 @@ Risultati e blocchi: [report del 7 ottobre](docs/store-readiness-20261007.md).
 
 ## Backend e firma
 
-- [ ] Applicare le 17 migrazioni mancanti, dopo esame del dry run e backup.
-- [ ] Distribuire le funzioni aggiornate, incluse `upload-image` e `resolve-event`.
-- [ ] Configurare `FCM_SERVICE_ACCOUNT_JSON` e APNs in Firebase.
+- [x] Applicate le 17 migrazioni mancanti e due correzioni successive, dopo dry run e backup (10 ottobre).
+- [x] Distribuite tutte le 16 funzioni, incluse `upload-image` e `resolve-event` (10 ottobre).
+- [x] Collegato il service account backend `FIREBASE_SERVICE_ACCOUNT_JSON` all’invio FCM HTTP v1.
+- [ ] Configurare/verificare APNs in Firebase e provare la consegna push su device.
 - [ ] Confermare accesso Spotify per utenti pubblici.
 - [ ] Configurare chiave Android e Play App Signing.
 - [ ] Configurare firma e profilo App Store Apple con le capability necessarie.

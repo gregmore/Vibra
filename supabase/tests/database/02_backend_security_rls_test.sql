@@ -1,4 +1,5 @@
 BEGIN;
+\ir ../pgtap_setup.inc
 SELECT plan(5);
 
 INSERT INTO auth.users (id, email) VALUES
@@ -6,7 +7,8 @@ INSERT INTO auth.users (id, email) VALUES
   ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'bob@vibra.test');
 INSERT INTO public.users (id, username) VALUES
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'alice-vibra'),
-  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'bob-vibra');
+  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'bob-vibra')
+ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username;
 
 INSERT INTO public.spotify_connections (user_id, spotify_user_id, access_token_ciphertext, token_expires_at)
 VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'spotify-alice', 'v1.a.b', now());

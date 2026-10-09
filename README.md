@@ -28,7 +28,7 @@ I modelli Freezed/JSON si rigenerano con
 flutter analyze --no-pub
 flutter test --no-pub
 npx --yes deno check supabase/functions/*/index.ts
-npx --yes deno test --allow-env=FCM_SERVICE_ACCOUNT_JSON supabase/functions/_shared/fcm.test.ts supabase/functions/calculate-match/index.test.ts supabase/functions/sync-music-profile/genres.test.ts
+npx --yes deno test --allow-env=FCM_SERVICE_ACCOUNT_JSON,FIREBASE_SERVICE_ACCOUNT_JSON supabase/functions/_shared/fcm.test.ts supabase/functions/calculate-match/index.test.ts supabase/functions/sync-music-profile/genres.test.ts
 python3 script/release/preflight.py --technical-only
 ```
 

@@ -64,7 +64,8 @@ async function token(account: ServiceAccount): Promise<string> {
 export async function sendFcm(
   fcmToken: string, title: string, body: string, data?: Record<string, string>,
 ): Promise<boolean> {
-  const credentials = optionalEnv("FCM_SERVICE_ACCOUNT_JSON");
+  const credentials = optionalEnv("FCM_SERVICE_ACCOUNT_JSON") ??
+    optionalEnv("FIREBASE_SERVICE_ACCOUNT_JSON");
   if (!credentials || !fcmToken) return false;
   try {
     const account = JSON.parse(credentials) as ServiceAccount;

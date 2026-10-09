@@ -4,6 +4,7 @@ import { sendFcm } from "./fcm.ts";
 Deno.test("FCM v1 authorization, caching, renewal and delivery failures", async (t) => {
   const originalFetch = globalThis.fetch;
   const originalCredentials = Deno.env.get("FCM_SERVICE_ACCOUNT_JSON");
+  const originalFirebaseCredentials = Deno.env.get("FIREBASE_SERVICE_ACCOUNT_JSON");
   const originalWarn = console.warn;
   const warnings: string[] = [];
   console.warn = (...values: unknown[]) => warnings.push(values.join(" "));
@@ -22,6 +23,7 @@ Deno.test("FCM v1 authorization, caching, renewal and delivery failures", async 
   try {
     await t.step("unconfigured push makes no outbound request", async () => {
       Deno.env.delete("FCM_SERVICE_ACCOUNT_JSON");
+      Deno.env.delete("FIREBASE_SERVICE_ACCOUNT_JSON");
       globalThis.fetch = () => { throw new Error("Unexpected network request"); };
       assertEquals(await sendFcm("device", "Title", "Body"), false);
     });
@@ -78,6 +80,13 @@ Deno.test("FCM v1 authorization, caching, renewal and delivery failures", async 
       globalThis.fetch = () => Promise.reject(new Error("network offline"));
       assertEquals(await sendFcm("device", "Title", "Body"), false);
     });
+    await t.step("existing Firebase secret supports delivery", async () => {
+      Deno.env.delete("FCM_SERVICE_ACCOUNT_JSON");
+      Deno.env.set("FIREBASE_SERVICE_ACCOUNT_JSON", JSON.stringify(account));
+      globalThis.fetch = () => Promise.resolve(Response.json({ name: "delivered" }));
+      assertEquals(await sendFcm("device", "Title", "Body"), true);
+      Deno.env.delete("FIREBASE_SERVICE_ACCOUNT_JSON");
+    });
     await t.step("malformed secrets fail without leaking credentials", async () => {
       Deno.env.set("FCM_SERVICE_ACCOUNT_JSON", "private-secret-invalid-json");
       assertEquals(await sendFcm("device", "Title", "Body"), false);
@@ -88,5 +97,7 @@ Deno.test("FCM v1 authorization, caching, renewal and delivery failures", async 
     console.warn = originalWarn;
     if (originalCredentials === undefined) Deno.env.delete("FCM_SERVICE_ACCOUNT_JSON");
     else Deno.env.set("FCM_SERVICE_ACCOUNT_JSON", originalCredentials);
+    if (originalFirebaseCredentials === undefined) Deno.env.delete("FIREBASE_SERVICE_ACCOUNT_JSON");
+    else Deno.env.set("FIREBASE_SERVICE_ACCOUNT_JSON", originalFirebaseCredentials);
   }
 });

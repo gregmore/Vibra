@@ -1,4 +1,5 @@
 BEGIN;
+\ir pgtap_setup.inc
 
 -- Utilizziamo pgTAP (estensione standard per i test unitari in PostgreSQL/Supabase)
 CREATE EXTENSION IF NOT EXISTS pgtap;
@@ -17,7 +18,8 @@ VALUES (
     '00000000-0000-0000-0000-000000000001', 
     'TestUser', 
     ST_SetSRID(ST_MakePoint(9.1900, 45.4642), 4326)
-);
+) ON CONFLICT (id) DO UPDATE
+SET username = EXCLUDED.username, last_location = EXCLUDED.last_location;
 
 -- Mock Evento (Posizionato in centro a Milano)
 INSERT INTO public.events (id, external_id, source, name, latitude, longitude, event_date)
@@ -54,7 +56,7 @@ SELECT lives_ok(
 -- 3. SCENARIO 2: Utente a 550 metri
 -- ==========================================
 -- Ripristiniamo i permessi admin per l'update
-RESET ROLE;
+SET LOCAL ROLE postgres;
 
 -- Spostiamo l'utente a ~545 metri di distanza (9.1970, 45.4642)
 UPDATE public.users 

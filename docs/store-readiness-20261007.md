@@ -63,6 +63,10 @@ cerca valori noti e formati sensibili; non certifica ogni possibile segreto.
 
 ## Backend collegato
 
+Aggiornamento del 10 ottobre: migrazioni e funzioni sono state distribuite;
+Vault e job periodici configurati. Questo paragrafo conserva lo stato storico
+del 7 ottobre. Stato corrente: [report backend](backend-20261010.md).
+
 Controllo amministrativo in sola lettura sul progetto `dxgqovzlvmhcmpvlkxgi`:
 35 migrazioni registrate, ultima `20260828000001`. **17 migrazioni del repository
 mancanti**. Mancano anche le funzioni attive `upload-image` e `resolve-event` e

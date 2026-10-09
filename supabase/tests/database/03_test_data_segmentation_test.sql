@@ -1,4 +1,5 @@
 BEGIN;
+\ir ../pgtap_setup.inc
 SELECT plan(10);
 
 INSERT INTO auth.users (id, email, raw_app_meta_data) VALUES
@@ -9,7 +10,8 @@ INSERT INTO auth.users (id, email, raw_app_meta_data) VALUES
 INSERT INTO public.users (id, username) VALUES
   ('71000000-0000-4000-8000-000000000001', 'segment_real'),
   ('71000000-0000-4000-8000-000000000002', 'segment_test_a'),
-  ('71000000-0000-4000-8000-000000000003', 'segment_test_b');
+  ('71000000-0000-4000-8000-000000000003', 'segment_test_b')
+ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username;
 
 SELECT results_eq(
   $$
@@ -105,7 +107,7 @@ SELECT is(
   'Anonymous event discovery excludes synthetic events'
 );
 
-RESET ROLE;
+SET LOCAL ROLE postgres;
 SELECT throws_like(
   $$
     INSERT INTO public.user_matches (

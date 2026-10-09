@@ -1,4 +1,5 @@
 BEGIN;
+\ir ../pgtap_setup.inc
 select plan(4);
 
 -- Crea utenti fittizi per i test
@@ -8,7 +9,8 @@ insert into auth.users (id, email) values
 
 insert into public.users (id, username) values
   ('11111111-1111-1111-1111-111111111111', 'user1'),
-  ('22222222-2222-2222-2222-222222222222', 'user2');
+  ('22222222-2222-2222-2222-222222222222', 'user2')
+ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username;
 
 insert into public.events (id, external_id, source, name, event_date, latitude, longitude) values
   ('12345678-1234-1234-1234-123456789012', 'test-ext-1', 'ticketmaster', 'Test Event', now(), 45.0, 9.0);

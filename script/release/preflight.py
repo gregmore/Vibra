@@ -22,28 +22,25 @@ PUBLIC_KEYS = {"SUPABASE_URL", "SUPABASE_ANON_KEY", "SPOTIFY_CLIENT_ID",
 def backend_checks(project_ref):
     """Read hosted deployment metadata; do not fetch or print server secrets."""
     errors = []
-    token_result = subprocess.run([
-        "security", "find-generic-password", "-s", "Supabase CLI", "-a", "supabase", "-w"
-    ], capture_output=True, text=True)
-    access_token = token_result.stdout.strip()
-    if token_result.returncode or not access_token:
-        return ["Sign in to the Supabase CLI to verify the production deployment"]
-    def management(path, query=None):
-        req = urllib.request.Request(
-            f"https://api.supabase.com/v1/projects/{project_ref}/{path}",
-            method="POST" if query else "GET",
-            data=json.dumps({"query": query}).encode() if query else None,
-            headers={"Authorization": "Bearer " + access_token, "Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=20) as response:
-            return json.load(response)
+    def metadata(arguments):
+        result = subprocess.run(
+            ["supabase", *arguments, "--output-format", "json", "--agent", "yes"],
+            capture_output=True, text=True, timeout=120,
+        )
+        if result.returncode:
+            raise RuntimeError("Supabase metadata check failed")
+        return json.loads(result.stdout)
     try:
-        applied = {row["version"] for row in management(
-            "database/query", "SELECT version FROM supabase_migrations.schema_migrations")}
+        linked_ref = (ROOT / "supabase/.temp/project-ref").read_text().strip()
+        if linked_ref != project_ref:
+            return ["The linked Supabase project differs from the production project"]
+        migrations = metadata(["migration", "list", "--linked"])
+        applied = {row["remote"] for row in migrations["migrations"] if row["remote"]}
         local = {p.name.split("_", 1)[0] for p in (ROOT / "supabase/migrations").glob("*.sql")}
         missing = sorted(local - applied)
         if missing:
             errors.append(f"Production database is missing {len(missing)} migrations: " + ", ".join(missing))
-        deployed = {row["slug"]: row for row in management("functions")}
+        deployed = {row["slug"]: row for row in metadata(["functions", "list", "--project-ref", project_ref])["functions"]}
         required = {p.parent.name for p in (ROOT / "supabase/functions").glob("*/index.ts")}
         absent = sorted(name for name in required if deployed.get(name, {}).get("status") != "ACTIVE")
         if absent:
@@ -51,11 +48,13 @@ def backend_checks(project_ref):
         if "seed-compatible-users" in deployed:
             errors.append("Remove the hosted seed-compatible-users demo endpoint")
         # This endpoint returns names and hashes only, never secret values.
-        secrets = {row["name"] for row in management("secrets")}
-        for name in ("SPOTIFY_CLIENT_SECRET", "SPOTIFY_TOKEN_ENCRYPTION_KEY", "FCM_SERVICE_ACCOUNT_JSON"):
+        secrets = {row["name"] for row in metadata(["secrets", "list", "--project-ref", project_ref])["secrets"]}
+        for name in ("SPOTIFY_CLIENT_SECRET", "SPOTIFY_TOKEN_ENCRYPTION_KEY"):
             if name not in secrets:
                 errors.append(f"Missing production backend secret: {name}")
-    except (urllib.error.URLError, TimeoutError, ValueError, KeyError, TypeError):
+        if not secrets.intersection({"FCM_SERVICE_ACCOUNT_JSON", "FIREBASE_SERVICE_ACCOUNT_JSON"}):
+            errors.append("Missing production backend secret: FCM_SERVICE_ACCOUNT_JSON")
+    except (OSError, subprocess.TimeoutExpired, RuntimeError, ValueError, KeyError, TypeError):
         errors.append("Unable to verify the hosted Supabase deployment")
     return errors
 

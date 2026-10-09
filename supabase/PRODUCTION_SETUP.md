@@ -22,7 +22,9 @@ Il progetto collegato a questo repository e' `dxgqovzlvmhcmpvlkxgi` (Vibra,
 
 Le funzioni inviano con FCM HTTP v1. Configurare `FCM_SERVICE_ACCOUNT_JSON`
 nei secret Edge con il JSON del service account del progetto Firebase,
-autorizzato per Firebase Cloud Messaging. Abilitare la Cloud Messaging API.
+autorizzato per Firebase Cloud Messaging. È supportato anche il nome già usato
+`FIREBASE_SERVICE_ACCOUNT_JSON`; `FCM_SERVICE_ACCOUNT_JSON` ha precedenza.
+Abilitare la Cloud Messaging API.
 La vecchia `FCM_SERVER_KEY` non viene usata. Su iOS configurare la chiave APNs
 in Firebase e la capability Push Notifications nel profilo Apple. Verificare
 la consegna reale su dispositivo: gli in-app notification record da soli non
@@ -66,7 +68,10 @@ configurare Google solo se il relativo login viene esposto nell'app.
 
 Per il job `send-notifications`, creare in **Database > Vault** un secret
 denominato `vibra_service_role_key`, con valore pari alla service-role key.
-Poi eseguire [`setup_notification_cron.sql`](setup_notification_cron.sql) nel
+Creare anche `vibra_functions_url` con il valore HTTPS della base
+`https://<project-ref>.supabase.co/functions/v1`: i trigger chat/social leggono
+URL e credenziale da Vault. Nessuna consegna parte nei database locali senza
+questi secret. Poi eseguire [`setup_notification_cron.sql`](setup_notification_cron.sql) nel
 SQL Editor. La chiave verra' letta da Vault a ogni esecuzione, non salvata in
 chiaro nel job.
 
@@ -104,3 +109,7 @@ quindi le normali migrazioni applicative non possono abilitarne RLS. Aprire un
 ticket Supabase chiedendo lo spostamento/aggiornamento dell'estensione PostGIS
 nello schema `extensions`; nel frattempo la tabella non è esposta dalla Data API
 e non contiene dati utente.
+
+## Aggiornamento hosted del 10 ottobre 2026
+
+Esiti e limiti della verifica: [report backend](../docs/backend-20261010.md).
