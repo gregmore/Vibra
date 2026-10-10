@@ -1,69 +1,42 @@
-# Vibra Support
+# Ci siamo. Scrivici. — Vibra
 
-## Support Contact and SLA
+Versione 10 ottobre 2026. Titolare: Gregorio Morelli. Contatto: vibra7341@gmail.com
 
-Before release, replace these placeholders with real production contacts:
+[Testo pubblico completo](https://vibra-assistenza.newrobin4.chatgpt.site/supporto.html). Copia generata da `script/store/build_site.py`.
 
-- Support email: `support@vibra.app`
-- Privacy contact: `privacy@vibra.app`
-- Legal contact: `legal@vibra.app`
+CONTATTO UFFICIALE
 
-The in-app support queue (`support_reports`) and `support@vibra.app` must be
-monitored on business days. Initial response target: **within 48 hours**.
+## vibra7341@gmail.com
 
-## In-app support workflow
+Descrivi il problema e indica versione dell’app e dispositivo. Non inviare password, codici di accesso o token. L’obiettivo è una prima risposta entro 48 ore lavorative.
+[Scrivi all’assistenza ↗](mailto:vibra7341@gmail.com?subject=Assistenza%20Vibra)
 
-- **Centro assistenza** offers searchable FAQ grouped by Account, Eventi,
-  Chat/Match, Spotify and Privacy.
-- **Segnala un problema** creates a row in `support_reports`; screenshot
-  attachments stay in the private `support-attachments` bucket.
-- Diagnostic payloads contain app/OS version, latest failed endpoint and a
-  30-entry local log buffer. The client redacts bearer tokens, passwords,
-  token query values and UUID-like identifiers before upload. Do not add a
-  service-role key or raw HTTP request bodies to this payload.
-- Low satisfaction is routed to the same report flow. Positive feedback may
-  use the native store review dialog only after seven days, once per 90 days.
-- To communicate a confirmed incident, add an `investigating` row to
-  `service_incidents` (for example a Spotify or Ticketmaster outage). The app
-  shows its message as a global banner; mark it `resolved` when closed.
+## Risposte veloci
 
-## Recommended Support Scope
+Non riesco ad accedere
 
-Support should cover at least:
-- login and account issues
-- Spotify connection issues
-- event discovery problems
-- live chat and messaging problems
-- notification and permission issues
-- privacy and data deletion requests
+Usa lo stesso metodo della registrazione: email, Google o Apple. Per email controlla anche la cartella spam. Se il problema continua, scrivi dal recapito associato all’account.
 
-## Recommended Response Flows
+Spotify non si collega o non si aggiorna
 
-### Account Access
-- verify the user’s registered email
-- check authentication provider used
-- confirm whether the issue is login, redirect, or token related
+Controlla le autorizzazioni e prova a scollegare e ricollegare il servizio. L’accesso può essere soggetto ai limiti del fornitore. Puoi continuare a usare le altre funzioni senza collegarlo.
 
-### Spotify Connection
-- verify Spotify permissions were granted
-- confirm redirect URI is configured correctly
-- confirm Edge Functions and secrets are deployed
+Non vedo concerti nella mia zona
 
-### Notifications
-- confirm system notification permission is enabled
-- confirm Firebase files are installed
-- confirm `users.fcm_token` is populated in Supabase
+Controlla la zona e i filtri in Esplora. Posizione e disponibilità degli eventi dipendono dai permessi e dai fornitori. Dati e biglietti vanno sempre confermati sul sito dell’organizzatore.
 
-### Privacy Requests
-- route data access, correction, export, and deletion requests through a dedicated privacy contact
+Non ricevo notifiche
 
-## Public Support URL
+Verifica il permesso nelle impostazioni del telefono e l’interruttore notifiche di Vibra. Se il permesso era disabilitato, riapri l’app dopo averlo riattivato.
 
-Before app store submission, publish a real support page and add its URL to store metadata.
+Come segnalo una persona o un contenuto?
 
-## Internal Note
+Usa Segnala nell’app dove disponibile o scrivi all’assistenza indicando il contesto. Per contenuti riguardanti minori usa le istruzioni della [pagina sicurezza](https://vibra-assistenza.newrobin4.chatgpt.site/sicurezza.html). Non inoltrare materiale illegale.
 
-If you ship without a website, at minimum provide:
-- a working support email
-- a working privacy policy URL
-- a working legal contact
+Come gestisco o cancello i miei dati?
+
+Apri Impostazioni → Privacy e dati personali per le scelte e l’esportazione. Per eliminare l’account usa l’app oppure la [richiesta esterna](https://vibra-assistenza.newrobin4.chatgpt.site/elimina-account.html).
+
+## Inviare una segnalazione dall’app
+
+Dal centro assistenza puoi inviare una descrizione e uno screenshot facoltativo. La segnalazione include diagnostica essenziale e log ripuliti. Se non hai più l’app, puoi sempre contattarci via email.

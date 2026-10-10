@@ -9,12 +9,20 @@ class AppConstants {
   static const String appBuildNumber = '2';
   static const String androidPackageName = 'com.vibra.app';
   static const String iOSBundleId = 'com.vibra.app';
-  static const String supportEmail = 'support@vibra.app';
+  static const String supportEmail = 'vibra7341@gmail.com';
 
-  /// Impegno operativo del canale di assistenza in-app e via email.
-  static const String supportResponseSla = 'entro 48 ore';
-  static const String privacyEmail = 'privacy@vibra.app';
-  static const String legalEmail = 'legal@vibra.app';
+  /// Obiettivo per la prima risposta, da confermare nella gestione operativa.
+  static const String supportResponseSla = 'entro 48 ore lavorative';
+  static const String privacyEmail = 'vibra7341@gmail.com';
+  static const String legalEmail = 'vibra7341@gmail.com';
+  static const String legalOwner = 'Gregorio Morelli';
+  static const String publicSiteUrl =
+      'https://vibra-assistenza.newrobin4.chatgpt.site';
+  static const String privacyUrl = '$publicSiteUrl/privacy.html';
+  static const String termsUrl = '$publicSiteUrl/termini.html';
+  static const String supportUrl = '$publicSiteUrl/supporto.html';
+  static const String accountDeletionUrl =
+      '$publicSiteUrl/elimina-account.html';
 
   // ── Raggi di ricerca eventi (in km) ──────────────────────
   static const List<int> searchRadii = [25, 50, 100, 250];

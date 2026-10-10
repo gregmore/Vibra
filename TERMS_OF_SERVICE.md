@@ -1,99 +1,37 @@
-# Vibra Terms of Service
+# Le regole per stare bene insieme. — Vibra
 
-Last updated: `2026-06-30`
+Versione 10 ottobre 2026. Titolare: Gregorio Morelli. Contatto: vibra7341@gmail.com
 
-## 1. Acceptance of Terms
+[Testo pubblico completo](https://vibra-assistenza.newrobin4.chatgpt.site/termini.html). Copia generata da `script/store/build_site.py`.
 
-By accessing or using Vibra, you agree to be bound by these Terms of Service. If you do not agree, do not use the service.
+## 1. Servizio e gestore
 
-## 2. Service Description
+Vibra è il progetto personale di Gregorio Morelli. Aiuta a scoprire eventi, salvare concerti, confrontare gusti musicali e comunicare con altri utenti. Contatto: [vibra7341@gmail.com](mailto:vibra7341@gmail.com). Le funzioni dipendono anche da servizi esterni e dalle disponibilità dei loro dati.
 
-Vibra is a mobile application that helps users:
-- connect music preferences
-- discover live events
-- interact socially with other users
-- exchange messages and live-event content
+## 2. Età e account
 
-Some features depend on third-party services such as Spotify, Supabase, Firebase, Ticketmaster, Songkick, and Bandsintown.
+Per utilizzare Vibra devi avere almeno 18 anni. Fornisci dati corretti e proteggi le credenziali. Non impersonare altre persone. Se sospetti un accesso non autorizzato, contatta l’assistenza.
 
-## 3. Eligibility
+## 3. Contenuti e community
 
-You must be legally able to use the service under the laws applicable in your region. If you are below the required age, you may not use Vibra.
+Conservi i diritti sui contenuti che inserisci; autorizzi il trattamento e la visualizzazione necessari a fornire il servizio ai destinatari scelti. Devi avere il diritto di condividere i materiali caricati.
 
-## 4. User Accounts
+Sono vietati molestie, minacce, discriminazione, contenuti illegali, sessualmente espliciti, spam, frodi, violazioni della privacy e tentativi di accesso non autorizzato. Sono tassativamente vietati abusi e sfruttamento sessuale di minori. Leggi gli [standard di sicurezza della community](https://vibra-assistenza.newrobin4.chatgpt.site/sicurezza.html).
 
-You are responsible for:
-- maintaining the security of your account
-- ensuring your account information is accurate
-- any activity performed through your account
+Puoi segnalare contenuti e utenti e usare il blocco dove disponibile. Il gestore può rimuovere contenuti o limitare/sospendere account per violazioni, sicurezza o obblighi di legge. Per contestare un intervento scrivi a [vibra7341@gmail.com](mailto:vibra7341@gmail.com) con gli elementi utili.
 
-You must not impersonate others or use misleading identity information.
+## 4. Spotify, eventi e biglietti
 
-## 5. Connected Services
+Collegare Spotify è facoltativo e puoi scollegarlo nelle impostazioni. Disponibilità e limiti delle integrazioni dipendono dai fornitori. Eventi, date, luoghi e prezzi possono cambiare: verifica sempre sul sito dell’organizzatore. Vibra apre i siti esterni per i biglietti e non gestisce il pagamento o il contratto di acquisto del biglietto.
 
-When you connect Spotify or other supported services, you authorize Vibra to access the data necessary to provide the related features.
+## 5. Privacy e sicurezza personale
 
-You remain responsible for compliance with the terms of those third-party platforms.
+Il trattamento dei dati è descritto nell’[informativa privacy](https://vibra-assistenza.newrobin4.chatgpt.site/privacy.html). Rispetta le scelte e la sicurezza delle altre persone. Non condividere dati sensibili, password o informazioni di terzi senza autorizzazione. Gli incontri e gli spostamenti sono decisioni dell’utente; in caso di emergenza rivolgiti ai servizi competenti.
 
-## 6. User Conduct
+## 6. Disponibilità e responsabilità
 
-You agree not to:
-- harass, threaten, or abuse other users
-- post unlawful, hateful, violent, or sexually explicit content
-- attempt unauthorized access to systems or accounts
-- misuse live chat, messaging, or social features
-- upload malware, spam, or fraudulent content
+Il servizio può subire interruzioni o modifiche. Le informazioni degli eventi e le affinità musicali non garantiscono risultati, disponibilità di biglietti o compatibilità personale. Restano salvi i diritti inderogabili previsti dalla legge; questi termini non escludono responsabilità che non possano essere escluse secondo la normativa applicabile.
 
-Vibra may suspend or terminate accounts that violate these rules.
+## 7. Cancellazione e aggiornamenti
 
-## 7. User Content
-
-You retain rights to your content where applicable, but you grant Vibra a limited license to store, process, and display that content as required to operate the service.
-
-You are responsible for the content you submit.
-
-## 8. Event and Recommendation Data
-
-Vibra may display event information and recommendations from third-party providers. We do not guarantee the accuracy, availability, pricing, or scheduling of third-party event data.
-
-Purchases, tickets, and external event pages are governed by the third party that provides them.
-
-## 9. Privacy
-
-Your use of Vibra is also governed by the Privacy Policy.
-
-Before publication, make sure the public Privacy Policy URL is available and linked in the app stores.
-
-## 10. Service Availability
-
-Vibra may change, suspend, or discontinue features at any time, including integrations or recommendation systems.
-
-We do not guarantee uninterrupted availability.
-
-## 11. Termination
-
-We may suspend or terminate your access if:
-- you violate these Terms
-- required third-party access is revoked
-- your use creates legal, security, or operational risk
-
-You may also stop using the service and request account deletion, subject to legal or operational retention requirements.
-
-## 12. Disclaimers
-
-The service is provided on an “as is” and “as available” basis to the extent permitted by law.
-
-## 13. Limitation of Liability
-
-To the extent permitted by law, Vibra and its operators are not liable for indirect, incidental, special, consequential, or punitive damages arising from use of the service.
-
-## 14. Changes to Terms
-
-We may update these Terms from time to time. Continued use after updates constitutes acceptance of the revised Terms.
-
-## 15. Contact
-
-Before release, replace the placeholder below with the real legal/support contact:
-
-`legal@vibra.app`
-
+Puoi smettere di usare Vibra ed eliminare l’account dall’app o attraverso la [pagina dedicata](https://vibra-assistenza.newrobin4.chatgpt.site/elimina-account.html). Per modifiche sostanziali dei termini verranno fornite informazioni aggiornate tramite i canali del servizio. L’utilizzo della versione del servizio cui si applicano questi termini comporta l’accettazione delle relative condizioni.

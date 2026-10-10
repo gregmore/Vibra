@@ -3,6 +3,10 @@
 Versione 1.0.0, build 2. Le descrizioni seguenti sono pronte da copiare dopo
 aver completato i requisiti di [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md).
 
+Contatto assistenza/privacy: **vibra7341@gmail.com**. Titolare del progetto
+personale: Gregorio Morelli. URL pubblici, screenshot e risposte preparate
+ai questionari: [pacchetto materiali store](store/README.md).
+
 ## Italiano
 
 **Nome:** Vibra

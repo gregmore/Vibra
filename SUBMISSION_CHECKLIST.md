@@ -2,6 +2,7 @@
 
 Stato attuale: **preparazione tecnica completata; invio non ancora pronto**.
 Risultati e blocchi: [report del 7 ottobre](docs/store-readiness-20261007.md).
+Materiali aggiornati al 10 ottobre: [store/README.md](store/README.md).
 
 ## Codice e bundle
 
@@ -32,12 +33,13 @@ Risultati e blocchi: [report del 7 ottobre](docs/store-readiness-20261007.md).
 ## Materiali e operatività
 
 - [ ] Confermare titolare legale, indirizzo e contatti monitorati.
-- [ ] Pubblicare privacy, termini, supporto e richiesta eliminazione account.
-- [ ] Allineare i documenti legali e i contatti mostrati nell'app.
+- [x] Pubblicate privacy, termini, supporto, eliminazione account e sicurezza community.
+- [x] Allineati documenti, contatto email nell'app e link alle pagine complete.
+- [x] Preparate tabelle App Privacy / Data safety e questionari età/review.
 - [ ] Completare App Privacy / Data safety usando [l’inventario tecnico](docs/store-privacy-data.md).
 - [ ] Verificare consensi, revoca e opt-out delle campagne dopo il deploy.
 - [ ] Completare questionari età, contenuti utenti e obblighi regionali del venditore.
-- [ ] Preparare screenshot dell'app reale, senza profili o dati demo.
+- [x] Preparate 18 catture dei widget reali con fixture locali fittizie; nessun dato utente reale o demo backend.
 - [ ] Confermare moderazione, segnalazioni e blocco utenti funzionanti.
 - [ ] Verificare OAuth reale, revoca, account deletion, push e riconnessione su dispositivi fisici.
 - [ ] Fornire istruzioni e accesso necessari alla review degli store.

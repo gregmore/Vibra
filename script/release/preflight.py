@@ -152,7 +152,7 @@ def check(platform, config_path, technical_only=False, online=False):
             require(valid, f"Provide a public HTTPS {name}")
             if valid and online:
                 try:
-                    req = urllib.request.Request(address, headers={"User-Agent": "VibraReleasePreflight/1.0"})
+                    req = urllib.request.Request(address, headers={"User-Agent": "Mozilla/5.0 (compatible; VibraReleasePreflight/1.0)", "Accept": "text/html"})
                     with urllib.request.urlopen(req, timeout=15) as response:
                         require(response.status == 200 and response.url.startswith("https://"), f"{name} is not publicly accessible via HTTPS")
                 except (urllib.error.URLError, TimeoutError):

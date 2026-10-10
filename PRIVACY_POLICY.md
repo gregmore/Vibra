@@ -1,46 +1,57 @@
-# Vibra Privacy Policy
+# Privacy, senza giri di parole. — Vibra
 
-Last updated: `2026-08-27` · Policy version: `2026-08-27`
+Versione 10 ottobre 2026. Titolare: Gregorio Morelli. Contatto: vibra7341@gmail.com
 
-This is the product-facing privacy notice for Vibra. It must be reviewed by a qualified privacy lawyer before launch, completed with the controller's legal identity/address and published at a stable public URL.
+[Testo pubblico completo](https://vibra-assistenza.newrobin4.chatgpt.site/privacy.html). Copia generata da `script/store/build_site.py`.
 
-## What Vibra processes and why
+## 1. Titolare e contatti
 
-| Data | Purpose | Basis / control | Retention |
-|---|---|---|---|
-| Account profile (email, username, display name, avatar, bio) | Create and secure the account | Service contract | Until account deletion |
-| Spotify ID and music profile (top artists/tracks/genres, listening heatmap) | Music matching and event recommendations | Explicit optional Spotify/matching choice | Until disconnect or account deletion |
-| Encrypted Spotify OAuth credentials | Refresh the voluntary Spotify connection | Service requested by the user | Until disconnect or account deletion |
-| Precise/last location | Nearby events and Live proximity | Explicit optional location choice | Cleared after 30 days without a refresh |
-| Saved events, matches, social actions and ticket clicks | Deliver features and improve recommendations | Service / optional recommendation processing | Interaction and ticket logs: 12 months; account data until deletion |
-| Direct messages | Conversation service and user safety | Service contract | Message content: 24 months, then replaced with a retention marker |
-| Live-event messages | Temporary event chat | Service contract | 30 days |
-| Push token and notification choices | Send requested service notifications | Consent/device permission | Token cleared on logout; preferences until changed or deletion |
+Il titolare del trattamento è Gregorio Morelli, autore del progetto personale Vibra. Per richieste sui tuoi dati scrivi a [vibra7341@gmail.com](mailto:vibra7341@gmail.com) indicando “Privacy Vibra”.
 
-Vibra does not use a single forced “accept all” choice. Location, Spotify matching, service notifications and marketing notifications are controlled separately in **Settings → Privacy and personal data**. Marketing is optional and never required to use Vibra. Disconnecting Spotify deletes its stored credentials and music profile; withdrawing a device permission may require changing it in the device settings.
+## 2. Quali dati utilizziamo
 
-## Sharing and processors
+| Dati | Funzione e scelta |
+|---|---|
+| Email, identificativo account, username e profilo | Accesso, gestione dell’account e profilo. Nome visualizzato, foto e bio sono facoltativi. |
+| Account Spotify e preferenze musicali | Solo se colleghi Spotify: artisti, brani e generi per il profilo musicale, consigli e affinità. Le credenziali OAuth sono protette sul server. |
+| Posizione precisa e città | La posizione del dispositivo è facoltativa: eventi vicini e verifica della prossimità nella modalità Live. Puoi negare il permesso e usare le altre funzioni. |
+| Eventi salvati, affinità e interazioni | Raccolta personale, relazioni sociali e personalizzazione dei consigli. |
+| Messaggi, foto e contenuti delle chat | Conversazioni e chat degli eventi; gestione delle segnalazioni e protezione della community. |
+| Token push e preferenze | Notifiche facoltative. Il token viene rimosso al logout o alla disattivazione delle push nell’app. |
+| Clic sui biglietti e interazioni con notifiche | Funzionamento, personalizzazione e misurazione interna. Le campagne promozionali richiedono la scelta dedicata. |
+| Segnalazioni, allegati e diagnostica | Assistenza richiesta dall’utente: versione app/sistema, endpoint fallito e un buffer di log ripulito da credenziali e identificativi tecnici. |
 
-We use Supabase for authentication, database, storage and edge functions; Spotify for the account connection and music data requested by the user; Firebase Cloud Messaging for push delivery; and Ticketmaster, Songkick and Bandsintown to retrieve event data. A provider processes only the data necessary for its service under its own terms and privacy notice. Vibra does not sell personal data.
+## 3. Finalità e basi del trattamento
 
-## Your rights and how to use them
+Gestione dell’account, eventi salvati e messaggi sono necessari a erogare le funzioni richieste (esecuzione del servizio). Posizione, collegamento Spotify, uso facoltativo per affinità e comunicazioni promozionali dipendono dalle tue scelte e dal consenso quando richiesto. Sicurezza, prevenzione degli abusi e gestione delle segnalazioni rispondono all’interesse legittimo a proteggere gli utenti, nei limiti dei loro diritti; gli obblighi di legge si applicano quando necessari.
 
-From **Settings → Privacy and personal data** you can immediately generate a readable JSON export containing your profile, Spotify connection metadata (never OAuth tokens), events, messages, matches and relevant interaction logs. This automated response is immediate; requests requiring manual review are answered within one month unless GDPR law permits an extension, which we will communicate.
+La mancata attivazione di una funzione facoltativa limita quella funzione. Puoi modificare le scelte da Impostazioni → Privacy e dati personali, scollegare Spotify e revocare i permessi del dispositivo. Revocare il consenso non pregiudica la liceità del trattamento precedente.
 
-You can correct profile information in the app, change optional processing at any time, disconnect Spotify, or request account deletion in Settings. For access, portability, correction, restriction, objection or a complaint, contact `privacy@vibra.app` after the controller contact is confirmed before release.
+## 4. Fornitori e visibilità dei contenuti
 
-## Account deletion and backups
+Vibra usa Supabase per autenticazione, database, archiviazione e funzioni server; Google/Firebase per accesso e notifiche; Apple per l’accesso Apple; Google per la traduzione delle descrizioni pubbliche degli eventi; Spotify per la connessione musicale; Ticketmaster e Bandsintown e, se attivato, Songkick per i dati degli eventi. Le mappe sono fornite da servizi cartografici indicati nell’app: le richieste possono includere indirizzo IP e area visualizzata.
 
-Account deletion revokes sessions, deletes the profile, Spotify credentials, music data, saved events, recommendation logs, matches, notifications and associated application records. Direct messages sent by the deleted user are anonymized: the sender identity, text, media and message metadata are removed and a neutral marker remains for the other participant. Messages received from another person remain their data. Chat-media objects are removed before deletion. The production backup schedule must enforce a maximum 30-day backup retention; deleted data may persist only in an access-restricted backup until its scheduled expiry and is not restored into the active service except for disaster recovery.
+Profilo e affinità possono essere visibili agli altri utenti secondo le funzioni e impostazioni dell’app. I messaggi diretti sono destinati ai partecipanti; le chat Live ai partecipanti alla chat dell’evento. I fornitori di biglietti ricevono la visita quando apri un link esterno e applicano le proprie informative. Vibra non vende i dati personali e non include SDK pubblicitari per tracciare gli utenti tra app.
 
-## Security
+Il database applicativo hosted è nella regione Supabase eu-west-2 (Regno Unito). Alcuni fornitori operano anche fuori dallo Spazio economico europeo. I trasferimenti sono soggetti alle garanzie applicabili, come decisioni di adeguatezza e clausole contrattuali standard, ove previste dai contratti dei fornitori. Puoi chiedere dettagli e informazioni sulle garanzie a [vibra7341@gmail.com](mailto:vibra7341@gmail.com).
 
-The app communicates with Supabase and providers over HTTPS/TLS. OAuth tokens are encrypted before server-side storage and are not exposed through client database policies. Row-level security isolates accounts and private data. Encryption at rest, key rotation, backup encryption, incident response and provider data-processing agreements are deployment obligations that must be verified in the production Supabase/Firebase configuration before release.
+## 5. Conservazione e cancellazione
 
-## Children
+I dati dell’account sono conservati finché mantieni l’account o fino a una richiesta di cancellazione, salvo obblighi di legge o necessità documentate di sicurezza. Le credenziali e il profilo musicale Spotify vengono rimossi quando scolleghi il servizio. Le preferenze restano fino alla modifica o cancellazione dell’account. Segnalazioni e informazioni necessarie a gestire controversie o abusi possono essere conservate per il tempo necessario alla gestione del caso e ai relativi obblighi.
 
-Vibra is not for people under 18. During registration users must confirm that they are at least 18. We will delete accounts identified as belonging to minors, subject to any applicable legal obligation.
+Alla cancellazione vengono rimossi account, profilo, connessione Spotify, salvataggi, affinità, notifiche e relativi record applicativi. I messaggi inviati vengono privati di identità, testo, media e metadati e sostituiti da un indicatore neutro; i contenuti degli altri partecipanti restano loro dati. Le copie di backup possono persistere fino al ciclo di scadenza configurato dal fornitore: non sono usate per il funzionamento ordinario e il loro periodo effettivo è comunicabile su richiesta.
 
-## Operational controls
+Le regole tecniche di pulizia prevedono finestre specifiche per posizione, chat Live e log; la loro operatività e le impostazioni di backup sono oggetto dei controlli prima del rilascio. Non considerare queste finestre una garanzia di cancellazione automatica già verificata.
 
-Run the trusted `apply_data_retention` database function daily using the production scheduler/service role, monitor failures, and document the backup retention configuration. The legal controller identity, DPO assessment, international-transfer assessment, records of processing and DPIA decision remain launch prerequisites.
+## 6. Diritti e richieste
+
+Puoi chiedere accesso, rettifica, cancellazione, limitazione, portabilità e opposizione nei casi previsti. Nell’app sono disponibili modifica profilo, esportazione dei dati, revoca delle scelte facoltative ed eliminazione account. Puoi anche scrivere a [vibra7341@gmail.com](mailto:vibra7341@gmail.com), senza fornire password o token: potremmo chiedere una verifica proporzionata dell’identità.
+
+Le richieste relative ai diritti sono gestite entro i termini di legge, normalmente un mese; eventuali proroghe consentite vengono comunicate. Puoi proporre reclamo all’autorità di controllo competente, incluso il [Garante per la protezione dei dati personali](https://www.garanteprivacy.it/) per gli utenti italiani.
+[Richiedi eliminazione account ↗](https://vibra-assistenza.newrobin4.chatgpt.site/elimina-account.html)
+
+## 7. Età, sicurezza e modifiche
+
+Vibra è destinata a persone di almeno 18 anni. Se ritieni che un account appartenga a un minore, segnalalo a [vibra7341@gmail.com](mailto:vibra7341@gmail.com). Il servizio usa HTTPS e controlli di accesso; le chat non sono dichiarate cifrate da punto a punto. Consigli e affinità sono suggerimenti e non decisioni automatizzate con effetti giuridici o analogamente significativi.
+
+Eventuali modifiche sostanziali a questa informativa saranno comunicate attraverso i canali del servizio. Questo sito informativo non usa cookie pubblicitari o analytics applicativi; il servizio di hosting può trattare dati tecnici necessari a erogare le pagine e proteggerle.

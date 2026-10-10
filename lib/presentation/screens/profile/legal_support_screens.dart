@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -19,11 +20,13 @@ class _StaticInfoScreen extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.sections,
+    this.publicUrl,
   });
 
   final String title;
   final String subtitle;
   final List<_InfoSection> sections;
+  final String? publicUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +43,19 @@ class _StaticInfoScreen extends StatelessWidget {
             style: theme.textTheme.bodyLarge?.copyWith(color: t.textSecondary),
           ),
           const SizedBox(height: 20),
+          Text(AppConstants.legalOwner, style: theme.textTheme.bodyMedium),
+          if (publicUrl != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => launchUrl(
+                  Uri.parse(publicUrl!),
+                  mode: LaunchMode.externalApplication,
+                ),
+                icon: const Icon(Icons.open_in_new_rounded),
+                label: Text(title),
+              ),
+            ),
           ...sections.asMap().entries.map(
             (entry) =>
                 VibraGlassmorphicCard(
@@ -83,6 +99,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return _StaticInfoScreen(
       title: l10n.legalPrivacyPolicyTitle,
+      publicUrl: AppConstants.privacyUrl,
       subtitle: l10n.legalPrivacySubtitle,
       sections: [
         _InfoSection(
@@ -114,6 +131,7 @@ class TermsOfServiceScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return _StaticInfoScreen(
       title: l10n.legalTermsTitle,
+      publicUrl: AppConstants.termsUrl,
       subtitle: l10n.legalTermsSubtitle,
       sections: [
         _InfoSection(title: l10n.legalTermsSec1, body: l10n.legalTermsBody1),
@@ -136,6 +154,7 @@ class SupportScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return _StaticInfoScreen(
       title: l10n.legalSupportTitle,
+      publicUrl: AppConstants.supportUrl,
       subtitle: l10n.legalSupportSubtitle,
       sections: [
         _InfoSection(
