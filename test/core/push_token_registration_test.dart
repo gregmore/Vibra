@@ -42,6 +42,37 @@ void main() {
     expect(reads, 2);
   });
 
+  testWidgets(
+    'a new synchronization restarts after APNs retries are exhausted',
+    (tester) async {
+      var reads = 0;
+      String? availableToken;
+      final saved = <String>[];
+      final registration = PushTokenRegistration(
+        readToken: () async {
+          reads++;
+          return availableToken;
+        },
+        persistToken: (token) async => saved.add(token),
+        isActive: () => true,
+        onError: (_, _) => fail('Unexpected error'),
+        maxAttempts: 2,
+      );
+      await registration.synchronize();
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 30));
+      expect(reads, 2);
+      expect(saved, isEmpty);
+
+      // Re-enabling push calls synchronize again, even after a previous timeout.
+      availableToken = 'new-token';
+      await registration.synchronize();
+      expect(reads, 3);
+      expect(saved, ['new-token']);
+      registration.dispose();
+    },
+  );
+
   test('logout while token is loading prevents persistence', () async {
     var signedIn = true;
     final token = Completer<String?>();
