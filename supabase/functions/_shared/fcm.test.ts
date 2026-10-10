@@ -52,6 +52,8 @@ Deno.test("FCM v1 authorization, caching, renewal and delivery failures", async 
         assertEquals(new Headers(init?.headers).get("Authorization"), "Bearer fixture-access-token");
         assertEquals(JSON.parse(init?.body as string), { message: {
           token: "device", notification: { title: "Title", body: "Body" }, data: { type: "event" },
+          android: { priority: 'HIGH', notification: { sound: 'default' } },
+          apns: { headers: { 'apns-priority': '10' }, payload: { aps: { sound: 'default' } } },
         } });
         return Response.json({ name: "projects/vibra-fixture/messages/1" });
       };

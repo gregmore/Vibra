@@ -86,6 +86,8 @@ export async function sendFcm(
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accessToken}` },
         body: JSON.stringify({ message: {
           token: fcmToken, notification: { title, body }, ...(data ? { data } : {}),
+          android: { priority: 'HIGH', notification: { sound: 'default' } },
+          apns: { headers: { 'apns-priority': '10' }, payload: { aps: { sound: 'default' } } },
         } }),
       });
       // Consume the response so failed sends don't hold resources in a worker.

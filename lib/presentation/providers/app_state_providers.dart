@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import '../../core/config/push_notifications_bootstrap.dart';
+import '../../core/config/push_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/constants/db_tables.dart';
@@ -1476,54 +1477,59 @@ class PushEnabledController extends StateNotifier<bool> {
   }
 
   final Ref ref;
+  int _revision = 0;
 
   Future<void> _load() async {
+    final revision = _revision;
     try {
+      final supabase = ref.read(supabaseDatasourceProvider);
+      final user = supabase.currentUser;
+      if (user == null) return;
       final prefs = await SharedPreferences.getInstance();
-      state = prefs.getBool('push_enabled') ?? true;
+      if (!mounted || revision != _revision) return;
+      await PushPreferences.migrateLegacyOptOut(prefs, user.id, () async {
+        await supabase.client
+            .from(DbTables.users)
+            .update({'push_enabled': false, 'fcm_token': null})
+            .eq('id', user.id);
+      });
+      if (!mounted || revision != _revision) return;
+      state = prefs.getBool(PushPreferences.key(user.id)) ?? true;
+      final profile = await supabase.client
+          .from(DbTables.users)
+          .select('push_enabled')
+          .eq('id', user.id)
+          .maybeSingle();
+      if (!mounted ||
+          revision != _revision ||
+          supabase.currentUser?.id != user.id ||
+          profile == null) {
+        return;
+      }
+      state = profile['push_enabled'] != false;
+      await prefs.setBool(PushPreferences.key(user.id), state);
     } catch (e) {
       VibraLogger.error('Failed to load push_enabled preference', error: e);
     }
   }
 
   Future<void> toggle(bool value) async {
+    _revision++;
+    final previous = state;
     state = value;
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('push_enabled', value);
-
       final supabase = ref.read(supabaseDatasourceProvider);
       final user = supabase.currentUser;
-      if (user != null) {
-        if (value) {
-          // get FCM token and send to Supabase
-          final messaging = FirebaseMessaging.instance;
-          final token = await messaging.getToken();
-          if (token != null && token.isNotEmpty) {
-            await supabase.client.from('users').upsert({
-              'id': user.id,
-              'email': user.email ?? '',
-              'fcm_token': token,
-            }, onConflict: 'id');
-            VibraLogger.info(
-              'Push notifications re-enabled, token sent to Supabase',
-              tag: 'Push',
-            );
-          }
-        } else {
-          // remove FCM token from Supabase
-          await supabase.client.from('users').upsert({
-            'id': user.id,
-            'email': user.email ?? '',
-            'fcm_token': null,
-          }, onConflict: 'id');
-          VibraLogger.info(
-            'Push notifications disabled, token removed from Supabase',
-            tag: 'Push',
-          );
-        }
-      }
+      if (user == null) return;
+      await supabase.client
+          .from(DbTables.users)
+          .update({'push_enabled': value, if (!value) 'fcm_token': null})
+          .eq('id', user.id);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(PushPreferences.key(user.id), value);
+      if (value) await PushNotificationsBootstrap.synchronizeToken();
     } catch (e) {
+      if (mounted) state = previous;
       VibraLogger.error('Failed to toggle push_enabled', error: e);
     }
   }

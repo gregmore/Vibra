@@ -1,22 +1,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { sendFcm } from "../_shared/fcm.ts";
+import { reminderDays, remindersEnabled } from "./reminder.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Interfaccia per i dati attesi dal DB
-interface ReminderData {
-  user_id: string;
-  event_id: string;
-  fcm_token: string | null;
-  event_name: string;
-  event_date: string;
-  venue_name: string | null;
-  status: string;
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -39,55 +29,39 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "" // Deve essere service_role per leggere tutto
     );
 
-    // 1. Troviamo gli eventi imminenti (es. 1 giorno o 7 giorni). 
-    // Questa è una query semplificata. In Postgres sarebbe meglio calcolarlo con SQL,
-    // ma qui lo facciamo caricando i dati.
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const oneDayFromNow = new Date(today);
-    oneDayFromNow.setDate(oneDayFromNow.getDate() + 1);
-
-    const sevenDaysFromNow = new Date(today);
-    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-    
-    // Per semplicità, richiamiamo una RPC personalizzata o facciamo una JOIN tramite API
-    // Se non abbiamo una RPC, facciamo le chiamate necessarie (ma attenzione alla scalabilità).
-    // In questo esempio, ipotizziamo una query che recupera gli eventi in arrivo e i partecipanti:
+    const now = new Date();
+    // Broad UTC window; the calendar-day filter below uses Europe/Rome and
+    // remains correct for evening events and daylight-saving transitions.
+    const end = new Date(now.getTime() + 8 * 86400000);
     const { data: attendees, error: attendeesError } = await supabaseClient
       .from("event_attendees")
       .select(`
         user_id,
         status,
-        users!inner ( fcm_token, push_settings ),
+        users!inner ( fcm_token, push_enabled, push_settings ),
         events!inner ( id, name, event_date, venue_name )
       `)
       .in('status', ['going', 'maybe'])
-      .gte('events.event_date', today.toISOString())
-      .lte('events.event_date', sevenDaysFromNow.toISOString());
+      .gte('events.event_date', now.toISOString())
+      .lte('events.event_date', end.toISOString());
 
     if (attendeesError) {
       throw attendeesError;
     }
 
-    const notifications: { userId: string; token: string; title: string; body: string; eventId: string }[] = [];
+    const notifications: { userId: string; token: string | null; days: number; title: string; body: string; eventId: string }[] = [];
 
     // 2. Filtra gli eventi per quelli esattamente a +1 o +7 giorni o oggi
     for (const record of attendees) {
-      const pushSettings = (record.users as any).push_settings || {};
-      
-      // Controllo che le notifiche siano attive per gli eventi
-      // Se l'utente ha disabilitato event_alert, ignoriamo
-      if (pushSettings['event_alert'] === false) {
-        continue;
-      }
-      
-      const fcmToken = (record.users as any).fcm_token;
-      if (!fcmToken) continue;
-
-      const eventDate = new Date((record.events as any).event_date);
-      const diffTime = Math.abs(eventDate.getTime() - today.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+      const user = record.users as unknown as {
+        fcm_token: string | null;
+        push_enabled: boolean | null;
+        push_settings: Record<string, boolean> | null;
+      };
+      if (!remindersEnabled(user)) continue;
+      const fcmToken = user.fcm_token;
+      const diffDays = reminderDays((record.events as any).event_date, now);
+      if (diffDays === null) continue;
 
       let title = "";
       let body = "";
@@ -107,6 +81,7 @@ Deno.serve(async (req) => {
         notifications.push({
           userId: record.user_id,
           token: fcmToken,
+          days: diffDays,
           title,
           body,
           eventId: (record.events as any).id,
@@ -115,24 +90,29 @@ Deno.serve(async (req) => {
     }
 
     let sent = 0;
+    let created = 0;
     for (const notif of notifications) {
       // Keep an inbox record even when FCM is unavailable; this is a
       // transactional event reminder, so it does not consume the retention cap.
-      await supabaseClient.from('notifications').insert({
+      const { error: insertError } = await supabaseClient.from('notifications').insert({
         user_id: notif.userId,
         type: 'event_alert',
         title: notif.title,
         body: notif.body,
-        data: { event_id: notif.eventId, reminder: true },
+        data: { event_id: notif.eventId, reminder: true, reminder_days: notif.days },
       });
-      if (await sendFcm(notif.token, notif.title, notif.body, {
+      // The unique reminder key makes reruns safe; do not send a second push.
+      if (insertError?.code === '23505') continue;
+      if (insertError) throw insertError;
+      created++;
+      if (notif.token && await sendFcm(notif.token, notif.title, notif.body, {
         type: 'event_alert', event_id: notif.eventId,
       })) {
         sent++;
       }
     }
 
-    return new Response(JSON.stringify({ success: true, count: notifications.length, sent }), {
+    return new Response(JSON.stringify({ success: true, count: created, sent }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
