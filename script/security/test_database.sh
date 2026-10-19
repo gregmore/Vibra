@@ -32,9 +32,10 @@ fi
 # pgTAP fixtures run inside BEGIN/ROLLBACK in each file.
 export PGPASSWORD="${LOCAL_DB_PASSWORD:-postgres}"
 echo "Running all pgTAP files against local container $db_container"
+# Official Docker Hub mirror avoids shared ECR download quotas in hosted CI.
 docker run --rm \
   --network "container:$db_container" \
   --mount "type=bind,src=$repo_root/supabase/tests,dst=/tests,readonly" \
   --env PGPASSWORD \
-  public.ecr.aws/supabase/pg_prove:3.36 \
+  supabase/pg_prove:3.36 \
   sh -c 'exec pg_prove --host 127.0.0.1 --port 5432 --username postgres --dbname postgres --verbose /tests/*.sql /tests/database/*.sql'
