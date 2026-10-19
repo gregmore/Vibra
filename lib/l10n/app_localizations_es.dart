@@ -49,11 +49,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get loginSubtitle =>
-      'Inicia sesión con tu cuenta o conéctate usando uno de los proveedores compatibles para desbloquear recomendaciones reales.';
+      'Descubre conciertos y personas con quienes disfrutarlos.';
 
   @override
   String get loginConsent =>
-      'Al autenticarte, aceptas el consentimiento de datos, la gestión de sesiones JWT y las preferencias de privacidad de GDPR.';
+      'Puedes leer los términos y la información de privacidad antes de continuar. Gestiona tus preferencias opcionales en los ajustes.';
 
   @override
   String get loginWithSpotify => 'Continuar con Spotify';
@@ -107,7 +107,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsNotificationsSnackbar =>
-      'Las notificaciones dependen de los permisos del dispositivo, la configuración de Firebase y una cuenta autenticada.';
+      'Para recibir avisos, inicia sesión y activa las notificaciones de Vibra en los ajustes del dispositivo.';
 
   @override
   String get settingsPrivacyPolicy => 'Política de Privacidad';
@@ -267,7 +267,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsDeleteAccountError =>
-      'No se puede eliminar la cuenta. Asegúrate de que el RPC se haya cargado en la base de datos.';
+      'No se pudo eliminar tu cuenta. Inténtalo de nuevo o contacta con soporte.';
 
   @override
   String get eventDetailChat => 'Chat';
@@ -420,7 +420,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get friendsGoToExplore =>
-      'Ve a la sección Explorar o usa Social Match para encontrar personas con tus mismos gustos.';
+      'Explora la comunidad para encontrar personas y enviar solicitudes de amistad.';
 
   @override
   String get friendsSentRequests => 'Solicitudes enviadas';
@@ -435,7 +435,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get socialMatchNewAffinity => 'NUEVA AFINIDAD';
 
   @override
-  String get socialMatchScore => 'MATCH SCORE';
+  String get socialMatchScore => 'AFINIDAD MUSICAL';
 
   @override
   String get socialMatchWhyMatched => 'POR QUÉ HAY MATCH';
@@ -459,7 +459,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Explora eventos en vivo a tu alrededor en tiempo real';
 
   @override
-  String get exploreSearchRadius => 'Radio de búsqueda';
+  String exploreSearchRadius(int radius) {
+    return 'RADIO DE BÚSQUEDA: $radius KM';
+  }
 
   @override
   String get exploreFindEventsNearYou => 'Encuentra eventos cerca de ti';
@@ -525,6 +527,129 @@ class AppLocalizationsEs extends AppLocalizations {
       'Privacidad, notificaciones, cuenta y cierre de sesión';
 
   @override
+  String get myEventsUpcoming => 'Próximos';
+
+  @override
+  String get myEventsPast => 'Pasados';
+
+  @override
+  String get myEventsPastSubtitle => 'Tu historial de conciertos';
+
+  @override
+  String get myEventsPastEmpty => 'Aún no tienes eventos pasados.';
+
+  @override
+  String get myEventsSearchHint => 'Busca eventos, artistas o lugares';
+
+  @override
+  String get myEventsSearchEmpty => 'Ningún evento coincide con tu búsqueda.';
+
+  @override
+  String get myEventsClearSearch => 'Borrar búsqueda';
+
+  @override
+  String get myEventsExplore => 'Explorar eventos';
+
+  @override
+  String get inboxUnread => 'Sin leer';
+
+  @override
+  String get inboxNoResults => 'No se encontraron conversaciones.';
+
+  @override
+  String get inboxNoResultsBody =>
+      'Prueba otro nombre o elimina los filtros para ver todos los mensajes.';
+
+  @override
+  String get inboxClearFilters => 'Quitar filtros';
+
+  @override
+  String get homeFeedError => 'No se pudieron cargar los eventos.';
+
+  @override
+  String get homeFeedErrorBody =>
+      'Inténtalo de nuevo en un momento. Puedes seguir explorando el mapa.';
+
+  @override
+  String get homeFeedEmpty => 'Hay espacio para una nueva noche.';
+
+  @override
+  String get homeFeedEmptyBody =>
+      'Explora el mapa para encontrar tu próximo concierto.';
+
+  @override
+  String get socialSearchHint => 'Busca personas o artistas';
+
+  @override
+  String get socialSearchEmpty => 'No se encontraron personas.';
+
+  @override
+  String get socialSearchEmptyBody => 'Prueba otro nombre o artista.';
+
+  @override
+  String get socialDiscoverEmpty => 'Las nuevas conexiones empiezan aquí.';
+
+  @override
+  String get socialDiscoverEmptyBody =>
+      'Completa tu perfil y conecta Spotify para encontrar personas con gustos similares.';
+
+  @override
+  String get chatSendMessage => 'Enviar mensaje';
+
+  @override
+  String get chatLoadError => 'No se pudo cargar la conversación.';
+
+  @override
+  String get chatDraftRecovered =>
+      'El mensaje no se envió. El texto se ha recuperado en el campo de escritura.';
+
+  @override
+  String get eventLocationUnknown =>
+      'La ubicación exacta aún no está disponible.';
+
+  @override
+  String get eventDirections => 'Cómo llegar';
+
+  @override
+  String get eventDirectionsError => 'No se pudieron abrir las indicaciones.';
+
+  @override
+  String get inboxDeleteTitle => '¿Eliminar la conversación?';
+
+  @override
+  String get inboxDeleteBody =>
+      'La conversación se quitará de tu bandeja. Los mensajes de la otra persona no se eliminarán.';
+
+  @override
+  String get inboxDeleteAction => 'Eliminar conversación';
+
+  @override
+  String get inboxDeleteSuccess => 'Conversación eliminada.';
+
+  @override
+  String get inboxDeleteError =>
+      'No se eliminó la conversación. Inténtalo de nuevo.';
+
+  @override
+  String get commonCancel => 'Cancelar';
+
+  @override
+  String get eventCopyDetails => 'Copiar los detalles del evento';
+
+  @override
+  String get eventCopyError => 'No se pudieron copiar los detalles.';
+
+  @override
+  String get eventCancelled => 'Evento cancelado';
+
+  @override
+  String get eventTicketsOffsale => 'Entradas no disponibles para la venta';
+
+  @override
+  String get socialMatchSendFailed =>
+      'No se envió la Vibra. Inténtalo de nuevo: el perfil sigue disponible.';
+
+  @override
   String get myEventsTitle => 'Mis eventos';
 
   @override
@@ -535,7 +660,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get myEventsGoingEmpty =>
-      'Aún no has confirmado tu asistencia a ningún evento.\\n¡Explora y encuentra tus próximos conciertos!';
+      'Aún no has confirmado tu asistencia a ningún evento.\n¡Explora y encuentra tus próximos conciertos!';
 
   @override
   String get myEventsSaved => 'Guardados';
@@ -545,7 +670,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get myEventsSavedEmpty =>
-      'Ningún evento guardado.\\nGuarda los eventos que te interesan para no perderlos.';
+      'Ningún evento guardado.\nGuarda los eventos que te interesan para no perderlos.';
 
   @override
   String get chatEmptyTitle => 'Sin mensajes';
@@ -798,7 +923,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get legalSupportBody3 =>
-      'Permisos, estado de conexión a Spotify, configuración de Firebase y presencia de un usuario autenticado.';
+      'Comprueba la conexión, los permisos del dispositivo y el inicio de sesión. Si persiste, informa del problema desde los ajustes.';
 
   @override
   String legalAboutBody1(String version, String build) {
@@ -807,12 +932,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String legalAboutBody2(String android, String ios) {
-    return 'Paquete Android: $android\nBundle iOS: $ios';
+    return 'Paquete Android: $android\nIdentificador iOS: $ios';
   }
 
   @override
   String get legalAboutBody3 =>
-      'Vibra ayuda a conectar Spotify, descubrir eventos en vivo, ver detalles, conocer gente compatible y unirse a chats en vivo.';
+      'Vibra te ayuda a descubrir eventos en vivo, explorar el mapa, guardar conciertos, conocer personas y unirte a chats. Las funciones de Spotify solo están disponibles cuando el servicio está habilitado.';
 
   @override
   String legalAboutBody4(String email) {
@@ -848,7 +973,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get legalAboutSubtitle =>
-      'Vibra combina gustos musicales, descubrimiento de eventos e interacción social en torno a experiencias en vivo.';
+      'Eventos en vivo, mapa y comunidad para compartir nuevas experiencias.';
 
   @override
   String get exploreShowAllEvents => 'Mostrar todos los eventos';
@@ -909,7 +1034,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get eventCardLocation => 'Ubicación';
 
   @override
-  String get matchScore => 'PUNTUACIÓN DE MATCH';
+  String get matchScore => 'AFINIDAD MUSICAL';
 
   @override
   String get userGeneric => 'Usuario';
@@ -953,4 +1078,1292 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeSpotifySyncAction => 'CONECTAR SPOTIFY';
+
+  @override
+  String get loginBackToWelcome => 'Volver a la pantalla de bienvenida';
+
+  @override
+  String get authOr => 'o';
+
+  @override
+  String get authEmailLoginSubtitle =>
+      'Introduce tus credenciales para iniciar sesión y explorar conciertos.';
+
+  @override
+  String get authEmailRegisterSubtitle =>
+      'Introduce tus credenciales para registrarte y empezar a disfrutar de los conciertos en directo.';
+
+  @override
+  String get authAgeConfirmation => 'Confirmo que tengo al menos 18 años.';
+
+  @override
+  String get authAgeExplanation =>
+      'Vibra facilita encuentros entre personas y no está destinada a menores.';
+
+  @override
+  String get authAgeRequired =>
+      'Debes confirmar que tienes al menos 18 años para crear una cuenta.';
+
+  @override
+  String get authShowPassword => 'Mostrar contraseña';
+
+  @override
+  String get authHidePassword => 'Ocultar contraseña';
+
+  @override
+  String get spotifyUnavailableTitle => 'Spotify en pausa';
+
+  @override
+  String get spotifyUnavailableBody =>
+      'Spotify y la afinidad musical están temporalmente desactivados. Los eventos, amigos y chats siguen disponibles.';
+
+  @override
+  String get launchExploreTitle => 'Encuentra tu próximo concierto';
+
+  @override
+  String get launchExploreBody =>
+      'Busca artistas, explora el mapa y guarda eventos cercanos.';
+
+  @override
+  String get launchCommunityTitle => 'Vive la comunidad';
+
+  @override
+  String get launchCommunityBody =>
+      'Encuentra personas, añade amigos y organiza conciertos en tus chats.';
+
+  @override
+  String get launchSavedTitle => 'Tu agenda de conciertos';
+
+  @override
+  String get launchSavedBody =>
+      'Guarda conciertos y encuentra los que quieres visitar.';
+
+  @override
+  String get launchCommunitySubtitle => 'Busca personas por nombre o usuario';
+
+  @override
+  String get launchCommunityEmptyTitle => 'No se encontraron personas';
+
+  @override
+  String get launchCommunityEmptyBody =>
+      'Prueba otro nombre o vuelve más tarde.';
+
+  @override
+  String get launchCommunityLoadError =>
+      'No se pudieron cargar las personas. Inténtalo de nuevo.';
+
+  @override
+  String get commonOK => 'Aceptar';
+
+  @override
+  String get commonLoading => 'Cargando…';
+
+  @override
+  String get commonSave => 'Guardar';
+
+  @override
+  String get commonClose => 'Cerrar';
+
+  @override
+  String get commonAll => 'Todos';
+
+  @override
+  String get commonConnect => 'Conectar';
+
+  @override
+  String get commonActive => 'Activo';
+
+  @override
+  String get commonNotNow => 'Ahora no';
+
+  @override
+  String get commonSkip => 'Omitir';
+
+  @override
+  String get commonTryLater => 'Inténtalo más tarde.';
+
+  @override
+  String get commonConnectionError => 'Error de conexión';
+
+  @override
+  String commonLoadingLabel(String label) {
+    return '$label, cargando';
+  }
+
+  @override
+  String commonSelectedLabel(String label) {
+    return '$label, seleccionado';
+  }
+
+  @override
+  String commonNotSelectedLabel(String label) {
+    return '$label, no seleccionado';
+  }
+
+  @override
+  String get commonOnline => 'En línea';
+
+  @override
+  String get commonAvatar => 'Avatar';
+
+  @override
+  String commonPercentLabel(int percentage, String label) {
+    return '$percentage por ciento $label';
+  }
+
+  @override
+  String commonAvatarAffinity(String name, int percentage) {
+    return '$name, afinidad del $percentage por ciento';
+  }
+
+  @override
+  String get commonRegistrationComplete => 'Registro completado';
+
+  @override
+  String get profileEditTitle => 'Editar perfil';
+
+  @override
+  String get profileBack => 'Volver al perfil';
+
+  @override
+  String get profilePersonalSpace => 'ESPACIO PERSONAL';
+
+  @override
+  String get profileSpotifyConnected => 'Spotify conectado';
+
+  @override
+  String get profileFollowers => 'Seguidores';
+
+  @override
+  String get profileFollowing => 'Siguiendo';
+
+  @override
+  String get profileOpenMusicStats => 'Abrir estadísticas musicales';
+
+  @override
+  String get profileYourVibra => 'TU VIBRA';
+
+  @override
+  String get profileInRotation => 'En rotación';
+
+  @override
+  String get profileSyncMusicBody =>
+      'Sincroniza Spotify para ver tu perfil musical.';
+
+  @override
+  String get profileShapeTitle => 'Dale forma a tu Vibra';
+
+  @override
+  String get profileShapeBody =>
+      'Conecta Spotify para mostrar tu identidad musical.';
+
+  @override
+  String get profileUsernameEmpty =>
+      'El nombre de usuario no puede estar vacío';
+
+  @override
+  String get profileUsernameShort => 'Al menos 3 caracteres';
+
+  @override
+  String get profileUsernameCharacters => 'Usa solo letras, números, _ o .';
+
+  @override
+  String get profileUsernameCharactersOnboarding =>
+      'Usa solo letras, números y guiones bajos';
+
+  @override
+  String get profileUsernameTaken => 'Nombre de usuario ya utilizado';
+
+  @override
+  String get profileUsernameTakenRetry =>
+      'Este nombre de usuario ya está ocupado. Elige otro.';
+
+  @override
+  String get profilePhotoPermission =>
+      'Permite el acceso a las fotos en los ajustes del dispositivo e inténtalo de nuevo.';
+
+  @override
+  String get profilePhotoPickError =>
+      'No se pudo seleccionar la foto. Inténtalo de nuevo.';
+
+  @override
+  String get profilePhotoTitle => 'Foto de perfil';
+
+  @override
+  String get profilePhotoGallery => 'Elegir de la galería';
+
+  @override
+  String get profilePhotoGalleryBody => 'Selecciona una foto del dispositivo';
+
+  @override
+  String get profilePhotoCamera => 'Hacer una foto';
+
+  @override
+  String get profilePhotoCameraBody =>
+      'Usa la cámara para hacer una nueva foto';
+
+  @override
+  String get profilePhotoRemove => 'Eliminar foto';
+
+  @override
+  String get profilePhotoRestore => 'Restaurar el avatar predeterminado';
+
+  @override
+  String get profileSaved => '¡Perfil actualizado!';
+
+  @override
+  String get profileSaveError =>
+      'No se pudo guardar el perfil. Inténtalo de nuevo en unos momentos.';
+
+  @override
+  String get profilePhotoChange => 'Cambiar foto de perfil';
+
+  @override
+  String get profileUsernameExample => 'p. ej. musica_fan';
+
+  @override
+  String get profileName => 'Nombre';
+
+  @override
+  String get profileNameHint => 'Tu nombre o apodo';
+
+  @override
+  String get profileNameEmpty => 'El nombre no puede estar vacío';
+
+  @override
+  String get profileDescription => 'Descripción';
+
+  @override
+  String get profileDescriptionHint => 'Cuéntanos algo sobre ti…';
+
+  @override
+  String get profileMusicStreaming => 'Música y streaming';
+
+  @override
+  String get profileAccountConnected => 'Cuenta conectada';
+
+  @override
+  String get profileConnectSuggestions =>
+      'Conecta tu cuenta para mejorar las sugerencias';
+
+  @override
+  String get profileSaveChanges => 'Guardar cambios';
+
+  @override
+  String get homeYourSoundToday => 'TU SONIDO, HOY';
+
+  @override
+  String get homeSpotifySynced =>
+      'Spotify sincronizado · las sugerencias aprenden de ti';
+
+  @override
+  String get homeSpotifyPersonalize =>
+      'Conecta Spotify para personalizar las sugerencias';
+
+  @override
+  String get homeCompleteProfile => 'Completa tu perfil';
+
+  @override
+  String get homeShapeVibra => 'Dale tu toque a Vibra';
+
+  @override
+  String get homeNextEvent => 'EL PRÓXIMO';
+
+  @override
+  String get homeNearbyEyebrow => 'CERCA DE TI';
+
+  @override
+  String get homeTrendingEyebrow => 'LO QUE SE MUEVE';
+
+  @override
+  String get settingsPrivateMessages => 'Mensajes y solicitudes privados';
+
+  @override
+  String get settingsPersonalizedUpdates =>
+      'Actualizaciones y recordatorios personalizados';
+
+  @override
+  String get settingsMusicWeek => 'Tu semana musical';
+
+  @override
+  String get settingsMusicWeekBody =>
+      'Eventos y afinidades seleccionados para ti';
+
+  @override
+  String get settingsWeekly => 'Semanal';
+
+  @override
+  String get settingsMonthly => 'Mensual';
+
+  @override
+  String get settingsNever => 'Nunca';
+
+  @override
+  String get settingsPrivacyData => 'Privacidad y datos personales';
+
+  @override
+  String get settingsPrivacyDataBody =>
+      'Consentimiento, exportación y eliminación de datos';
+
+  @override
+  String get settingsHelpCenter => 'Centro de ayuda';
+
+  @override
+  String get settingsHelpCenterBody =>
+      'Ayuda con cuentas, eventos, chat y Spotify';
+
+  @override
+  String get settingsReportProblem => 'Informar de un problema';
+
+  @override
+  String get settingsReportProblemBody =>
+      'Envía datos técnicos anonimizados y una captura opcional';
+
+  @override
+  String get privacySaveError =>
+      'No se pudo guardar la preferencia. Inténtalo de nuevo.';
+
+  @override
+  String get privacyExportTitle => 'Exportación de tus datos';
+
+  @override
+  String get privacySaveJSON => 'Guardar JSON';
+
+  @override
+  String get privacyCopyJSON => 'Copiar JSON';
+
+  @override
+  String get privacyCopiedJSON => 'JSON copiado al portapapeles.';
+
+  @override
+  String get privacyExportError =>
+      'La exportación no está disponible. Inténtalo más tarde.';
+
+  @override
+  String privacyExportSaved(String path) {
+    return 'Exportación guardada en $path';
+  }
+
+  @override
+  String get privacyIntro =>
+      'Elige por separado cada uso opcional de tus datos. Puedes cambiar de opinión en cualquier momento.';
+
+  @override
+  String get privacyPreciseLocation => 'Ubicación precisa';
+
+  @override
+  String get privacyPreciseLocationBody =>
+      'Para eventos cercanos y funciones Live. Se conserva un máximo de 30 días.';
+
+  @override
+  String get privacySpotifyMatching => 'Spotify para afinidad musical';
+
+  @override
+  String get privacySpotifyMatchingBody =>
+      'Usa artistas, géneros y escuchas sincronizados para sugerencias y afinidades.';
+
+  @override
+  String get privacyServiceNotifications => 'Notificaciones del servicio';
+
+  @override
+  String get privacyServiceNotificationsBody =>
+      'Afinidades, mensajes y eventos guardados.';
+
+  @override
+  String get privacyMarketing => 'Comunicaciones de marketing';
+
+  @override
+  String get privacyMarketingBody =>
+      'Siempre opcionales; puedes usar la app sin ellas.';
+
+  @override
+  String get privacyExportAction => 'Exportar mis datos';
+
+  @override
+  String get privacyExportBody =>
+      'Genera una copia JSON legible de tu perfil, chats, eventos e interacciones, incluidos los datos previos de Spotify si existen.';
+
+  @override
+  String get privacyDeletionBody =>
+      'Al eliminar tu cuenta se borran sus datos. Los mensajes enviados se vuelven anónimos y se elimina su contenido y archivos. Las copias de seguridad siguen el plazo indicado en la política de privacidad.';
+
+  @override
+  String get appearanceTitle => 'Apariencia';
+
+  @override
+  String get appearanceBody =>
+      'Elige el tema de la app o sigue el del dispositivo.';
+
+  @override
+  String get appearanceDark => 'Oscuro';
+
+  @override
+  String get appearanceDarkBody => 'Reduce el brillo con poca luz';
+
+  @override
+  String get appearanceLight => 'Claro';
+
+  @override
+  String get appearanceLightBody => 'Superficies luminosas y sombras suaves';
+
+  @override
+  String get appearanceSystem => 'Automático (sistema)';
+
+  @override
+  String get appearanceSystemBody =>
+      'Se actualiza cuando cambian los ajustes del dispositivo';
+
+  @override
+  String get onboardingBack => 'Volver al paso anterior';
+
+  @override
+  String get onboardingStart => 'Empecemos';
+
+  @override
+  String get onboardingProfileTitle => 'Tu perfil';
+
+  @override
+  String get onboardingProfileBody => 'Cómo te verán los demás';
+
+  @override
+  String get onboardingSkipToHome => 'Omitir el resto e ir al inicio';
+
+  @override
+  String get onboardingPhotoUploading => 'Subiendo la foto de perfil';
+
+  @override
+  String get onboardingPhotoSelect => 'Elegir o cambiar la foto de perfil';
+
+  @override
+  String get onboardingUsernameExample => 'p. ej. vibra_user';
+
+  @override
+  String get onboardingRequired => 'OBLIGATORIO';
+
+  @override
+  String get onboardingSpotifyBody =>
+      'Encuentra eventos según tus escuchas y descubre tu afinidad musical con otras personas.';
+
+  @override
+  String get onboardingSpotifyCancelled =>
+      'Conexión cancelada. Inténtalo de nuevo o sáltalo por ahora.';
+
+  @override
+  String get onboardingSpotifyError =>
+      'No se pudo conectar. Inténtalo más tarde.';
+
+  @override
+  String get onboardingLocationTitle => 'Eventos cerca de ti';
+
+  @override
+  String get onboardingLocationBody =>
+      'Activa la ubicación para descubrir conciertos y locales en tu zona.';
+
+  @override
+  String get onboardingLocationDenied =>
+      'Permiso denegado permanentemente. Puedes activarlo después en los ajustes del dispositivo.';
+
+  @override
+  String get onboardingAllowLocation => 'Permitir ubicación';
+
+  @override
+  String get onboardingNotificationsTitle => 'Mantente al día';
+
+  @override
+  String get onboardingNotificationsBody =>
+      'Recibe avisos de eventos guardados, solicitudes de amistad y mensajes.';
+
+  @override
+  String get onboardingNotificationsDenied =>
+      'Notificaciones denegadas. Puedes activarlas en los ajustes del dispositivo.';
+
+  @override
+  String get onboardingAllowNotifications => 'Activar notificaciones';
+
+  @override
+  String get liveAttendanceError =>
+      'No se pudo confirmar la asistencia. Inténtalo de nuevo.';
+
+  @override
+  String get liveEventsLoadError => 'No se pudieron cargar los eventos Live.';
+
+  @override
+  String get liveLocationHelp =>
+      'El chat Live está disponible a menos de 500 m del evento, durante las 24 horas antes y después del concierto. Activa la ubicación en los ajustes de privacidad.';
+
+  @override
+  String get liveUnavailableHere =>
+      'El chat de este evento no está disponible en tu ubicación o en este momento.';
+
+  @override
+  String get liveRefreshLocation => 'Actualizar ubicación';
+
+  @override
+  String get liveEventTitle => 'Evento Live';
+
+  @override
+  String get liveConnectionInterrupted => 'Conexión al chat Live interrumpida.';
+
+  @override
+  String get liveEmpty => 'No hay mensajes. ¡Inicia la conversación!';
+
+  @override
+  String get liveRetryAttendance => 'Volver a comprobar la asistencia';
+
+  @override
+  String get liveConfirmingAttendance => 'Confirmando asistencia…';
+
+  @override
+  String get liveJoinToChat => 'Únete al evento para escribir en el chat';
+
+  @override
+  String get liveInputHint => 'Escribe en el chat Live…';
+
+  @override
+  String get liveSendMessage => 'Enviar mensaje Live';
+
+  @override
+  String get musicReconnect => 'Volver a conectar';
+
+  @override
+  String get musicReconnectBody =>
+      'Vuelve a conectar Spotify para actualizar las estadísticas musicales.';
+
+  @override
+  String get musicStatsUpdated => 'Estadísticas musicales actualizadas.';
+
+  @override
+  String get musicStatsRefreshing => 'Actualizando estadísticas musicales';
+
+  @override
+  String get musicStatsNoArtists =>
+      'No hay artistas disponibles tras la última sincronización.';
+
+  @override
+  String get musicStatsEmptyTitle => 'Dale sonido a tu perfil.';
+
+  @override
+  String get musicStatsEmptyBody =>
+      'Conecta Spotify para ver los artistas y ritmos que te definen.';
+
+  @override
+  String get musicStatsYourSound => 'TU SONIDO';
+
+  @override
+  String get musicStatsHeroTitle => 'Escuchas que dejan huella.';
+
+  @override
+  String get musicStatsArtists => 'Artistas';
+
+  @override
+  String get musicStatsRhythm => 'Ritmo';
+
+  @override
+  String get spotifyBackToLogin => 'Volver al inicio de sesión';
+
+  @override
+  String get spotifyConsentBody =>
+      'Al conectar Spotify autorizas a Vibra a leer tu perfil y tus artistas, canciones y géneros principales. Los usamos para sugerir eventos y afinidades musicales; puedes desconectar Spotify y borrar estos datos en los ajustes.';
+
+  @override
+  String get eventBackToEvents => 'Volver a los eventos';
+
+  @override
+  String get eventPrice => 'Precio';
+
+  @override
+  String get eventVenueTBA => 'Lugar por confirmar';
+
+  @override
+  String eventOpenSemantics(String name, String date, String place) {
+    return 'Abrir evento $name, $date, $place';
+  }
+
+  @override
+  String eventAffinitySemantics(int percentage) {
+    return 'Afinidad del $percentage por ciento';
+  }
+
+  @override
+  String eventForYouScore(int percentage) {
+    return '$percentage% PARA TI';
+  }
+
+  @override
+  String eventCommonSavedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count eventos compartidos o guardados',
+      one: '$count evento compartido o guardado',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get supportReportTitle => 'Informar de un problema';
+
+  @override
+  String get supportReportIntro =>
+      'Describe lo que no funciona. Incluiremos la versión de la app, el sistema operativo y algunos datos técnicos sin información sensible.';
+
+  @override
+  String get supportDescriptionLabel => 'Descripción del problema';
+
+  @override
+  String get supportDescriptionHint =>
+      'Indica la pantalla, los pasos y lo que esperabas.';
+
+  @override
+  String get supportAddScreenshot => 'Añadir captura';
+
+  @override
+  String get supportScreenshotAttached => 'Captura adjunta';
+
+  @override
+  String get supportRemoveScreenshot => 'Eliminar captura';
+
+  @override
+  String get supportScreenshotPrivacy =>
+      'Comprueba que la captura no muestre contraseñas, mensajes privados u otros datos sensibles.';
+
+  @override
+  String get supportSending => 'Enviando…';
+
+  @override
+  String get supportSendReport => 'Enviar informe';
+
+  @override
+  String get supportDescriptionTooShort =>
+      'Describe el problema con al menos 8 caracteres.';
+
+  @override
+  String get supportDescriptionTooLong =>
+      'La descripción puede contener un máximo de 4000 caracteres.';
+
+  @override
+  String get supportReportSentTitle => 'Informe enviado';
+
+  @override
+  String get supportReportSentBody =>
+      'Hemos recibido tu informe. El soporte responde en 48 horas laborables.';
+
+  @override
+  String supportReportSendFailed(String email) {
+    return 'No se pudo enviar el informe. Inténtalo de nuevo o escribe a $email.';
+  }
+
+  @override
+  String get supportReportAuthRequired =>
+      'Vuelve a iniciar sesión para enviar el informe.';
+
+  @override
+  String get supportReportRateLimited =>
+      'Has enviado demasiados informes. Espera un minuto e inténtalo de nuevo.';
+
+  @override
+  String get supportScreenshotTooLarge =>
+      'La captura debe ocupar menos de 5 MB.';
+
+  @override
+  String get supportScreenshotUnsupported =>
+      'Elige una captura en formato JPG o PNG.';
+
+  @override
+  String get supportScreenshotPickFailed =>
+      'No se pudo seleccionar la captura. Inténtalo de nuevo.';
+
+  @override
+  String get supportScreenshotPermissionDenied =>
+      'Permite el acceso a las fotos en los ajustes del dispositivo para adjuntar una captura.';
+
+  @override
+  String supportAlternativeContact(String email) {
+    return 'También puedes escribir a $email. Respondemos en 48 horas laborables.';
+  }
+
+  @override
+  String get supportFeedbackTitle => '¿Qué tal va Vibra?';
+
+  @override
+  String get supportFeedbackBody => 'Tu opinión nos ayuda a mejorar.';
+
+  @override
+  String get supportFeedbackNegative => 'Mal';
+
+  @override
+  String get supportFeedbackNeutral => 'Regular';
+
+  @override
+  String get supportFeedbackPositive => '¡Bien!';
+
+  @override
+  String get supportFeedbackDescriptionPrefix => 'Comentario:';
+
+  @override
+  String get chatSendFriendshipRequired =>
+      'Para escribir a esta persona, envía una solicitud de amistad y espera a que la acepte.';
+
+  @override
+  String get chatSendFirstContactLimit =>
+      'Ya has enviado 3 mensajes. Espera una respuesta antes de enviar más.';
+
+  @override
+  String get chatSendUnavailable => 'Esta conversación no está disponible.';
+
+  @override
+  String get chatSendRateLimited =>
+      'Estás enviando demasiados mensajes. Espera un minuto e inténtalo de nuevo.';
+
+  @override
+  String get chatSendSignInRequired =>
+      'Vuelve a iniciar sesión para enviar el mensaje.';
+
+  @override
+  String get chatRequestFriendship => 'Enviar solicitud de amistad';
+
+  @override
+  String get chatFriendshipRequestSent => 'Solicitud de amistad enviada';
+
+  @override
+  String get chatFriendshipRequestFailed =>
+      'No se pudo enviar la solicitud de amistad. Inténtalo de nuevo.';
+
+  @override
+  String get chatMessageTooLong =>
+      'El mensaje puede contener un máximo de 2000 caracteres.';
+
+  @override
+  String get chatPermissionChecking => 'Comprobando conversación…';
+
+  @override
+  String get chatFriendshipRequestPending =>
+      'Solicitud de amistad pendiente de aceptación';
+
+  @override
+  String get chatAcceptFriendship => 'Aceptar amistad';
+
+  @override
+  String get chatFriendshipAccepted =>
+      'Amistad aceptada. Ya puedes enviar mensajes.';
+
+  @override
+  String get socialReportUser => 'Denunciar usuario';
+
+  @override
+  String get socialReportSpam => 'Spam';
+
+  @override
+  String get socialReportHarassment => 'Acoso';
+
+  @override
+  String get socialReportInappropriate => 'Contenido inapropiado';
+
+  @override
+  String get socialReportDetailsHint => 'Detalles adicionales (opcional)';
+
+  @override
+  String get socialReportSent => 'Usuario denunciado';
+
+  @override
+  String get socialReportFailed =>
+      'No se pudo enviar la denuncia. Inténtalo de nuevo.';
+
+  @override
+  String get socialReportAction => 'Denunciar';
+
+  @override
+  String get socialBlockUser => 'Bloquear usuario';
+
+  @override
+  String get socialBlockConfirm =>
+      '¿Quieres bloquear a esta persona? Ya no podréis intercambiar mensajes.';
+
+  @override
+  String get socialBlockSuccess => 'Usuario bloqueado';
+
+  @override
+  String get socialBlockFailed =>
+      'No se pudo bloquear a esta persona. Inténtalo de nuevo.';
+
+  @override
+  String get socialBlockAction => 'Bloquear';
+
+  @override
+  String get chatRequestTitle => 'Solicitud de mensaje';
+
+  @override
+  String chatRequestBody(String name) {
+    return '$name quiere escribirte. Responde para aceptar la conversación.';
+  }
+
+  @override
+  String get chatRequestRejected => 'Solicitud rechazada y eliminada';
+
+  @override
+  String get chatRequestRejectFailed =>
+      'No se pudo eliminar la solicitud. Inténtalo de nuevo.';
+
+  @override
+  String get commonReject => 'Rechazar';
+
+  @override
+  String get commonReply => 'Responder';
+
+  @override
+  String get userProfileView => 'Ver perfil';
+
+  @override
+  String get chatConnectionInterrupted => 'Conexión al chat interrumpida.';
+
+  @override
+  String get chatMeetupTitle => 'Propuesta de encuentro';
+
+  @override
+  String get chatMeetupAccept => 'Me apunto';
+
+  @override
+  String get chatMeetupDecline => 'No puedo';
+
+  @override
+  String chatMeetupAcceptMessage(String message) {
+    return '¡Me apunto! $message';
+  }
+
+  @override
+  String chatMeetupDeclineMessage(String message) {
+    return 'No puedo asistir. $message';
+  }
+
+  @override
+  String get helpIntro =>
+      'Respuestas rápidas y ayuda. Respondemos en 48 horas laborables.';
+
+  @override
+  String get helpSearchHint => 'Buscar en preguntas frecuentes';
+
+  @override
+  String get helpSearchEmpty =>
+      'No se encontraron respuestas. Prueba otra búsqueda.';
+
+  @override
+  String get helpNeedMore => '¿Necesitas más ayuda?';
+
+  @override
+  String get helpCategoryAll => 'Todas';
+
+  @override
+  String get helpCategoryAccount => 'Cuenta';
+
+  @override
+  String get helpCategoryChatMatch => 'Chat y afinidad';
+
+  @override
+  String get helpCategoryPrivacy => 'Privacidad';
+
+  @override
+  String get helpLoginQuestion => 'No puedo iniciar sesión';
+
+  @override
+  String get helpLoginAnswer =>
+      'Comprueba el correo y la contraseña, y cierra y vuelve a abrir Vibra. Si el problema persiste, usa “Informar de un problema” e indica el método de acceso.';
+
+  @override
+  String get helpLogoutQuestion => '¿Cómo cierro sesión?';
+
+  @override
+  String get helpLogoutAnswer =>
+      'Ve a Perfil > Ajustes > Cerrar sesión. Para terminar todas las sesiones, elige “Cerrar sesión en todos los dispositivos”.';
+
+  @override
+  String get helpDeleteQuestion => '¿Cómo elimino mi cuenta?';
+
+  @override
+  String get helpDeleteAnswer =>
+      'Ve a Perfil > Ajustes > Eliminar cuenta. Al confirmar se eliminan los datos según la política de privacidad.';
+
+  @override
+  String get helpEventsQuestion => '¿Por qué no veo eventos cerca de mí?';
+
+  @override
+  String get helpEventsAnswer =>
+      'Comprueba el acceso a la ubicación y amplía el radio. La disponibilidad depende de las fuentes de eventos de la zona; también puedes buscar una ciudad.';
+
+  @override
+  String get helpTicketsQuestion => 'Un evento o enlace de entradas no se abre';
+
+  @override
+  String get helpTicketsAnswer =>
+      'Los eventos y las entradas proceden de socios externos. Inténtalo más tarde; si persiste, envía un informe indicando el evento.';
+
+  @override
+  String get helpAffinityQuestion => '¿Cómo se calcula la afinidad?';
+
+  @override
+  String get helpAffinityAnswer =>
+      'La puntuación compara artistas y géneros compartidos, con un pequeño extra para gustos menos comunes. Indica afinidad, sin garantizarla.';
+
+  @override
+  String get helpBlockQuestion => '¿Cómo bloqueo o denuncio a alguien?';
+
+  @override
+  String get helpBlockAnswer =>
+      'Abre la conversación y usa el menú para bloquear o denunciar a la persona. El bloqueo impide futuras interacciones; las denuncias se envían al equipo.';
+
+  @override
+  String get helpSpotifyConnectQuestion => '¿Cómo conecto Spotify?';
+
+  @override
+  String get helpSpotifyConnectAnswer =>
+      'Ve a Perfil > Ajustes > Cuenta de Spotify y completa la autorización en Spotify. Volverás automáticamente a Vibra.';
+
+  @override
+  String get helpSpotifyDisconnectQuestion => '¿Cómo desconecto Spotify?';
+
+  @override
+  String get helpSpotifyDisconnectAnswer =>
+      'Ve a Perfil > Ajustes > Cuenta de Spotify y elige “Desconectar”.';
+
+  @override
+  String get helpSpotifyErrorQuestion => 'La conexión con Spotify falla';
+
+  @override
+  String get helpSpotifyErrorAnswer =>
+      'Comprueba la conexión y completa la autorización. No compartas contraseñas ni tokens con soporte: los informes solo incluyen datos técnicos depurados.';
+
+  @override
+  String get helpReportDataQuestion => '¿Qué datos envía un informe?';
+
+  @override
+  String get helpReportDataAnswer =>
+      'Versión de la app, sistema operativo, último endpoint con error y algunos registros técnicos sin datos sensibles. La captura es opcional: comprueba que no contenga información privada.';
+
+  @override
+  String get helpPrivacyQuestion =>
+      '¿Cómo ejerzo mis derechos sobre los datos?';
+
+  @override
+  String helpPrivacyAnswer(String email) {
+    return 'Ve a Perfil > Ajustes > Privacidad y datos personales para gestionar consentimientos y exportar datos. Para otras solicitudes escribe a $email.';
+  }
+
+  @override
+  String get exploreEyebrow => 'EVENTOS A TU ALREDEDOR';
+
+  @override
+  String get exploreClearSearch => 'Borrar búsqueda';
+
+  @override
+  String exploreEventsVisible(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count EVENTOS A LA VISTA',
+      one: '$count EVENTO A LA VISTA',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get commonReset => 'Restablecer';
+
+  @override
+  String get exploreLoadErrorTitle => 'No se pudieron cargar los eventos.';
+
+  @override
+  String get exploreLoadErrorBody =>
+      'Comprueba la conexión y vuelve a buscar en esta zona.';
+
+  @override
+  String get exploreEmptyTitle => 'No se encontraron eventos en esta zona.';
+
+  @override
+  String get exploreEmptyBody => 'Amplía el radio o cambia los filtros.';
+
+  @override
+  String get exploreZoomIn => 'Acercar mapa';
+
+  @override
+  String get exploreZoomOut => 'Alejar mapa';
+
+  @override
+  String exploreOpenEvents(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Abrir lista de $count eventos',
+      one: 'Abrir lista de $count evento',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get exploreMoveMapHint => 'Mueve el mapa para buscar eventos';
+
+  @override
+  String exploreEventsInArea(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count eventos en esta zona',
+      one: '$count evento en esta zona',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get exploreCloseEvents => 'Cerrar lista de eventos';
+
+  @override
+  String get exploreGenreElectronic => 'Electrónica';
+
+  @override
+  String get exploreGenreAlternative => 'Alternativa';
+
+  @override
+  String get commonLinkOpenError => 'No se pudo abrir el enlace.';
+
+  @override
+  String get authConfirmEmail =>
+      'Te hemos enviado un correo de confirmación. Revisa tu bandeja antes de iniciar sesión.';
+
+  @override
+  String get authEmailNotConfirmed =>
+      'Confirma primero tu dirección de correo. Revisa tu bandeja de entrada.';
+
+  @override
+  String get authInvalidCredentials =>
+      'El correo o la contraseña no son correctos. Compruébalos e inténtalo de nuevo.';
+
+  @override
+  String get authProviderUnavailable =>
+      'Este método de acceso no está disponible. Usa el correo o inténtalo más tarde.';
+
+  @override
+  String get authEmailAlreadyRegistered =>
+      'Este correo ya está registrado. Intenta iniciar sesión.';
+
+  @override
+  String get authWeakPassword =>
+      'Elige una contraseña más segura e inténtalo de nuevo.';
+
+  @override
+  String get errorNetwork =>
+      'Conexión no disponible. Comprueba la red e inténtalo de nuevo.';
+
+  @override
+  String get errorSessionChanged =>
+      'La sesión ha cambiado. Vuelve a iniciar sesión e inténtalo de nuevo.';
+
+  @override
+  String get errorRateLimited =>
+      'Demasiadas solicitudes. Espera un minuto e inténtalo de nuevo.';
+
+  @override
+  String get errorActionFailed =>
+      'La operación ha fallado. Inténtalo de nuevo en unos momentos.';
+
+  @override
+  String get socialAffinity => 'Afinidad';
+
+  @override
+  String get socialFollow => 'Seguir';
+
+  @override
+  String get socialFollowing => 'Siguiendo';
+
+  @override
+  String get socialFollowUpdateError =>
+      'No se pudo actualizar el seguimiento. Inténtalo de nuevo.';
+
+  @override
+  String get socialMessageAction => 'Enviar mensaje';
+
+  @override
+  String get socialFriendRequestSentShort => 'Enviada';
+
+  @override
+  String get socialFriendRequestError =>
+      'No se pudo enviar la solicitud. Inténtalo de nuevo.';
+
+  @override
+  String get socialAddFriend => 'Añadir';
+
+  @override
+  String get socialCommonArtists => 'Artistas en común';
+
+  @override
+  String get socialUsersLoadError => 'No se pudieron cargar las personas.';
+
+  @override
+  String socialFollowersCount(int count) {
+    return 'Seguidores ($count)';
+  }
+
+  @override
+  String socialFollowingCount(int count) {
+    return 'Siguiendo ($count)';
+  }
+
+  @override
+  String get socialNoFollowers => 'Sin seguidores';
+
+  @override
+  String get socialNoFollowersBody =>
+      'Aquí aparecerán las personas que sigan este perfil.';
+
+  @override
+  String get socialNoFollowing => 'No sigues a nadie';
+
+  @override
+  String get socialNoFollowingBody =>
+      'Aquí aparecerán los perfiles que sigues.';
+
+  @override
+  String get friendsRequestUpdateError =>
+      'No se pudo actualizar la solicitud. Inténtalo de nuevo.';
+
+  @override
+  String get friendsRemoveTitle => 'Eliminar de amigos';
+
+  @override
+  String friendsRemoveBody(String name) {
+    return '¿Quieres eliminar a $name de tus amigos?';
+  }
+
+  @override
+  String friendsRemoved(String name) {
+    return '$name eliminado de amigos';
+  }
+
+  @override
+  String get friendsRemoveError =>
+      'No se pudo eliminar a este amigo. Inténtalo de nuevo.';
+
+  @override
+  String get commonRemove => 'Eliminar';
+
+  @override
+  String get friendsConnectionsTitle => 'Amigos y conexiones';
+
+  @override
+  String friendsCount(int count) {
+    return 'Amigos ($count)';
+  }
+
+  @override
+  String get friendsReceived => 'Recibidas';
+
+  @override
+  String friendsSentCount(int count) {
+    return 'Enviadas ($count)';
+  }
+
+  @override
+  String get friendsSearchHint => 'Buscar entre tus amigos…';
+
+  @override
+  String get friendsNoneFound => 'No se encontraron amigos';
+
+  @override
+  String get friendsFindBody =>
+      'Explora perfiles, envía solicitudes de amistad y comparte eventos.';
+
+  @override
+  String get friendsFindPeople => 'Encontrar personas';
+
+  @override
+  String get friendsNoReceived => 'No hay solicitudes recibidas';
+
+  @override
+  String get friendsNoReceivedBody =>
+      'Aquí aparecerán las solicitudes de amistad que recibas.';
+
+  @override
+  String get friendsVibraUser => 'Usuario de Vibra';
+
+  @override
+  String get friendsNoSent => 'No hay solicitudes enviadas';
+
+  @override
+  String get friendsNoSentBody =>
+      'Aquí aparecerán las solicitudes enviadas pendientes de respuesta.';
+
+  @override
+  String inboxOpenConversation(String name) {
+    return 'Abrir conversación con $name';
+  }
+
+  @override
+  String inboxUnreadCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count mensajes sin leer',
+      one: '$count mensaje sin leer',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inboxEyebrow => 'EN CONTACTO';
+
+  @override
+  String get inboxMessages => 'Mensajes';
+
+  @override
+  String get inboxDirect => 'Directos';
+
+  @override
+  String get inboxRequests => 'Solicitudes';
+
+  @override
+  String get inboxSearchHint => 'Buscar una conversación';
+
+  @override
+  String get inboxClearSearch => 'Borrar búsqueda de conversaciones';
+
+  @override
+  String get inboxRefreshError =>
+      'No se pudieron actualizar las conversaciones.';
+
+  @override
+  String get inboxEmptyTitle => 'Todavía no hay conversaciones.';
+
+  @override
+  String get inboxEmptyBody =>
+      'Encuentra a alguien con quien compartir un concierto y empieza a hablar.';
+
+  @override
+  String get inboxNoRequests => 'No hay solicitudes pendientes.';
+
+  @override
+  String get inboxNoRequestsBody =>
+      'Aquí aparecerán las nuevas solicitudes de mensaje.';
+
+  @override
+  String get socialMatchSend => 'ENVIAR';
+
+  @override
+  String get socialMatchPass => 'PASAR';
+
+  @override
+  String get socialMatchSharedListening =>
+      'Tus escuchas han encontrado algo en común.';
+
+  @override
+  String get socialYou => 'Tú';
+
+  @override
+  String get socialMatchFrequencyNow => 'misma frecuencia, ahora';
+
+  @override
+  String get socialMatchSharedSound => 'ESCUCHAS COMPARTIDAS';
+
+  @override
+  String get socialMatchSameArea => 'MISMA ZONA';
+
+  @override
+  String get friendsLoadError =>
+      'No se pudieron cargar los amigos. Inténtalo de nuevo.';
 }

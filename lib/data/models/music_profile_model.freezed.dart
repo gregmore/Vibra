@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MusicProfileModel {
 
- String get id;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'top_artists') List<Map<String, dynamic>> get topArtists;@JsonKey(name: 'top_tracks') List<Map<String, dynamic>> get topTracks;@JsonKey(name: 'top_genres') List<Map<String, dynamic>> get topGenres;@JsonKey(name: 'last_synced_at') DateTime? get lastSyncedAt;
+ String get id;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'top_artists') List<Map<String, dynamic>> get topArtists;@JsonKey(name: 'top_tracks') List<Map<String, dynamic>> get topTracks;@JsonKey(name: 'top_genres') List<Map<String, dynamic>> get topGenres;@JsonKey(name: 'listening_heatmap') List<Map<String, dynamic>> get listeningHeatmap;@JsonKey(name: 'last_synced_at') DateTime? get lastSyncedAt;
 /// Create a copy of MusicProfileModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $MusicProfileModelCopyWith<MusicProfileModel> get copyWith => _$MusicProfileMode
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MusicProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&const DeepCollectionEquality().equals(other.topArtists, topArtists)&&const DeepCollectionEquality().equals(other.topTracks, topTracks)&&const DeepCollectionEquality().equals(other.topGenres, topGenres)&&(identical(other.lastSyncedAt, lastSyncedAt) || other.lastSyncedAt == lastSyncedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MusicProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&const DeepCollectionEquality().equals(other.topArtists, topArtists)&&const DeepCollectionEquality().equals(other.topTracks, topTracks)&&const DeepCollectionEquality().equals(other.topGenres, topGenres)&&const DeepCollectionEquality().equals(other.listeningHeatmap, listeningHeatmap)&&(identical(other.lastSyncedAt, lastSyncedAt) || other.lastSyncedAt == lastSyncedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,const DeepCollectionEquality().hash(topArtists),const DeepCollectionEquality().hash(topTracks),const DeepCollectionEquality().hash(topGenres),lastSyncedAt);
+int get hashCode => Object.hash(runtimeType,id,userId,const DeepCollectionEquality().hash(topArtists),const DeepCollectionEquality().hash(topTracks),const DeepCollectionEquality().hash(topGenres),const DeepCollectionEquality().hash(listeningHeatmap),lastSyncedAt);
 
 @override
 String toString() {
-  return 'MusicProfileModel(id: $id, userId: $userId, topArtists: $topArtists, topTracks: $topTracks, topGenres: $topGenres, lastSyncedAt: $lastSyncedAt)';
+  return 'MusicProfileModel(id: $id, userId: $userId, topArtists: $topArtists, topTracks: $topTracks, topGenres: $topGenres, listeningHeatmap: $listeningHeatmap, lastSyncedAt: $lastSyncedAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $MusicProfileModelCopyWith<$Res>  {
   factory $MusicProfileModelCopyWith(MusicProfileModel value, $Res Function(MusicProfileModel) _then) = _$MusicProfileModelCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'top_artists') List<Map<String, dynamic>> topArtists,@JsonKey(name: 'top_tracks') List<Map<String, dynamic>> topTracks,@JsonKey(name: 'top_genres') List<Map<String, dynamic>> topGenres,@JsonKey(name: 'last_synced_at') DateTime? lastSyncedAt
+ String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'top_artists') List<Map<String, dynamic>> topArtists,@JsonKey(name: 'top_tracks') List<Map<String, dynamic>> topTracks,@JsonKey(name: 'top_genres') List<Map<String, dynamic>> topGenres,@JsonKey(name: 'listening_heatmap') List<Map<String, dynamic>> listeningHeatmap,@JsonKey(name: 'last_synced_at') DateTime? lastSyncedAt
 });
 
 
@@ -65,13 +65,14 @@ class _$MusicProfileModelCopyWithImpl<$Res>
 
 /// Create a copy of MusicProfileModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? topArtists = null,Object? topTracks = null,Object? topGenres = null,Object? lastSyncedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? topArtists = null,Object? topTracks = null,Object? topGenres = null,Object? listeningHeatmap = null,Object? lastSyncedAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,topArtists: null == topArtists ? _self.topArtists : topArtists // ignore: cast_nullable_to_non_nullable
 as List<Map<String, dynamic>>,topTracks: null == topTracks ? _self.topTracks : topTracks // ignore: cast_nullable_to_non_nullable
 as List<Map<String, dynamic>>,topGenres: null == topGenres ? _self.topGenres : topGenres // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,listeningHeatmap: null == listeningHeatmap ? _self.listeningHeatmap : listeningHeatmap // ignore: cast_nullable_to_non_nullable
 as List<Map<String, dynamic>>,lastSyncedAt: freezed == lastSyncedAt ? _self.lastSyncedAt : lastSyncedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
@@ -158,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'top_artists')  List<Map<String, dynamic>> topArtists, @JsonKey(name: 'top_tracks')  List<Map<String, dynamic>> topTracks, @JsonKey(name: 'top_genres')  List<Map<String, dynamic>> topGenres, @JsonKey(name: 'last_synced_at')  DateTime? lastSyncedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'top_artists')  List<Map<String, dynamic>> topArtists, @JsonKey(name: 'top_tracks')  List<Map<String, dynamic>> topTracks, @JsonKey(name: 'top_genres')  List<Map<String, dynamic>> topGenres, @JsonKey(name: 'listening_heatmap')  List<Map<String, dynamic>> listeningHeatmap, @JsonKey(name: 'last_synced_at')  DateTime? lastSyncedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MusicProfileModel() when $default != null:
-return $default(_that.id,_that.userId,_that.topArtists,_that.topTracks,_that.topGenres,_that.lastSyncedAt);case _:
+return $default(_that.id,_that.userId,_that.topArtists,_that.topTracks,_that.topGenres,_that.listeningHeatmap,_that.lastSyncedAt);case _:
   return orElse();
 
 }
@@ -179,10 +180,10 @@ return $default(_that.id,_that.userId,_that.topArtists,_that.topTracks,_that.top
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'top_artists')  List<Map<String, dynamic>> topArtists, @JsonKey(name: 'top_tracks')  List<Map<String, dynamic>> topTracks, @JsonKey(name: 'top_genres')  List<Map<String, dynamic>> topGenres, @JsonKey(name: 'last_synced_at')  DateTime? lastSyncedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'top_artists')  List<Map<String, dynamic>> topArtists, @JsonKey(name: 'top_tracks')  List<Map<String, dynamic>> topTracks, @JsonKey(name: 'top_genres')  List<Map<String, dynamic>> topGenres, @JsonKey(name: 'listening_heatmap')  List<Map<String, dynamic>> listeningHeatmap, @JsonKey(name: 'last_synced_at')  DateTime? lastSyncedAt)  $default,) {final _that = this;
 switch (_that) {
 case _MusicProfileModel():
-return $default(_that.id,_that.userId,_that.topArtists,_that.topTracks,_that.topGenres,_that.lastSyncedAt);case _:
+return $default(_that.id,_that.userId,_that.topArtists,_that.topTracks,_that.topGenres,_that.listeningHeatmap,_that.lastSyncedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +200,10 @@ return $default(_that.id,_that.userId,_that.topArtists,_that.topTracks,_that.top
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'top_artists')  List<Map<String, dynamic>> topArtists, @JsonKey(name: 'top_tracks')  List<Map<String, dynamic>> topTracks, @JsonKey(name: 'top_genres')  List<Map<String, dynamic>> topGenres, @JsonKey(name: 'last_synced_at')  DateTime? lastSyncedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'top_artists')  List<Map<String, dynamic>> topArtists, @JsonKey(name: 'top_tracks')  List<Map<String, dynamic>> topTracks, @JsonKey(name: 'top_genres')  List<Map<String, dynamic>> topGenres, @JsonKey(name: 'listening_heatmap')  List<Map<String, dynamic>> listeningHeatmap, @JsonKey(name: 'last_synced_at')  DateTime? lastSyncedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _MusicProfileModel() when $default != null:
-return $default(_that.id,_that.userId,_that.topArtists,_that.topTracks,_that.topGenres,_that.lastSyncedAt);case _:
+return $default(_that.id,_that.userId,_that.topArtists,_that.topTracks,_that.topGenres,_that.listeningHeatmap,_that.lastSyncedAt);case _:
   return null;
 
 }
@@ -214,7 +215,7 @@ return $default(_that.id,_that.userId,_that.topArtists,_that.topTracks,_that.top
 @JsonSerializable()
 
 class _MusicProfileModel implements MusicProfileModel {
-  const _MusicProfileModel({required this.id, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'top_artists') final  List<Map<String, dynamic>> topArtists = const <Map<String, dynamic>>[], @JsonKey(name: 'top_tracks') final  List<Map<String, dynamic>> topTracks = const <Map<String, dynamic>>[], @JsonKey(name: 'top_genres') final  List<Map<String, dynamic>> topGenres = const <Map<String, dynamic>>[], @JsonKey(name: 'last_synced_at') this.lastSyncedAt}): _topArtists = topArtists,_topTracks = topTracks,_topGenres = topGenres;
+  const _MusicProfileModel({required this.id, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'top_artists') final  List<Map<String, dynamic>> topArtists = const <Map<String, dynamic>>[], @JsonKey(name: 'top_tracks') final  List<Map<String, dynamic>> topTracks = const <Map<String, dynamic>>[], @JsonKey(name: 'top_genres') final  List<Map<String, dynamic>> topGenres = const <Map<String, dynamic>>[], @JsonKey(name: 'listening_heatmap') final  List<Map<String, dynamic>> listeningHeatmap = const <Map<String, dynamic>>[], @JsonKey(name: 'last_synced_at') this.lastSyncedAt}): _topArtists = topArtists,_topTracks = topTracks,_topGenres = topGenres,_listeningHeatmap = listeningHeatmap;
   factory _MusicProfileModel.fromJson(Map<String, dynamic> json) => _$MusicProfileModelFromJson(json);
 
 @override final  String id;
@@ -240,6 +241,13 @@ class _MusicProfileModel implements MusicProfileModel {
   return EqualUnmodifiableListView(_topGenres);
 }
 
+ final  List<Map<String, dynamic>> _listeningHeatmap;
+@override@JsonKey(name: 'listening_heatmap') List<Map<String, dynamic>> get listeningHeatmap {
+  if (_listeningHeatmap is EqualUnmodifiableListView) return _listeningHeatmap;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_listeningHeatmap);
+}
+
 @override@JsonKey(name: 'last_synced_at') final  DateTime? lastSyncedAt;
 
 /// Create a copy of MusicProfileModel
@@ -255,16 +263,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MusicProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&const DeepCollectionEquality().equals(other._topArtists, _topArtists)&&const DeepCollectionEquality().equals(other._topTracks, _topTracks)&&const DeepCollectionEquality().equals(other._topGenres, _topGenres)&&(identical(other.lastSyncedAt, lastSyncedAt) || other.lastSyncedAt == lastSyncedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MusicProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&const DeepCollectionEquality().equals(other._topArtists, _topArtists)&&const DeepCollectionEquality().equals(other._topTracks, _topTracks)&&const DeepCollectionEquality().equals(other._topGenres, _topGenres)&&const DeepCollectionEquality().equals(other._listeningHeatmap, _listeningHeatmap)&&(identical(other.lastSyncedAt, lastSyncedAt) || other.lastSyncedAt == lastSyncedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,const DeepCollectionEquality().hash(_topArtists),const DeepCollectionEquality().hash(_topTracks),const DeepCollectionEquality().hash(_topGenres),lastSyncedAt);
+int get hashCode => Object.hash(runtimeType,id,userId,const DeepCollectionEquality().hash(_topArtists),const DeepCollectionEquality().hash(_topTracks),const DeepCollectionEquality().hash(_topGenres),const DeepCollectionEquality().hash(_listeningHeatmap),lastSyncedAt);
 
 @override
 String toString() {
-  return 'MusicProfileModel(id: $id, userId: $userId, topArtists: $topArtists, topTracks: $topTracks, topGenres: $topGenres, lastSyncedAt: $lastSyncedAt)';
+  return 'MusicProfileModel(id: $id, userId: $userId, topArtists: $topArtists, topTracks: $topTracks, topGenres: $topGenres, listeningHeatmap: $listeningHeatmap, lastSyncedAt: $lastSyncedAt)';
 }
 
 
@@ -275,7 +283,7 @@ abstract mixin class _$MusicProfileModelCopyWith<$Res> implements $MusicProfileM
   factory _$MusicProfileModelCopyWith(_MusicProfileModel value, $Res Function(_MusicProfileModel) _then) = __$MusicProfileModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'top_artists') List<Map<String, dynamic>> topArtists,@JsonKey(name: 'top_tracks') List<Map<String, dynamic>> topTracks,@JsonKey(name: 'top_genres') List<Map<String, dynamic>> topGenres,@JsonKey(name: 'last_synced_at') DateTime? lastSyncedAt
+ String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'top_artists') List<Map<String, dynamic>> topArtists,@JsonKey(name: 'top_tracks') List<Map<String, dynamic>> topTracks,@JsonKey(name: 'top_genres') List<Map<String, dynamic>> topGenres,@JsonKey(name: 'listening_heatmap') List<Map<String, dynamic>> listeningHeatmap,@JsonKey(name: 'last_synced_at') DateTime? lastSyncedAt
 });
 
 
@@ -292,13 +300,14 @@ class __$MusicProfileModelCopyWithImpl<$Res>
 
 /// Create a copy of MusicProfileModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? topArtists = null,Object? topTracks = null,Object? topGenres = null,Object? lastSyncedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? topArtists = null,Object? topTracks = null,Object? topGenres = null,Object? listeningHeatmap = null,Object? lastSyncedAt = freezed,}) {
   return _then(_MusicProfileModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,topArtists: null == topArtists ? _self._topArtists : topArtists // ignore: cast_nullable_to_non_nullable
 as List<Map<String, dynamic>>,topTracks: null == topTracks ? _self._topTracks : topTracks // ignore: cast_nullable_to_non_nullable
 as List<Map<String, dynamic>>,topGenres: null == topGenres ? _self._topGenres : topGenres // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,listeningHeatmap: null == listeningHeatmap ? _self._listeningHeatmap : listeningHeatmap // ignore: cast_nullable_to_non_nullable
 as List<Map<String, dynamic>>,lastSyncedAt: freezed == lastSyncedAt ? _self.lastSyncedAt : lastSyncedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));

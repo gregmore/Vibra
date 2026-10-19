@@ -135,8 +135,14 @@ void main() {
       // 2. Verifica che sia presente il titolo "Account Spotify"
       expect(find.text('Account Spotify'), findsOneWidget);
 
-      // 3. Tap su Privacy Policy e verifica navigazione
-      await tester.tap(find.text('Privacy Policy').first);
+      // 3. Apri l’informativa localizzata e verifica la navigazione.
+      await tester.tap(
+        find
+            .text(
+              lookupAppLocalizations(const Locale('it')).settingsPrivacyPolicy,
+            )
+            .first,
+      );
       await tester.pumpAndSettle();
       expect(find.text('Quali dati raccoglie Vibra'), findsOneWidget);
       await tester.tap(find.byType(BackButton));

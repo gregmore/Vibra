@@ -1,10 +1,13 @@
+import 'package:vibra/l10n/app_localizations.dart';
+import '../../../core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
 
 import '../../providers/app_state_providers.dart';
 import '../vibra_glassmorphic_card.dart';
 import '../vibra_neon_avatar.dart';
-import '../../../core/theme/vibra_colors.dart';
 import '../../../core/theme/vibra_spacing.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
+import 'vibra_avatar.dart';
 
 class VibraUserMatchCard extends StatelessWidget {
   const VibraUserMatchCard({
@@ -21,7 +24,10 @@ class VibraUserMatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final matchColor = VibraColors.getMatchColor(user.compatibility / 100.0);
+    final t = context.vibraTokens;
+    final matchColor = AppConstants.spotifyEnabled
+        ? t.matchColor(user.compatibility / 100.0)
+        : t.borderStrong;
 
     return Container(
       margin: const EdgeInsets.symmetric(
@@ -30,7 +36,7 @@ class VibraUserMatchCard extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         border: Border(left: BorderSide(color: matchColor, width: 3.0)),
-        borderRadius: BorderRadius.circular(VibraSpacing.radiusLarge),
+        borderRadius: VibraSpacing.borderMedium,
       ),
       child: VibraGlassmorphicCard(
         onTap: onTap,
@@ -39,12 +45,19 @@ class VibraUserMatchCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            VibraNeonAvatar(
-              imageUrl: user.user.avatarUrl ?? '',
-              radius: 28,
-              score: user.compatibility / 100.0,
-              displayName: user.user.displayName ?? user.user.username,
-            ),
+            if (AppConstants.spotifyEnabled)
+              VibraNeonAvatar(
+                imageUrl: user.user.avatarUrl ?? '',
+                radius: 28,
+                score: user.compatibility / 100.0,
+                displayName: user.user.displayName ?? user.user.username,
+              )
+            else
+              VibraAvatar(
+                imageUrl: user.user.avatarUrl,
+                radius: 28,
+                name: user.user.displayName ?? user.user.username,
+              ),
             const SizedBox(width: VibraSpacing.md),
             Expanded(
               child: Column(
@@ -60,52 +73,57 @@ class VibraUserMatchCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: VibraSpacing.md,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: matchColor.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(
-                            VibraSpacing.radiusFull,
+                      if (AppConstants.spotifyEnabled)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: VibraSpacing.md,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: t.surfaceMuted,
+                            borderRadius: VibraSpacing.borderFull,
+                            border: Border.all(color: matchColor, width: 1.5),
+                          ),
+                          child: Text(
+                            '${user.compatibility}%',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: matchColor,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
-                        child: Text(
-                          '${user.compatibility}%',
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: matchColor,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                   const SizedBox(height: VibraSpacing.xs),
                   Text(user.city, style: theme.textTheme.bodySmall),
                   const SizedBox(height: VibraSpacing.sm),
-                  Wrap(
-                    spacing: VibraSpacing.xs,
-                    runSpacing: VibraSpacing.xs,
-                    children: user.topArtists
-                        .map(
-                          (artist) => Chip(
-                            avatar: const Icon(
-                              Icons.music_note_rounded,
-                              size: 14,
-                              color: VibraColors.primary,
+                  if (AppConstants.spotifyEnabled)
+                    Wrap(
+                      spacing: VibraSpacing.xs,
+                      runSpacing: VibraSpacing.xs,
+                      children: user.topArtists
+                          .map(
+                            (artist) => Chip(
+                              avatar: Icon(
+                                Icons.music_note_rounded,
+                                size: 14,
+                                color: t.accentPrimary,
+                              ),
+                              label: Text(artist),
+                              visualDensity: VisualDensity.compact,
                             ),
-                            label: Text(artist),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                        )
-                        .toList(),
-                  ),
+                          )
+                          .toList(),
+                    ),
                   const SizedBox(height: VibraSpacing.sm),
                   Text(
-                    '${user.attendingEvents} eventi in comune o salvati',
+                    AppConstants.spotifyEnabled
+                        ? AppLocalizations.of(
+                            context,
+                          )!.eventCommonSavedCount(user.attendingEvents)
+                        : '@${user.user.username}',
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                      color: t.textSecondary,
                     ),
                   ),
                 ],

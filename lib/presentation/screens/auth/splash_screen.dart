@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
-import '../../../core/theme/vibra_colors.dart';
 import '../../../core/theme/vibra_text_styles.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../widgets/common/vibra_logo.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
 
-    Future<void>.delayed(const Duration(milliseconds: 1800), () {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) context.go('/welcome');
     });
   }
@@ -38,10 +39,15 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.vibraTokens;
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: VibraColors.backgroundGradient,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [t.backgroundPrimary, t.backgroundSecondary],
+          ),
         ),
         child: SafeArea(
           child: Center(
@@ -58,19 +64,9 @@ class _SplashScreenState extends State<SplashScreen>
                         height: 110,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              VibraColors.accent.withValues(alpha: 0.95),
-                              VibraColors.primary.withValues(alpha: 0.85),
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: VibraColors.accent.withValues(alpha: 0.35),
-                              blurRadius: 30,
-                              spreadRadius: 6,
-                            ),
-                          ],
+                          color: t.surfaceElevated,
+                          border: Border.all(color: t.borderDefault),
+                          boxShadow: [t.elevatedShadow],
                         ),
                         child: const Center(
                           child: VibraLogo(width: 80, height: 80),
@@ -83,26 +79,24 @@ class _SplashScreenState extends State<SplashScreen>
                 Text(
                   AppConstants.appName,
                   style: VibraTextStyles.displayMedium.copyWith(
-                    color: Colors.white,
+                    color: t.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  AppConstants.appSlogan,
+                  AppLocalizations.of(context)!.appSlogan,
                   textAlign: TextAlign.center,
                   style: VibraTextStyles.bodyLarge.copyWith(
-                    color: VibraColors.textSecondary,
+                    color: t.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 42),
-                const SizedBox(
+                SizedBox(
                   width: 28,
                   height: 28,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.8,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      VibraColors.accent,
-                    ),
+                    valueColor: AlwaysStoppedAnimation<Color>(t.accentPrimary),
                   ),
                 ),
               ],

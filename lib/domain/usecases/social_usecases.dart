@@ -1,4 +1,6 @@
+import '../entities/conversation_summary.dart';
 import '../entities/direct_message.dart';
+import '../entities/follow_stats.dart';
 import '../entities/friendship.dart';
 import '../repositories/social_repository.dart';
 import 'usecase.dart';
@@ -172,6 +174,119 @@ class ReactToMessageUseCase implements UseCase<void, ReactToMessageParams> {
     return _repository.reactToMessage(
       messageId: params.messageId,
       reaction: params.reaction,
+    );
+  }
+}
+
+class DeleteFriendshipUseCase implements UseCase<void, String> {
+  DeleteFriendshipUseCase(this._repository);
+  final SocialRepository _repository;
+
+  @override
+  Future<void> call(String params) {
+    return _repository.deleteFriendship(friendshipId: params);
+  }
+}
+
+class CancelFriendRequestUseCase implements UseCase<void, String> {
+  CancelFriendRequestUseCase(this._repository);
+  final SocialRepository _repository;
+
+  @override
+  Future<void> call(String params) {
+    return _repository.cancelFriendRequest(friendshipId: params);
+  }
+}
+
+class MarkMessagesAsReadUseCase implements UseCase<void, String> {
+  MarkMessagesAsReadUseCase(this._repository);
+  final SocialRepository _repository;
+
+  @override
+  Future<void> call(String params) {
+    return _repository.markMessagesAsRead(otherUserId: params);
+  }
+}
+
+class ListConversationsUseCase
+    implements UseCase<List<ConversationSummary>, NoParams> {
+  ListConversationsUseCase(this._repository);
+  final SocialRepository _repository;
+
+  @override
+  Future<List<ConversationSummary>> call(NoParams params) {
+    return _repository.listConversations();
+  }
+}
+
+class FollowUserUseCase implements UseCase<void, String> {
+  FollowUserUseCase(this._repository);
+  final SocialRepository _repository;
+
+  @override
+  Future<void> call(String params) {
+    return _repository.followUser(userId: params);
+  }
+}
+
+class UnfollowUserUseCase implements UseCase<void, String> {
+  UnfollowUserUseCase(this._repository);
+  final SocialRepository _repository;
+
+  @override
+  Future<void> call(String params) {
+    return _repository.unfollowUser(userId: params);
+  }
+}
+
+class GetFollowStatsUseCase implements UseCase<FollowStats, String> {
+  GetFollowStatsUseCase(this._repository);
+  final SocialRepository _repository;
+
+  @override
+  Future<FollowStats> call(String params) {
+    return _repository.getFollowStats(userId: params);
+  }
+}
+
+class GetFollowListParams {
+  const GetFollowListParams({
+    required this.userId,
+    this.limit = 50,
+    this.offset = 0,
+  });
+
+  final String userId;
+  final int limit;
+  final int offset;
+}
+
+class GetFollowersUseCase
+    implements UseCase<List<Map<String, dynamic>>, GetFollowListParams> {
+  GetFollowersUseCase(this._repository);
+  final SocialRepository _repository;
+
+  @override
+  Future<List<Map<String, dynamic>>> call(GetFollowListParams params) {
+    return _repository.getFollowers(
+      userId: params.userId,
+      limit: params.limit,
+      offset: params.offset,
+    );
+  }
+}
+
+class GetFollowingUseCase
+    implements UseCase<List<Map<String, dynamic>>, GetFollowListParams> {
+  GetFollowingUseCase(this._repository);
+  final SocialRepository _repository;
+
+  @override
+  Future<List<Map<String, dynamic>>> call(GetFollowListParams params) {
+    return _repository.getFollowing(
+      userId: params.userId,
+      limit: params.limit,
+      offset: params.offset,
     );
   }
 }

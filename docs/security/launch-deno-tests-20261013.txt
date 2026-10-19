@@ -1,0 +1,67 @@
+running 5 tests from ./supabase/functions/sync-music-profile/genres.test.ts
+hydrates empty and missing genres for every artist, retaining existing genres ... ok (9ms)
+does not stop at the first artist when its full genres are empty ... ok (204µs)
+access and rate limits stop hydration but retain all supplied genres ...
+------- output -------
+Artist genres unavailable a SpotifyRequestError: Unavailable
+    at file:///path/to/user/development/vibra/supabase/functions/sync-music-profile/genres.test.ts:41:29
+    at loadTopGenres (file:///path/to/user/development/vibra/supabase/functions/sync-music-profile/genres.ts:33:41)
+    at file:///path/to/user/development/vibra/supabase/functions/sync-music-profile/genres.test.ts:37:26
+    at innerWrapped (ext:cli/40_test.js:300:11)
+    at exitSanitizer (ext:cli/40_test.js:201:33)
+    at outerWrapped (ext:cli/40_test.js:239:28) {
+  status: 401
+}
+Artist genres unavailable a SpotifyRequestError: Unavailable
+    at file:///path/to/user/development/vibra/supabase/functions/sync-music-profile/genres.test.ts:41:29
+    at loadTopGenres (file:///path/to/user/development/vibra/supabase/functions/sync-music-profile/genres.ts:33:41)
+    at file:///path/to/user/development/vibra/supabase/functions/sync-music-profile/genres.test.ts:37:26
+    at async innerWrapped (ext:cli/40_test.js:300:5)
+    at async exitSanitizer (ext:cli/40_test.js:201:27)
+    at async outerWrapped (ext:cli/40_test.js:239:22) {
+  status: 403
+}
+Artist genres unavailable a SpotifyRequestError: Unavailable
+    at file:///path/to/user/development/vibra/supabase/functions/sync-music-profile/genres.test.ts:41:29
+    at loadTopGenres (file:///path/to/user/development/vibra/supabase/functions/sync-music-profile/genres.ts:33:41)
+    at file:///path/to/user/development/vibra/supabase/functions/sync-music-profile/genres.test.ts:37:26
+    at async innerWrapped (ext:cli/40_test.js:300:5)
+    at async exitSanitizer (ext:cli/40_test.js:201:27)
+    at async outerWrapped (ext:cli/40_test.js:239:22) {
+  status: 429
+}
+----- output end -----
+access and rate limits stop hydration but retain all supplied genres ... ok (5ms)
+one failed artist does not discard other artists' genres ...
+------- output -------
+Artist genres unavailable a SpotifyRequestError: Missing artist
+    at file:///path/to/user/development/vibra/supabase/functions/sync-music-profile/genres.test.ts:50:27
+    at loadTopGenres (file:///path/to/user/development/vibra/supabase/functions/sync-music-profile/genres.ts:33:41)
+    at file:///path/to/user/development/vibra/supabase/functions/sync-music-profile/genres.test.ts:49:24
+    at innerWrapped (ext:cli/40_test.js:300:11)
+    at exitSanitizer (ext:cli/40_test.js:201:33)
+    at outerWrapped (ext:cli/40_test.js:239:28) {
+  status: 404
+}
+----- output end -----
+one failed artist does not discard other artists' genres ... ok (5ms)
+unavailable metadata stays empty without guessed genres ... ok (67µs)
+running 3 tests from ./supabase/functions/calculate-match/index.test.ts
+Calculate Match - Caso limite 1: 50 artisti condivisi ... ok (233µs)
+Calculate Match - Caso limite 2: 0 artisti in comune ... ok (19µs)
+Calculate Match - Caso ibrido: 25 artisti condivisi ... ok (14µs)
+running 3 tests from ./supabase/functions/event-reminders/reminder.test.ts
+event reminders use Italian calendar days rather than rounding hours ... ok (282µs)
+calendar reminders survive DST and the UTC date boundary ... ok (50µs)
+both global consent and event category can disable reminders ... ok (27µs)
+running 1 test from ./supabase/functions/_shared/fcm.test.ts
+FCM v1 authorization, caching, renewal and delivery failures ...
+  unconfigured push makes no outbound request ... ok (0ms)
+  RSA assertion and v1 payload are valid; token is reused ... ok (12ms)
+  401 renews authorization once and retries ... ok (1ms)
+  provider and network failures are not reported as delivery ... ok (1ms)
+  existing Firebase secret supports delivery ... ok (0ms)
+  malformed secrets fail without leaking credentials ... ok (0ms)
+FCM v1 authorization, caching, renewal and delivery failures ... ok (110ms)
+
+ok | 12 passed (6 steps) | 0 failed (188ms)

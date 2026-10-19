@@ -1,14 +1,18 @@
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
-import { clamp, haversineKm, proximityScore } from "../_shared/geo.ts";
+import { clamp, proximityScore } from "../_shared/geo.ts";
 import { fetchSpotifyArtistsByIds } from "../_shared/spotify_app_token.ts";
-import { sendFcmLegacy } from "../_shared/fcm.ts";
+import { sendFcm } from "../_shared/fcm.ts";
+import { notificationWorkerAuthorized } from "../_shared/notification_worker_auth.ts";
+import { skipDisabledSpotifyJob, spotifySkippedJobResponse } from "../_shared/spotify-feature.ts";
 
 type UserRow = {
   id: string;
   fcm_token: string | null;
   last_latitude: number | null;
   last_longitude: number | null;
+  push_enabled: boolean | null;
+  push_settings: Record<string, boolean> | null;
 };
 
 type MusicProfileRow = {
@@ -37,6 +41,15 @@ Deno.serve(async (req) => {
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 
+  // SECURITY: Verify the request is authorized (e.g. from internal webhook or cron)
+  if (!await notificationWorkerAuthorized(req)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+
   try {
     // Tipicamente verrà invocata da cron/scheduler (service role). Manteniamo POST.
     if (req.method.toUpperCase() !== "POST") {
@@ -46,13 +59,15 @@ Deno.serve(async (req) => {
       });
     }
 
+    const paused = skipDisabledSpotifyJob();
+    if (paused) return paused;
     const supabase = createSupabaseServiceClient();
 
-    // Carica utenti con token push registrato
+    // The in-app inbox must work even on a device without an FCM token. Push
+    // delivery is evaluated later for the users who have one.
     const { data: users, error: usersError } = await supabase
       .from("users")
-      .select("id, fcm_token, last_latitude, last_longitude")
-      .not("fcm_token", "is", null)
+      .select("id, fcm_token, last_latitude, last_longitude, push_enabled, push_settings")
       .limit(500)
       .returns<UserRow[]>();
 
@@ -69,6 +84,30 @@ Deno.serve(async (req) => {
       .returns<EventRow[]>();
 
     if (eventsError) throw eventsError;
+
+    const distanceByUserEvent = new Map<string, number>();
+    const distanceKey = (userId: string, eventId: string) =>
+      `${userId}:${eventId}`;
+    if ((users?.length ?? 0) > 0 && (events?.length ?? 0) > 0) {
+      const { data: distanceRows, error: distanceError } = await supabase.rpc(
+        "nearby_event_distances_for_users",
+        {
+          p_user_ids: (users ?? []).map((user) => user.id),
+          p_event_ids: (events ?? []).map((event) => event.id),
+          p_radius_meters: 250000,
+        },
+      );
+      if (distanceError) throw distanceError;
+
+      for (const row of distanceRows ?? []) {
+        const userId = String(row.user_id ?? "");
+        const eventId = String(row.event_id ?? "");
+        const meters = Number(row.distance_meters);
+        if (userId && eventId && Number.isFinite(meters)) {
+          distanceByUserEvent.set(distanceKey(userId, eventId), meters);
+        }
+      }
+    }
 
     const spotifyArtistIds = Array.from(
       new Set(
@@ -93,6 +132,8 @@ Deno.serve(async (req) => {
     let pushed = 0;
 
     for (const user of (users ?? [])) {
+      if (user.push_settings?.event_alert === false) continue;
+
       const { data: profile, error: profileError } = await supabase
         .from("music_profiles")
         .select("user_id, top_artists, top_genres")
@@ -128,16 +169,12 @@ Deno.serve(async (req) => {
         const avg = weights.length ? weights.reduce((a, b) => a + b, 0) / weights.length : 0;
         const genreMatch = clamp(avg * 100, 0, 100);
 
-        let prox = 0;
-        if (
-          typeof user.last_latitude === "number" &&
-          typeof user.last_longitude === "number" &&
-          typeof event.latitude === "number" &&
-          typeof event.longitude === "number"
-        ) {
-          const d = haversineKm(user.last_latitude, user.last_longitude, event.latitude, event.longitude);
-          prox = proximityScore(d);
-        }
+        const distanceMeters = distanceByUserEvent.get(
+          distanceKey(user.id, event.id),
+        );
+        const prox = distanceMeters == null
+          ? 0
+          : proximityScore(distanceMeters / 1000);
 
         const followers = spotifyById.get(artistId)?.followers ?? 0;
         let pop = 0;
@@ -189,10 +226,15 @@ Deno.serve(async (req) => {
           },
         });
 
-        if (!insertError) inserted++;
+        // A pause may commit after this worker started with an older Edge
+        // environment. Do not send an affinity push after the database refused
+        // its notification, or report delivery for any failed insert.
+        if (insertError?.code === "PT503") return spotifySkippedJobResponse();
+        if (insertError) continue;
+        inserted++;
 
-        if (user.fcm_token) {
-          const ok = await sendFcmLegacy(
+        if (user.fcm_token && user.push_enabled !== false) {
+          const ok = await sendFcm(
             user.fcm_token,
             title,
             body,
@@ -219,10 +261,9 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: "internal_error",
-        message: String(e?.message ?? e),
+        message: String(e instanceof Error ? e.message : e),
       }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });
-

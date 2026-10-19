@@ -3,19 +3,22 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/constants/app_constants.dart';
+import 'discover_users_screen.dart';
 import '../../../core/router/route_names.dart';
-import '../../../core/theme/vibra_colors.dart';
-import '../../../core/theme/vibra_spacing.dart';
 import '../../../core/theme/vibra_text_styles.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../providers/app_state_providers.dart';
-import '../../widgets/common/vibra_logo.dart';
+import '../../widgets/common/vibra_avatar.dart';
+import '../../widgets/common/vibra_button.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
-import '../../widgets/common/vibra_state_views.dart';
-import '../../widgets/vibra_arc_gauge.dart';
-import '../../widgets/vibra_match_comparison.dart';
-import '../../widgets/vibra_pill_button.dart';
+import '../../widgets/common/vibra_surface.dart';
+import '../../widgets/vibra_affinity_score.dart';
+import '../../widgets/vibra_match_scanner.dart';
+import '../../widgets/vibra_signal_wave.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 
+/// Match sociale come una connessione editoriale, non un gauge fitness.
 class SocialMatchScreen extends ConsumerStatefulWidget {
   const SocialMatchScreen({super.key});
 
@@ -25,6 +28,7 @@ class SocialMatchScreen extends ConsumerStatefulWidget {
 
 class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
   bool _isScanning = true;
+  bool _sendingVibra = false;
 
   @override
   void initState() {
@@ -34,27 +38,36 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
 
   void _startScanning() {
     Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _isScanning = false;
-        });
-      }
+      if (mounted) setState(() => _isScanning = false);
     });
   }
 
-  void _sendVibra(MatchedUserPreview match) {
-    ref.read(matchedUsersProvider.notifier).sendVibra(match.user.id);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          AppLocalizations.of(context)!.socialMatchVibraSent(
-            match.user.displayName ?? match.user.username,
+  Future<void> _sendVibra(MatchedUserPreview match) async {
+    if (_sendingVibra) return;
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _sendingVibra = true);
+    try {
+      await ref.read(matchedUsersProvider.notifier).sendVibra(match.user.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.socialMatchVibraSent(
+                match.user.displayName ?? match.user.username,
+              ),
+            ),
           ),
-        ),
-        backgroundColor: VibraColors.primary,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+        );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.socialMatchSendFailed)));
+    } finally {
+      if (mounted) setState(() => _sendingVibra = false);
+    }
   }
 
   void _passMatch(MatchedUserPreview match) {
@@ -63,429 +76,454 @@ class _SocialMatchScreenState extends ConsumerState<SocialMatchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    if (!AppConstants.spotifyEnabled) return const DiscoverUsersScreen();
     final profile = ref.watch(myProfileProvider);
-    final matches = ref.watch(matchedUsersProvider);
+    final matches = ref
+        .watch(matchedUsersProvider)
+        .where((match) => !match.isFriend)
+        .toList(growable: false);
 
     return VibraPageScaffold(
       child: SafeArea(
+        bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: _isScanning
-              ? _buildScanningState(theme)
-              : matches.isNotEmpty
-              ? _buildMatchStack(
-                  context,
-                  theme,
-                  profile.avatarUrl ?? '',
-                  matches,
-                )
-              : _buildEmptyState(context, theme),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 132),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 520),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(
+                scale: Tween(begin: .965, end: 1.0).animate(animation),
+                child: child,
+              ),
+            ),
+            child: _isScanning
+                ? const _ScanningState(key: ValueKey('scanning'))
+                : matches.isNotEmpty
+                ? KeyedSubtree(
+                    key: ValueKey('match-${matches.first.user.id}'),
+                    child: _buildMatchStack(profile.avatarUrl ?? '', matches),
+                  )
+                : _EmptyMatchState(
+                    key: const ValueKey('empty'),
+                    onExplore: () => context.go('/explore'),
+                    onRescan: () {
+                      ref.invalidate(matchedUsersProvider);
+                      setState(() => _isScanning = true);
+                      _startScanning();
+                    },
+                  ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildScanningState(ThemeData theme) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              // Pulsing concentric radar rings
-              Container(
-                    width: 180,
-                    height: 180,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: VibraColors.primary.withValues(alpha: 0.3),
-                        width: 2,
-                      ),
-                    ),
-                  )
-                  .animate(onPlay: (c) => c.repeat())
-                  .scale(
-                    begin: const Offset(0.6, 0.6),
-                    end: const Offset(1.3, 1.3),
-                    duration: 1800.ms,
-                    curve: Curves.easeOut,
-                  )
-                  .fadeOut(duration: 1800.ms),
-
-              Container(
-                    width: 140,
-                    height: 140,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: VibraColors.accent.withValues(alpha: 0.4),
-                        width: 2,
-                      ),
-                    ),
-                  )
-                  .animate(onPlay: (c) => c.repeat())
-                  .scale(
-                    begin: const Offset(0.5, 0.5),
-                    end: const Offset(1.2, 1.2),
-                    delay: 400.ms,
-                    duration: 1800.ms,
-                    curve: Curves.easeOut,
-                  )
-                  .fadeOut(delay: 400.ms, duration: 1800.ms),
-
-              // Logo in the middle
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: VibraColors.surfaceElevated,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: VibraColors.glassBorder),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x608B5CF6),
-                      blurRadius: 24,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: const VibraLogo(width: 56, height: 56),
-              ),
-            ],
-          ),
-          const SizedBox(height: 40),
-          Text(
-                AppLocalizations.of(context)!.socialMatchScanningTitle,
-                style: VibraTextStyles.labelLarge.copyWith(
-                  color: VibraColors.accent,
-                  letterSpacing: 4.0,
-                  fontWeight: FontWeight.w700,
-                ),
-              )
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .fadeIn(duration: 1.seconds),
-          const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context)!.socialMatchScanningSubtitle,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: VibraColors.textSecondary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMatchStack(
-    BuildContext context,
-    ThemeData theme,
-    String myAvatar,
-    List<MatchedUserPreview> matches,
-  ) {
+  Widget _buildMatchStack(String myAvatar, List<MatchedUserPreview> matches) {
+    final t = context.vibraTokens;
     return Stack(
       alignment: Alignment.center,
       children: [
         if (matches.length > 1)
           Positioned.fill(
-            child: Transform.scale(
-              scale: 0.92,
-              alignment: Alignment.bottomCenter,
-              child: Opacity(
-                opacity: 0.6,
-                child: AbsorbPointer(
-                  child: _buildMatchCard(context, theme, myAvatar, matches[1]),
+            child: Transform.translate(
+              offset: const Offset(0, 14),
+              child: Transform.scale(
+                scale: 0.96,
+                alignment: Alignment.bottomCenter,
+                child: Opacity(
+                  opacity: 0.42,
+                  child: IgnorePointer(
+                    child: _MatchPortrait(
+                      myAvatar: myAvatar,
+                      match: matches[1],
+                      onPass: () {},
+                      onSend: () {},
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-
         Positioned.fill(
           child: Dismissible(
             key: ValueKey(matches.first.user.id),
-            direction: DismissDirection.horizontal,
-            onDismissed: (direction) {
+            direction: _sendingVibra
+                ? DismissDirection.none
+                : DismissDirection.horizontal,
+            background: _SwipeHint(
+              alignment: Alignment.centerLeft,
+              label: AppLocalizations.of(context)!.socialMatchSend,
+              color: t.accentPrimary,
+              foreground: t.onAccent,
+              icon: Icons.waves_rounded,
+            ),
+            secondaryBackground: _SwipeHint(
+              alignment: Alignment.centerRight,
+              label: AppLocalizations.of(context)!.socialMatchPass,
+              color: t.surfaceMuted,
+              foreground: t.textPrimary,
+              icon: Icons.close_rounded,
+            ),
+            confirmDismiss: (direction) async {
+              if (_sendingVibra) return false;
               if (direction == DismissDirection.startToEnd) {
-                _sendVibra(matches.first);
+                await _sendVibra(matches.first);
               } else {
                 _passMatch(matches.first);
               }
+              // The provider removes the card only after the operation succeeds.
+              return false;
             },
-            child: _buildMatchCard(context, theme, myAvatar, matches.first),
+            child: _MatchPortrait(
+              myAvatar: myAvatar,
+              match: matches.first,
+              sending: _sendingVibra,
+              onPass: _sendingVibra ? null : () => _passMatch(matches.first),
+              onSend: _sendingVibra ? null : () => _sendVibra(matches.first),
+            ),
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildMatchCard(
-    BuildContext context,
-    ThemeData theme,
-    String myAvatar,
-    MatchedUserPreview match,
-  ) {
+class _ScanningState extends StatelessWidget {
+  const _ScanningState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final scoreNormalized = match.compatibility / 100.0;
-    final displayName = match.user.displayName ?? match.user.username;
+    return Center(
+      child: VibraMatchScanner(
+        title: l10n.socialMatchScanningTitle,
+        subtitle: l10n.socialMatchScanningSubtitle,
+      ),
+    ).animate().fadeIn(duration: 360.ms).scaleXY(begin: .97, end: 1);
+  }
+}
+
+class _MatchPortrait extends StatelessWidget {
+  const _MatchPortrait({
+    required this.myAvatar,
+    required this.match,
+    required this.onPass,
+    required this.onSend,
+    this.sending = false,
+  });
+
+  final String myAvatar;
+  final MatchedUserPreview match;
+  final VoidCallback? onPass;
+  final VoidCallback? onSend;
+  final bool sending;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.vibraTokens;
+    final l10n = AppLocalizations.of(context)!;
+    final score = match.compatibility / 100;
+    final name = match.user.displayName ?? match.user.username;
+    final sharedArtists = match.topArtists.isEmpty
+        ? AppLocalizations.of(context)!.socialMatchSharedListening
+        : l10n.socialMatchListenBoth(match.topArtists.take(2).join(', '));
 
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: VibraColors.surface,
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: VibraColors.glassBorder),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
-            blurRadius: 32,
-            offset: const Offset(0, 16),
-          ),
-        ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [t.surfaceElevated, t.surface],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: t.borderStrong),
+        boxShadow: [t.elevatedShadow],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 24),
-          // Intestazione
-          Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: VibraColors.accent.withValues(alpha: 0.15),
-                borderRadius: VibraSpacing.borderFull,
-                border: Border.all(
-                  color: VibraColors.accent.withValues(alpha: 0.3),
-                ),
-              ),
-              child: Text(
-                l10n.socialMatchNewAffinity,
-                style: VibraTextStyles.labelLarge.copyWith(
-                  color: VibraColors.accent,
-                  letterSpacing: 3.0,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.5, end: 0),
-          ),
-          const SizedBox(height: 16),
-
-          // Contenuto scrollabile centrale per evitare overflow su schermi piccoli
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Widget ArcGauge al centro con MatchScore
-                  Center(
-                    child: VibraArcGauge(
-                      score: scoreNormalized,
-                      size: 180,
-                      strokeWidth: 14,
-                    ),
-                  ).animate().scaleXY(
-                    begin: 0.8,
-                    end: 1.0,
-                    duration: 600.ms,
-                    curve: Curves.easeOutBack,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Widget Match Comparison
-                  VibraMatchComparison(
-                        myImageUrl: myAvatar,
-                        theirImageUrl: match.user.avatarUrl ?? '',
-                        theirDisplayName: displayName,
-                        score: scoreNormalized,
-                      )
-                      .animate()
-                      .fadeIn(delay: 300.ms, duration: 500.ms)
-                      .slideY(begin: 0.2, end: 0),
-
-                  const SizedBox(height: 12),
-
-                  // Nome
-                  Center(
-                    child: Text(
-                      displayName,
-                      style: theme.textTheme.displayMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
+              child: VibraWaveBackdrop(
+                color: t.accentPrimary,
+                opacity: 0.22,
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 13,
+                        vertical: 7,
                       ),
-                    ).animate().fadeIn(delay: 400.ms),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Motivazione del match
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: VibraColors.surfaceElevated,
-                      borderRadius: BorderRadius.circular(
-                        VibraSpacing.radiusMedium,
+                      decoration: BoxDecoration(
+                        color: t.accentSoft,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: t.accentPrimary.withValues(alpha: .28),
+                        ),
                       ),
-                      border: Border.all(color: VibraColors.glassBorder),
+                      child: Text(
+                        l10n.socialMatchNewAffinity.toUpperCase(),
+                        style: VibraTextStyles.labelSmall.copyWith(
+                          color: t.accentPrimary,
+                          letterSpacing: 1.25,
+                        ),
+                      ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(height: 18),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          l10n.socialMatchWhyMatched,
-                          style: VibraTextStyles.labelSmall.copyWith(
-                            color: VibraColors.textSecondary,
-                            letterSpacing: 1.5,
+                        VibraAvatar(
+                          imageUrl: myAvatar,
+                          name: AppLocalizations.of(context)!.socialYou,
+                          radius: 30,
+                        ),
+                        Container(
+                          width: 54,
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                          child: VibraSignalWave(
+                            height: 22,
+                            color: t.accentPrimary,
+                            secondaryColor: t.textPrimary,
+                            amplitude: 4,
+                            animate: true,
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        if (match.topArtists.isNotEmpty) ...[
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.music_note_rounded,
-                                size: 16,
-                                color: VibraColors.accent,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  l10n.socialMatchListenBoth(
-                                    match.topArtists.take(2).join(", "),
-                                  ),
-                                  style: VibraTextStyles.bodyMedium,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                        ],
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.location_on_rounded,
-                              size: 16,
-                              color: VibraColors.primary,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                l10n.socialMatchCityEvents(
-                                  match.city,
-                                  match.attendingEvents.toString(),
-                                ),
-                                style: VibraTextStyles.bodyMedium,
-                              ),
-                            ),
-                          ],
+                        VibraAvatar(
+                          imageUrl: match.user.avatarUrl,
+                          name: name,
+                          radius: 38,
+                          signalRing: true,
                         ),
                       ],
                     ),
-                  ).animate().fadeIn(delay: 500.ms),
-
-                  const SizedBox(height: 8),
-
-                  // Anteprima profilo button
-                  Center(
-                    child: TextButton.icon(
-                      onPressed: () {
-                        context.pushNamed(
-                          RouteNames.userProfile,
-                          extra: match.user.id,
-                        );
-                      },
-                      icon: const Icon(Icons.person_search_rounded, size: 18),
-                      label: Text(
-                        AppLocalizations.of(context)!.socialMatchViewProfile,
-                      ),
-                      style: TextButton.styleFrom(
-                        foregroundColor: VibraColors.textSecondary,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 4,
-                          horizontal: 12,
-                        ),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
+                    const SizedBox(height: 18),
+                    VibraAffinityScore(
+                      score: score,
+                      caption: AppLocalizations.of(
+                        context,
+                      )!.socialMatchFrequencyNow,
                     ),
-                  ).animate().fadeIn(delay: 550.ms),
-                  const SizedBox(height: 8),
-                ],
+                    const SizedBox(height: 18),
+                    Text(
+                      name,
+                      textAlign: TextAlign.center,
+                      style: VibraTextStyles.displayMedium,
+                    ),
+                    const SizedBox(height: 24),
+                    _ReasonLine(
+                      index: '01',
+                      title: AppLocalizations.of(
+                        context,
+                      )!.socialMatchSharedSound,
+                      text: sharedArtists,
+                      icon: Icons.music_note_rounded,
+                    ),
+                    _ReasonLine(
+                      index: '02',
+                      title: AppLocalizations.of(context)!.socialMatchSameArea,
+                      text: l10n.socialMatchCityEvents(
+                        match.city,
+                        match.attendingEvents.toString(),
+                      ),
+                      icon: Icons.location_on_outlined,
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton.icon(
+                      onPressed: () => context.pushNamed(
+                        RouteNames.userProfile,
+                        extra: match.user.id,
+                      ),
+                      icon: const Icon(Icons.arrow_outward_rounded, size: 17),
+                      label: Text(l10n.socialMatchViewProfile),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-
-          const SizedBox(height: 12),
-
-          // Azioni
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Bottone Passa
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: VibraColors.surfaceVariant,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: VibraColors.glassBorder),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 24),
-                      color: VibraColors.textSecondary,
-                      onPressed: () => _passMatch(match),
-                    ),
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+            decoration: BoxDecoration(
+              color: t.surface.withValues(alpha: .84),
+              border: Border(top: BorderSide(color: t.borderDefault)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: VibraButton(
+                    label: l10n.socialMatchIgnore,
+                    tone: VibraButtonTone.outline,
+                    leadingIcon: Icons.close_rounded,
+                    onPressed: onPass,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    AppLocalizations.of(context)!.socialMatchIgnore,
-                    style: VibraTextStyles.labelSmall.copyWith(
-                      color: VibraColors.textDisabled,
-                      fontSize: 10,
-                    ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 2,
+                  child: VibraButton(
+                    label: l10n.socialMatchSendVibra,
+                    tone: VibraButtonTone.signal,
+                    leadingIcon: Icons.waves_rounded,
+                    onPressed: onSend,
+                    loading: sending,
                   ),
-                ],
-              ).animate().fadeIn(delay: 600.ms),
-
-              const SizedBox(width: 16),
-
-              // Bottone Vibra
-              Expanded(
-                child: VibraPillButton(
-                  text: l10n.socialMatchSendVibra,
-                  icon: Icons.graphic_eq_rounded,
-                  isPrimary: true,
-                  onPressed: () => _sendVibra(match),
-                ).animate().fadeIn(delay: 600.ms).scaleXY(begin: 0.9, end: 1.0),
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 24),
         ],
       ),
     );
   }
+}
 
-  Widget _buildEmptyState(BuildContext context, ThemeData theme) {
+class _ReasonLine extends StatelessWidget {
+  const _ReasonLine({
+    required this.index,
+    required this.title,
+    required this.text,
+    required this.icon,
+  });
+
+  final String index;
+  final String title;
+  final String text;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.vibraTokens;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: t.borderDefault)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            index,
+            style: VibraTextStyles.labelSmall.copyWith(color: t.textSecondary),
+          ),
+          const SizedBox(width: 12),
+          Icon(icon, size: 18, color: t.textPrimary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: VibraTextStyles.labelSmall),
+                const SizedBox(height: 4),
+                Text(text, style: VibraTextStyles.bodyMedium),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SwipeHint extends StatelessWidget {
+  const _SwipeHint({
+    required this.alignment,
+    required this.label,
+    required this.color,
+    required this.foreground,
+    required this.icon,
+  });
+
+  final Alignment alignment;
+  final String label;
+  final Color color;
+  final Color foreground;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: color,
+      alignment: alignment,
+      padding: const EdgeInsets.symmetric(horizontal: 28),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: foreground, size: 28),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: VibraTextStyles.labelSmall.copyWith(color: foreground),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyMatchState extends StatelessWidget {
+  const _EmptyMatchState({
+    required this.onExplore,
+    required this.onRescan,
+    super.key,
+  });
+
+  final VoidCallback onExplore;
+  final VoidCallback onRescan;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.vibraTokens;
     final l10n = AppLocalizations.of(context)!;
     return Center(
-      child: VibraEmptyView(
-        title: l10n.socialMatchEmptyTitle,
-        message: l10n.socialMatchEmptyMessage,
-        icon: Icons.radar_rounded,
-        actionLabel: l10n.socialMatchEmptyAction,
-        onActionTap: () => context.go('/explore'),
-        secondaryActionLabel: l10n.socialMatchEmptySecondary,
-        onSecondaryActionTap: () {
-          ref.invalidate(matchedUsersProvider);
-          setState(() {
-            _isScanning = true;
-          });
-          _startScanning();
-        },
+      child: VibraSurface(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 150,
+              child: VibraSignalWave(
+                height: 42,
+                color: t.accentPrimary,
+                secondaryColor: t.textPrimary,
+                amplitude: 9,
+                animate: true,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.socialMatchEmptyTitle,
+              style: VibraTextStyles.headlineMedium,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              l10n.socialMatchEmptyMessage,
+              style: VibraTextStyles.bodySmall,
+            ),
+            const SizedBox(height: 20),
+            VibraButton(
+              label: l10n.socialMatchEmptyAction,
+              tone: VibraButtonTone.signal,
+              expanded: true,
+              onPressed: onExplore,
+            ),
+            const SizedBox(height: 8),
+            VibraButton(
+              label: l10n.socialMatchEmptySecondary,
+              tone: VibraButtonTone.text,
+              expanded: true,
+              onPressed: onRescan,
+            ),
+          ],
+        ),
       ),
     );
   }

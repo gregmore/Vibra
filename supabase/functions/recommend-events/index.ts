@@ -1,7 +1,10 @@
+import { rejectRevokedSession } from "../_shared/session-guard.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
-import { clamp, haversineKm, proximityScore } from "../_shared/geo.ts";
+import { clamp, proximityScore } from "../_shared/geo.ts";
 import { fetchSpotifyArtistsByIds } from "../_shared/spotify_app_token.ts";
+import { rejectDisabledSpotify } from "../_shared/spotify-feature.ts";
 
 type RecommendEventsRequest = {
   user_id: string;
@@ -34,10 +37,13 @@ type EventRow = {
   price_max: number | null;
   image_url: string | null;
   description: string | null;
+  is_test_data?: boolean;
   distance_meters?: number;
 };
 
 Deno.serve(async (req) => {
+  const rejected = await rejectRevokedSession(req, "recommend-events");
+  if (rejected) return rejected;
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 
@@ -49,17 +55,37 @@ Deno.serve(async (req) => {
       });
     }
 
-    const body = (await req.json()) as RecommendEventsRequest;
-    if (!body?.user_id) {
-      return new Response(JSON.stringify({ error: "user_id is required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
     }
+    const userClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "", {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: authHeader } }
+    });
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    }
+
+    const unavailable = rejectDisabledSpotify();
+    if (unavailable) return unavailable;
+
+    const body = (await req.json()) as RecommendEventsRequest;
+    // SECURITY: Use authenticated user's ID instead of trusting the body
+    body.user_id = user.id;
 
     const limit = clamp(body.limit ?? 20, 1, 50);
 
     const supabase = createSupabaseServiceClient();
+
+    const { data: targetUser, error: targetUserError } = await supabase
+      .from("users")
+      .select("is_test_user")
+      .eq("id", body.user_id)
+      .maybeSingle<{ is_test_user: boolean }>();
+    if (targetUserError) throw targetUserError;
+    const targetIsTestUser = targetUser?.is_test_user === true;
 
     // ── Load user music profile ──────────────────────────────
     const { data: profile, error: profileError } = await supabase
@@ -98,11 +124,14 @@ Deno.serve(async (req) => {
     let eventsError = null;
 
     if (typeof body.latitude === "number" && typeof body.longitude === "number") {
-      // Use PostGIS RPC per scaricare le distanze pesanti su database e limitare al raggio desiderato
-      const { data, error } = await supabase.rpc("get_nearby_events_with_distance", {
-        user_lon: body.longitude,
-        user_lat: body.latitude,
-        radius_meters: 100000 // default 100km per raccomandazioni
+      // Read-only PostGIS RPC: calculate distance in the database without
+      // persisting a caller location as a side effect.
+      const { data, error } = await supabase.rpc("find_events_in_radius", {
+        p_latitude: body.latitude,
+        p_longitude: body.longitude,
+        p_radius_meters: 100000, // default 100 km for recommendations
+        p_status: "onsale",
+        p_limit: 500,
       });
       eventsError = error;
       events = (data ?? []).map((e: any) => ({
@@ -125,6 +154,20 @@ Deno.serve(async (req) => {
     }
 
     if (eventsError) throw eventsError;
+
+    // Service-role reads bypass RLS. Apply the same segmentation explicitly so
+    // synthetic staging events can never enter a real beta user's feed.
+    if (!targetIsTestUser && events.length > 0) {
+      const eventIds = events.map((event) => event.id);
+      const { data: syntheticRows, error: syntheticRowsError } = await supabase
+        .from("events")
+        .select("id")
+        .in("id", eventIds)
+        .eq("is_test_data", true);
+      if (syntheticRowsError) throw syntheticRowsError;
+      const syntheticIds = new Set((syntheticRows ?? []).map((row) => row.id));
+      events = events.filter((event) => !syntheticIds.has(event.id));
+    }
 
     const spotifyArtistIds = Array.from(
       new Set(
@@ -193,18 +236,9 @@ Deno.serve(async (req) => {
       }
 
       // proximity_score (S_geo)
-      let proximity = 0;
-      if (typeof event.distance_meters === "number") {
-        proximity = proximityScore(event.distance_meters / 1000); // km
-      } else if (
-        typeof body.latitude === "number" &&
-        typeof body.longitude === "number" &&
-        typeof event.latitude === "number" &&
-        typeof event.longitude === "number"
-      ) {
-        const d = haversineKm(body.latitude, body.longitude, event.latitude, event.longitude);
-        proximity = proximityScore(d);
-      }
+      const proximity = typeof event.distance_meters === "number"
+        ? proximityScore(event.distance_meters / 1000)
+        : 0;
 
       // popularity_score (S_social): normalizzazione follower 0..100
       const followers = spotifyById.get(artistId)?.followers ?? 0;

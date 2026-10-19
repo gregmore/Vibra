@@ -1,139 +1,154 @@
-import 'package:flutter/material.dart';
+import 'package:vibra/l10n/app_localizations.dart';
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../core/theme/vibra_colors.dart';
-import '../../core/theme/vibra_shadows.dart';
+import 'package:flutter/material.dart';
 
-/// Un avatar utente con bordo sfumato e ombra al neon (in base al punteggio match o ruolo).
+import '../../core/theme/vibra_text_styles.dart';
+import '../../core/theme/vibra_theme_tokens.dart';
+
+/// Legacy-compatible avatar with an AA-safe initials fallback and score ring.
 class VibraNeonAvatar extends StatelessWidget {
-  final String imageUrl;
-  final double radius;
-  final double score; // Da 0.0 a 1.0 (se nullo usa il primary color)
-  final String? displayName;
-  final VoidCallback? onTap;
-  final bool isOnline;
-
   const VibraNeonAvatar({
     super.key,
     required this.imageUrl,
+    this.imageFile,
     this.radius = 30,
-    this.score = 1.0,
+    this.score = 1,
     this.displayName,
     this.onTap,
     this.isOnline = false,
   });
 
-  String _getInitials(String name) {
+  final String imageUrl;
+  final File? imageFile;
+  final double radius;
+  final double score;
+  final String? displayName;
+  final VoidCallback? onTap;
+  final bool isOnline;
+
+  String _initials(String name) {
     final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty || parts[0].isEmpty) return '?';
+    if (parts.isEmpty || parts.first.isEmpty) return 'V';
     if (parts.length > 1) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+      return '${parts.first[0]}${parts[1][0]}'.toUpperCase();
     }
-    return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
+    return parts.first
+        .substring(0, parts.first.length >= 2 ? 2 : 1)
+        .toUpperCase();
   }
 
-  Color _getHashColor(String name) {
-    final hash = name.codeUnits.fold(0, (a, b) => a + b);
-    final colors = [
-      VibraColors.primary,
-      VibraColors.accent,
-      VibraColors.accentWarm,
-      VibraColors.success,
-      VibraColors.primaryLight,
-    ];
-    return colors[hash % colors.length];
-  }
-
-  Widget _buildInitialsAvatar(double innerRadius) {
-    if (displayName != null && displayName!.isNotEmpty) {
-      final bgColor = _getHashColor(displayName!);
-      return Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              bgColor.withValues(alpha: 0.8),
-              bgColor.withValues(alpha: 0.4),
-            ],
-          ),
-        ),
-        child: Center(
-          child: Text(
-            _getInitials(displayName!),
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: innerRadius * 0.8,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
+  Widget _fallback(BuildContext context, double innerRadius) {
+    final t = context.vibraTokens;
+    final safeName = displayName?.trim() ?? '';
+    if (safeName.isEmpty) {
+      return ColoredBox(
+        color: t.surfaceMuted,
+        child: Icon(Icons.person_rounded, color: t.textSecondary, size: radius),
       );
     }
-    return Container(
-      color: VibraColors.surfaceVariant,
-      child: Icon(Icons.person, color: VibraColors.textDisabled, size: radius),
+    return DecoratedBox(
+      decoration: BoxDecoration(gradient: t.avatarGradient),
+      child: Center(
+        child: Text(
+          _initials(safeName),
+          style: VibraTextStyles.titleMedium.copyWith(
+            color: t.onAccent,
+            fontSize: innerRadius * .8,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _content(BuildContext context, double innerRadius) {
+    final t = context.vibraTokens;
+    if (imageFile != null) {
+      return Image.file(
+        imageFile!,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (_, _, _) => _fallback(context, innerRadius),
+      );
+    }
+    if (imageUrl.isEmpty) return _fallback(context, innerRadius);
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      final cacheWidth = (radius * 2 * MediaQuery.devicePixelRatioOf(context))
+          .ceil();
+      return CachedNetworkImage(
+        imageUrl: imageUrl,
+        fit: BoxFit.cover,
+        memCacheWidth: cacheWidth,
+        placeholder: (_, _) => ColoredBox(color: t.surfaceMuted),
+        errorWidget: (_, _, _) => _fallback(context, innerRadius),
+      );
+    }
+    return Image.file(
+      File(imageUrl),
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      errorBuilder: (_, _, _) => _fallback(context, innerRadius),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final color = VibraColors.getMatchColor(score);
-    final innerRadius = radius - 1.5;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            width: radius * 2,
-            height: radius * 2,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: color, width: 1.5),
-              boxShadow: [VibraShadows.neonGlow(color, intensity: 0.5)],
-            ),
-            child: ClipOval(
-              child: imageUrl.isEmpty
-                  ? _buildInitialsAvatar(innerRadius)
-                  : CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 200,
-                      placeholder: (context, url) {
-                        final isTest = WidgetsBinding.instance.runtimeType
-                            .toString()
-                            .contains('Test');
-                        if (isTest) {
-                          return Container(color: VibraColors.surfaceVariant);
-                        }
-                        return Container(
-                          color: VibraColors.surfaceVariant,
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        );
-                      },
-                      errorWidget: (context, url, error) =>
-                          _buildInitialsAvatar(innerRadius),
-                    ),
-            ),
+    final t = context.vibraTokens;
+    final ringColor = t.matchColor(score);
+    final innerRadius = radius - 2;
+    final avatar = Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: radius * 2,
+          height: radius * 2,
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: ringColor, width: 2),
           ),
-          if (isOnline)
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: Container(
-                width: radius * 0.5,
-                height: radius * 0.5,
-                decoration: BoxDecoration(
-                  color: VibraColors.success,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: VibraColors.background, width: 2),
-                ),
+          child: ClipOval(child: _content(context, innerRadius)),
+        ),
+        if (isOnline)
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              width: radius * .5,
+              height: radius * .5,
+              decoration: BoxDecoration(
+                color: t.success,
+                shape: BoxShape.circle,
+                border: Border.all(color: t.surface, width: 2),
               ),
             ),
-        ],
+          ),
+      ],
+    );
+
+    return Semantics(
+      image: true,
+      button: onTap != null,
+      label: [
+        AppLocalizations.of(context)!.commonAvatarAffinity(
+          displayName ?? AppLocalizations.of(context)!.commonAvatar,
+          (score * 100).round(),
+        ),
+        if (isOnline) AppLocalizations.of(context)!.commonOnline,
+      ].join(', '),
+      child: Material(
+        color: Colors.transparent,
+        child: InkResponse(
+          onTap: onTap,
+          radius: radius,
+          splashColor: t.accentPrimary.withValues(alpha: .16),
+          hoverColor: t.accentPrimary.withValues(alpha: .08),
+          focusColor: t.accentPrimary.withValues(alpha: .12),
+          child: avatar,
+        ),
       ),
     );
   }

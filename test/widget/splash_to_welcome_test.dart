@@ -1,3 +1,4 @@
+import 'package:vibra/core/constants/app_constants.dart';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -29,18 +30,23 @@ void main() {
     HttpOverrides.global = null;
   });
 
-  testWidgets('Splash naviga automaticamente a Welcome', (tester) async {
+  testWidgets('Splash opens Welcome without an artificial delay', (
+    tester,
+  ) async {
     await tester.pumpWidget(const ProviderScope(child: VibraApp()));
 
-    // Splash presente
+    // Navigation starts on the first frame; only the route transition remains.
     await tester.pump();
-    expect(find.text('Vibra'), findsWidgets);
-
-    // Attende il delayed navigation (1800ms) + un frame
-    await tester.pump(const Duration(milliseconds: 1900));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 400));
 
     // Welcome contiene il titolo della prima slide
-    expect(find.text('Connetti i tuoi gusti'), findsOneWidget);
+    expect(
+      find.text(
+        AppConstants.spotifyEnabled
+            ? 'Connetti i tuoi gusti'
+            : 'La tua agenda live',
+      ),
+      findsOneWidget,
+    );
   });
 }

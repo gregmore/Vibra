@@ -1,0 +1,20 @@
+{
+  "project_type": "personal",
+  "legal_name": "YOUR_LEGAL_NAME",
+  "legal_address": "YOUR_LEGAL_ADDRESS",
+  "country": "YOUR_COUNTRY",
+  "support_email": "support@example.com",
+  "privacy_email": "privacy@example.com",
+  "legal_email": "legal@example.com",
+  "child_safety_email": "safety@example.com",
+  "domain": "",
+  "trader_status": "to_confirm",
+  "address_status": "to_confirm",
+  "mailbox_monitoring_status": "owner_to_enable",
+  "public_site_url": "",
+  "feature_availability": {
+    "release_scope": "first_public_release",
+    "spotify_connection": false,
+    "music_affinity": false
+  }
+}

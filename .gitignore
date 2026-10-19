@@ -31,6 +31,9 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+/packages/*/build/
+/build.nosync/
+/build [0-9]*/
 /coverage/
 
 # Symbolication related
@@ -42,6 +45,13 @@ app.*.map.json
 # Environment variables (credenziali API)
 .env
 key.properties
+*.jks
+*.keystore
+*.p12
+*.p8
+*.mobileprovision
+service-account*.json
+/release/
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 
@@ -49,3 +59,35 @@ ios/Runner/GoogleService-Info.plist
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Generated allowlisted mobile configuration
+.env.public
+
+# Patch backups and duplicate generated Xcode configuration
+*.orig
+*.rej
+/ios/Flutter/Generated [0-9]*.xcconfig
+/ios/Flutter/flutter_export_environment [0-9]*.sh
+
+# Local build reports and Supabase CLI state
+/android/build/
+/supabase/.temp/
+/supabase/.branches/
+
+# Personal store metadata and generated legal/hosting output
+/store/owner.json
+/store/owner.local.json
+/store/site/dist/
+/store/site/.openai/
+/ios/Flutter/Signing.local.xcconfig
+*.pfx
+*.key
+*.pem
+*.cer
+*.der
+*.p7b
+*.ipa
+*.apk
+*.aab
+*.xcarchive/
+*.xcresult/

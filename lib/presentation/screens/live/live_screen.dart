@@ -1,440 +1,379 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:intl/intl.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:vibra/l10n/app_localizations.dart';
-import '../../../core/theme/vibra_colors.dart';
-import '../../../core/theme/vibra_spacing.dart';
+
+import '../../../core/theme/vibra_theme_tokens.dart';
+import '../../../domain/entities/event.dart';
+import '../../../domain/entities/live_message.dart';
+import '../../../domain/usecases/events_usecases.dart';
 import '../../../domain/usecases/live_usecases.dart';
 import '../../providers/app_state_providers.dart';
+import '../../providers/core_providers.dart';
+import '../../providers/live_events_provider.dart';
+import '../../providers/location_provider.dart';
 import '../../providers/usecase_providers.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
-import '../../widgets/common/vibra_section_header.dart';
-import '../../widgets/vibra_neon_avatar.dart';
-import '../../widgets/vibra_glassmorphic_card.dart';
 
 class LiveScreen extends ConsumerStatefulWidget {
-  const LiveScreen({super.key});
+  const LiveScreen({super.key, this.initialEventId});
+
+  final String? initialEventId;
 
   @override
   ConsumerState<LiveScreen> createState() => _LiveScreenState();
 }
 
 class _LiveScreenState extends ConsumerState<LiveScreen> {
-  bool liveEnabled = true;
-  final controller = TextEditingController();
+  final _controller = TextEditingController();
+  String? _selectedEventId;
+  bool _sending = false;
+  bool _joining = false;
+  Timer? _locationRefresh;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedEventId = widget.initialEventId;
+    // Recheck eligibility when time passes or the user leaves the venue.
+    _locationRefresh = Timer.periodic(const Duration(minutes: 1), (_) {
+      ref.invalidate(userLocationProvider);
+      ref.invalidate(liveEventsProvider);
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant LiveScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialEventId != widget.initialEventId) {
+      _selectedEventId = widget.initialEventId;
+      _controller.clear();
+    }
+  }
 
   @override
   void dispose() {
-    controller.dispose();
+    _locationRefresh?.cancel();
+    _controller.dispose();
     super.dispose();
   }
 
-  Future<void> _sendMessage() async {
-    final text = controller.text.trim();
-    if (text.isEmpty) return;
-    controller.clear();
+  void _showError(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(text)));
+  }
 
+  Future<void> _sendMessage(Event event) async {
+    final text = _controller.text.trim();
+    if (_sending || text.isEmpty) return;
+    if (text.length > 2000) {
+      _showError(AppLocalizations.of(context)!.chatMessageTooLong);
+      return;
+    }
+    setState(() => _sending = true);
+    _controller.clear();
     try {
-      final events = ref.read(allEventsProvider);
-      final eventId = events.isNotEmpty ? events.first.id : 'ev1';
       await ref
           .read(sendLiveMessageUseCaseProvider)
-          .call(SendLiveMessageParams(eventId: eventId, content: text));
+          .call(SendLiveMessageParams(eventId: event.id, content: text));
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.liveScreenSendFailed),
-        ),
-      );
+      if (_selectedEventId == null || _selectedEventId == event.id) {
+        final newerDraft = _controller.text;
+        _controller.text = newerDraft.isEmpty ? text : '$text\n\n$newerDraft';
+      }
+      _showError(AppLocalizations.of(context)!.liveScreenSendFailed);
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  Future<void> _join(Event event) async {
+    if (_joining) return;
+    setState(() => _joining = true);
+    try {
+      await ref
+          .read(setEventAttendanceUseCaseProvider)
+          .call(SetEventAttendanceParams(event: event, status: 'going'));
+      if (!mounted) return;
+      ref.invalidate(liveAttendanceProvider(event.id));
+      ref.read(myEventsProvider.notifier).applyAttendance(event, 'going');
+    } catch (_) {
+      _showError(AppLocalizations.of(context)!.liveAttendanceError);
+    } finally {
+      if (mounted) setState(() => _joining = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final users = ref.watch(matchedUsersProvider).take(3).toList();
-    final liveMessages = ref.watch(liveMessagesProvider);
-    final theme = Theme.of(context);
-
+    final t = context.vibraTokens;
+    final l10n = AppLocalizations.of(context)!;
+    final events = ref.watch(liveEventsProvider);
     return VibraPageScaffold(
-      child: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              VibraSpacing.pagePadding,
-              20,
-              VibraSpacing.pagePadding,
-              14,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+      appBar: AppBar(title: Text(l10n.liveScreenTitle)),
+      child: events.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, _) => _stateView(
+          Icons.cloud_off_rounded,
+          AppLocalizations.of(context)!.liveEventsLoadError,
+          FilledButton.tonal(
+            onPressed: () => ref.invalidate(liveEventsProvider),
+            child: Text(l10n.commonRetry),
+          ),
+        ),
+        data: (available) {
+          Event? event;
+          if (_selectedEventId == null) {
+            if (available.isNotEmpty) event = available.first;
+          } else {
+            for (final candidate in available) {
+              if (candidate.id == _selectedEventId) {
+                event = candidate;
+                break;
+              }
+            }
+          }
+          if (event == null) {
+            return _stateView(
+              Icons.location_on_outlined,
+              _selectedEventId == null
+                  ? AppLocalizations.of(context)!.liveLocationHelp
+                  : AppLocalizations.of(context)!.liveUnavailableHere,
+              FilledButton.tonal(
+                onPressed: () {
+                  ref.invalidate(userLocationProvider);
+                  ref.invalidate(liveEventsProvider);
+                },
+                child: Text(AppLocalizations.of(context)!.liveRefreshLocation),
+              ),
+            );
+          }
+          final selected = event;
+          final attendance = ref.watch(liveAttendanceProvider(selected.id));
+          final canSend = const {
+            'going',
+            'maybe',
+          }.contains(attendance.valueOrNull);
+          final messages = ref.watch(liveMessagesProvider(selected.id));
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: available.length > 1 && widget.initialEventId == null
+                    ? DropdownButtonFormField<String>(
+                        key: ValueKey(selected.id),
+                        initialValue: selected.id,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(
+                            context,
+                          )!.liveEventTitle,
+                        ),
+                        items: available
+                            .map(
+                              (item) => DropdownMenuItem(
+                                value: item.id,
+                                child: Text(
+                                  item.name,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: _sending
+                            ? null
+                            : (value) => setState(() {
+                                _selectedEventId = value;
+                                _controller.clear();
+                              }),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            AppLocalizations.of(context)!.liveScreenTitle,
-                            style: theme.textTheme.displaySmall,
+                            selected.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
-                          if (liveEnabled)
-                            Container(
-                                  margin: const EdgeInsets.only(left: 8),
-                                  width: 10,
-                                  height: 10,
-                                  decoration: const BoxDecoration(
-                                    color: VibraColors.accent,
-                                    shape: BoxShape.circle,
-                                  ),
-                                )
-                                .animate(
-                                  onPlay: (controller) => controller.repeat(),
-                                )
-                                .scale(
-                                  begin: const Offset(0.8, 0.8),
-                                  end: const Offset(1.2, 1.2),
-                                  duration: 1000.ms,
-                                )
-                                .then()
-                                .scale(
-                                  begin: const Offset(1.2, 1.2),
-                                  end: const Offset(0.8, 0.8),
-                                  duration: 1000.ms,
-                                ),
+                          if (selected.venueName?.isNotEmpty ?? false)
+                            Text(
+                              selected.venueName!,
+                              style: TextStyle(color: t.textSecondary),
+                            ),
                         ],
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        liveEnabled
-                            ? 'Sei entro 500m dal venue. Chat attiva per le prossime 24h.'
-                            : 'La modalità Live si attiva solo vicino al venue.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: VibraColors.textSecondary,
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: messages.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (_, _) => _stateView(
+                    Icons.wifi_off_rounded,
+                    AppLocalizations.of(context)!.liveConnectionInterrupted,
+                    TextButton(
+                      onPressed: () =>
+                          ref.invalidate(liveMessagesProvider(selected.id)),
+                      child: Text(l10n.commonRetry),
+                    ),
+                  ),
+                  data: (items) => items.isEmpty
+                      ? _stateView(
+                          Icons.chat_bubble_outline_rounded,
+                          AppLocalizations.of(context)!.liveEmpty,
+                          null,
+                        )
+                      : _messageList(items),
+                ),
+              ),
+              if (!canSend)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  child: attendance.when(
+                    loading: () => const LinearProgressIndicator(),
+                    error: (_, _) => TextButton(
+                      onPressed: () =>
+                          ref.invalidate(liveAttendanceProvider(selected.id)),
+                      child: Text(
+                        AppLocalizations.of(context)!.liveRetryAttendance,
+                      ),
+                    ),
+                    data: (_) => FilledButton.tonal(
+                      onPressed: _joining ? null : () => _join(selected),
+                      child: Text(
+                        _joining
+                            ? AppLocalizations.of(
+                                context,
+                              )!.liveConfirmingAttendance
+                            : AppLocalizations.of(context)!.liveJoinToChat,
+                      ),
+                    ),
+                  ),
+                ),
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _controller,
+                          enabled: canSend,
+                          minLines: 1,
+                          maxLines: 3,
+                          maxLength: 2000,
+                          textInputAction: TextInputAction.send,
+                          onSubmitted: (_) =>
+                              canSend ? _sendMessage(selected) : null,
+                          onChanged: (_) => setState(() {}),
+                          decoration: InputDecoration(
+                            hintText: AppLocalizations.of(
+                              context,
+                            )!.liveInputHint,
+                            counterText: '',
+                          ),
                         ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton.filled(
+                        tooltip: AppLocalizations.of(context)!.liveSendMessage,
+                        onPressed:
+                            canSend &&
+                                !_sending &&
+                                _controller.text.trim().isNotEmpty
+                            ? () => _sendMessage(selected)
+                            : null,
+                        icon: _sending
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.send_rounded),
                       ),
                     ],
                   ),
                 ),
-                Switch(
-                  value: liveEnabled,
-                  activeThumbColor: VibraColors.accent,
-                  onChanged: (value) => setState(() => liveEnabled = value),
-                ),
-              ],
-            ),
-          ).animate().fadeIn(duration: 400.ms),
-          VibraSectionHeader(
-            title: AppLocalizations.of(context)!.liveScreenPresentNowTitle,
-            subtitle: AppLocalizations.of(context)!.liveScreenPresentNowSub,
-          ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
-          SizedBox(
-            height: 92,
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(
-                horizontal: VibraSpacing.pagePadding,
               ),
-              scrollDirection: Axis.horizontal,
-              itemCount: users.length,
-              itemBuilder: (context, index) {
-                final user = users[index];
-                return Container(
-                      width: 172,
-                      margin: const EdgeInsets.only(
-                        right: 10,
-                        top: 8,
-                        bottom: 8,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: VibraColors.surfaceElevated,
-                        borderRadius: BorderRadius.circular(
-                          VibraSpacing.radiusLarge,
-                        ),
-                        border: Border.all(
-                          color: VibraColors.glassBorder,
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          VibraNeonAvatar(
-                            imageUrl: user.user.avatarUrl ?? '',
-                            radius: 18,
-                            displayName:
-                                user.user.displayName ?? user.user.username,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  user.user.displayName ?? user.user.username,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: VibraColors.textPrimary,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '${user.compatibility}%',
-                                  style: theme.textTheme.labelMedium?.copyWith(
-                                    color: VibraColors
-                                        .accentWarm, // using accentWarm instead of plain green
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                    .animate()
-                    .fadeIn(delay: (200 + index * 100).ms, duration: 400.ms)
-                    .slideX(begin: 0.1, end: 0);
-              },
-            ),
-          ),
-          VibraSectionHeader(
-            title: AppLocalizations.of(context)!.liveScreenChatTitle,
-            subtitle: AppLocalizations.of(context)!.liveScreenChatSub,
-          ).animate().fadeIn(delay: 250.ms, duration: 400.ms),
-          Expanded(
-            child: Stack(
-              children: [
-                // Chat list
-                ListView.builder(
-                  reverse: true,
-                  padding: EdgeInsets.fromLTRB(
-                    VibraSpacing.pagePadding,
-                    12,
-                    VibraSpacing.pagePadding,
-                    12,
-                  ),
-                  itemCount: liveMessages.length,
-                  itemBuilder: (context, index) {
-                    final message = liveMessages[index];
-                    final currentUserId =
-                        Supabase.instance.client.auth.currentUser?.id;
-                    final mine = message.userId == currentUserId;
-                    final timeString = message.createdAt != null
-                        ? DateFormat(
-                            'HH:mm',
-                          ).format(message.createdAt!.toLocal())
-                        : '';
+            ],
+          );
+        },
+      ),
+    );
+  }
 
-                    return Align(
-                      alignment: mine
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                      child: Column(
-                        crossAxisAlignment: mine
-                            ? CrossAxisAlignment.end
-                            : CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 290,
-                                ),
-                                margin: const EdgeInsets.only(bottom: 4),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: mine
-                                      ? LinearGradient(
-                                          colors: [
-                                            VibraColors.primary,
-                                            VibraColors.accent,
-                                          ],
-                                        )
-                                      : null,
-                                  color: mine
-                                      ? null
-                                      : VibraColors.surfaceElevated,
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(
-                                      VibraSpacing.radiusLarge,
-                                    ),
-                                    topRight: Radius.circular(
-                                      VibraSpacing.radiusLarge,
-                                    ),
-                                    bottomLeft: Radius.circular(
-                                      mine
-                                          ? VibraSpacing.radiusLarge
-                                          : VibraSpacing.radiusSmall,
-                                    ),
-                                    bottomRight: Radius.circular(
-                                      mine
-                                          ? VibraSpacing.radiusSmall
-                                          : VibraSpacing.radiusLarge,
-                                    ),
-                                  ),
-                                  border: mine
-                                      ? null
-                                      : Border.all(
-                                          color: VibraColors.glassBorder,
-                                        ),
-                                ),
-                                child: Text(
-                                  message.content,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: VibraColors.textPrimary,
-                                  ),
-                                ),
-                              )
-                              .animate()
-                              .fadeIn(duration: 300.ms)
-                              .slideY(
-                                begin: 0.1,
-                                end: 0,
-                                curve: Curves.easeOutQuad,
-                              ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: 10,
-                              left: 4,
-                              right: 4,
-                            ),
-                            child: Text(
-                              timeString,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: VibraColors.textSecondary,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                // Disabled overlay
-                if (!liveEnabled)
-                  Positioned.fill(
-                    child: Container(
-                      color: VibraColors.background.withValues(alpha: 0.85),
-                      padding: EdgeInsets.all(VibraSpacing.pagePadding),
-                      child: Center(
-                        child: VibraGlassmorphicCard(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.location_off_rounded,
-                                size: 64,
-                                color: VibraColors.textSecondary,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                AppLocalizations.of(context)!.liveModeDisabled,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: VibraColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Attivala per accedere alla chat in tempo reale con gli altri partecipanti presenti al concerto.',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: VibraColors.textSecondary,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 24),
-                              FilledButton.tonal(
-                                onPressed: () =>
-                                    setState(() => liveEnabled = true),
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: VibraColors.accent,
-                                  foregroundColor: VibraColors.textPrimary,
-                                ),
-                                child: Text(
-                                  AppLocalizations.of(
-                                    context,
-                                  )!.liveScreenActivateMode,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ).animate().fadeIn(duration: 300.ms),
-                  ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              VibraSpacing.pagePadding,
-              8,
-              VibraSpacing.pagePadding,
-              24,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: VibraColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(
-                        VibraSpacing.radiusFull,
-                      ),
-                      border: Border.all(color: VibraColors.glassBorder),
-                    ),
-                    child: TextField(
-                      controller: controller,
-                      enabled: liveEnabled,
-                      onSubmitted: (_) => _sendMessage(),
-                      style: const TextStyle(color: VibraColors.textPrimary),
-                      decoration: const InputDecoration(
-                        hintText: 'Scrivi in chat live...',
-                        hintStyle: TextStyle(color: VibraColors.textSecondary),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 14,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    color: liveEnabled
-                        ? VibraColors.accent
-                        : VibraColors.surfaceVariant,
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    onPressed: liveEnabled ? _sendMessage : null,
-                    icon: Icon(
-                      Icons.send_rounded,
-                      color: liveEnabled
-                          ? Colors.white
-                          : VibraColors.textSecondary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+  Widget _stateView(IconData icon, String text, Widget? action) => Center(
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 44, color: context.vibraTokens.textSecondary),
+          const SizedBox(height: 16),
+          Text(text, textAlign: TextAlign.center),
+          if (action != null) ...[const SizedBox(height: 16), action],
         ],
       ),
+    ),
+  );
+
+  Widget _messageList(List<LiveMessage> messages) {
+    final t = context.vibraTokens;
+    final currentUser = ref.watch(supabaseDatasourceProvider).currentUser?.id;
+    // The datasource already returns newest first; reverse places it at bottom.
+    return ListView.builder(
+      reverse: true,
+      padding: const EdgeInsets.all(16),
+      itemCount: messages.length,
+      itemBuilder: (context, index) {
+        final message = messages[index];
+        final mine = message.userId == currentUser;
+        return Align(
+          alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.sizeOf(context).width * 0.8,
+            ),
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: mine ? t.accentPrimary : t.surfaceElevated,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  message.content,
+                  style: TextStyle(color: mine ? t.onAccent : t.textPrimary),
+                ),
+                if (message.createdAt != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    DateFormat.Hm().format(message.createdAt!.toLocal()),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: mine ? t.onAccent : t.textSecondary,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -1,0 +1,3 @@
+{"test": "Realtime message and match owner positive control", "passed": true, "events": 2}
+{"test": "Realtime message and match unrelated user", "passed": true, "events": 0}
+{"test": "Existing Realtime subscription after logout", "passed": true, "events": 0}

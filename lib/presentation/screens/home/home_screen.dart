@@ -1,3 +1,4 @@
+import '../../../core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,15 +6,15 @@ import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 
-import '../../../core/theme/vibra_colors.dart';
-import '../../../core/theme/vibra_spacing.dart';
 import '../../../core/theme/vibra_text_styles.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../providers/app_state_providers.dart';
-import '../../widgets/common/vibra_event_card.dart';
+import '../../widgets/common/vibra_editorial_event.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
-import '../../widgets/common/vibra_section_header.dart';
-import '../../widgets/vibra_glassmorphic_card.dart';
+import '../../widgets/common/vibra_surface.dart';
+import '../../widgets/vibra_signal_wave.dart';
 
+/// La home mette un momento musicale davanti all'interfaccia, non una griglia.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -22,38 +23,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    final isTest = WidgetsBinding.instance.runtimeType.toString().contains(
-      'Test',
-    );
-    if (isTest) {
-      _isLoading = false;
-    } else {
-      _loadData();
-    }
-  }
-
-  void _loadData() {
-    setState(() {
-      _isLoading = true;
-    });
-    Future.delayed(const Duration(milliseconds: 250), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
+  Future<void> _refresh() => ref.read(allEventsProvider.notifier).refresh();
 
   String _getGreeting(BuildContext context) {
     final hour = DateTime.now().hour;
@@ -65,330 +35,458 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.vibraTokens;
     final featured = ref.watch(featuredEventsProvider);
     final nearby = ref.watch(nearbyEventsProvider);
     final trending = ref.watch(trendingEventsProvider);
     final profile = ref.watch(myProfileProvider);
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final displayName = profile.displayName ?? profile.username;
+    final hasSpotify =
+        AppConstants.spotifyEnabled &&
+        profile.spotifyId != null &&
+        profile.spotifyId!.isNotEmpty;
+    final needsProfile =
+        (AppConstants.spotifyEnabled && !hasSpotify) ||
+        profile.avatarUrl == null ||
+        profile.avatarUrl!.isEmpty;
 
-    if (_isLoading) {
-      return VibraPageScaffold(
-        child: Shimmer.fromColors(
-          baseColor: VibraColors.shimmerBase,
-          highlightColor: VibraColors.shimmerHighlight,
-          child: ListView(
-            padding: const EdgeInsets.only(bottom: 160),
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+    final feedStatus = ref.watch(eventsFeedStatusProvider);
+    if (feedStatus.isLoading && featured.isEmpty) return _HomeSkeleton();
+
+    return VibraPageScaffold(
+      child: RefreshIndicator(
+        onRefresh: _refresh,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      height: 16,
-                      width: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
+                    Text(
+                      AppConstants.spotifyEnabled
+                          ? AppLocalizations.of(context)!.homeYourSoundToday
+                          : l10n.launchExploreTitle.toUpperCase(),
+                      style: VibraTextStyles.labelSmall.copyWith(
+                        color: t.textSecondary,
+                        letterSpacing: 1.25,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Container(
-                      height: 32,
-                      width: 240,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                    const SizedBox(height: 7),
+                    Text(
+                      [_getGreeting(context), displayName].join(', '),
+                      style: VibraTextStyles.displayMedium,
+                    ),
+                    const SizedBox(height: 13),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 54,
+                          child: VibraSignalWave(
+                            height: 16,
+                            amplitude: 3,
+                            color: t.accentPrimary,
+                            secondaryColor: t.textPrimary,
+                            animate: true,
+                          ),
+                        ),
+                        const SizedBox(width: 9),
+                        Expanded(
+                          child: Text(
+                            !AppConstants.spotifyEnabled
+                                ? l10n.launchExploreBody
+                                : hasSpotify
+                                ? AppLocalizations.of(
+                                    context,
+                                  )!.homeSpotifySynced
+                                : AppLocalizations.of(
+                                    context,
+                                  )!.homeSpotifyPersonalize,
+                            style: VibraTextStyles.bodySmall,
+                          ),
+                        ),
+                        if (AppConstants.spotifyEnabled && !hasSpotify)
+                          TextButton(
+                            onPressed: () => context.push('/spotify-connect'),
+                            child: Text(
+                              AppLocalizations.of(context)!.commonConnect,
+                            ),
+                          ),
+                      ],
                     ),
                   ],
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                child: Container(
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: VibraSpacing.borderSmall,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Container(
-                  height: 24,
-                  width: 140,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              SizedBox(
-                height: 310,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: 2,
-                  itemBuilder: (context, _) => Container(
-                    width: 300,
-                    margin: const EdgeInsets.only(right: 14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: VibraSpacing.borderLarge,
+              ).animate().fadeIn(duration: 320.ms).slideY(begin: -0.04, end: 0),
+            ),
+            if (needsProfile)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+                  child: VibraSurface(
+                    color: t.accentSoft,
+                    borderColor: t.accentPrimary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 13,
+                    ),
+                    onTap: () => context.push('/profile'),
+                    semanticLabel: AppLocalizations.of(
+                      context,
+                    )!.homeCompleteProfile,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.tune_rounded,
+                          color: t.textPrimary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            AppLocalizations.of(context)!.homeShapeVibra,
+                            style: TextStyle(
+                              color: t.textPrimary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_outward_rounded,
+                          color: t.textPrimary,
+                          size: 18,
+                        ),
+                      ],
                     ),
                   ),
+                ).animate().fadeIn(delay: 80.ms, duration: 300.ms),
+              ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  needsProfile ? 28 : 30,
+                  20,
+                  12,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context)!.homeNextEvent,
+                            style: VibraTextStyles.labelSmall.copyWith(
+                              color: t.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            AppConstants.spotifyEnabled
+                                ? l10n.homeForYouTitle
+                                : l10n.navEvents,
+                            style: VibraTextStyles.headlineLarge,
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => context.go('/explore'),
+                      child: Text(AppLocalizations.of(context)!.commonAll),
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn(delay: 130.ms, duration: 320.ms),
+            ),
+            if (featured.isNotEmpty)
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 420,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: featured.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 14),
+                    itemBuilder: (context, index) =>
+                        SizedBox(
+                          width: 304,
+                          child: VibraEventFeature(
+                            event: featured[index],
+                            onTap: () => context.push(
+                              '/event-detail',
+                              extra: featured[index],
+                            ),
+                          ),
+                        ).animate().fadeIn(
+                          delay: Duration(milliseconds: 130 + index * 70),
+                          duration: 380.ms,
+                        ),
+                  ),
+                ),
+              )
+            else
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _HomeEmptyEvents(
+                    onTap: () => context.go('/explore'),
+                    hasError: feedStatus.hasError,
+                    onRetry: _refresh,
+                  ),
+                ),
+              ),
+            if (!AppConstants.spotifyEnabled)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                  child: Column(
+                    children: [
+                      _LaunchDestination(
+                        icon: Icons.people_outline_rounded,
+                        title: l10n.launchCommunityTitle,
+                        body: l10n.launchCommunityBody,
+                        onTap: () => context.go('/social-match'),
+                      ),
+                      const SizedBox(height: 12),
+                      _LaunchDestination(
+                        icon: Icons.bookmark_outline_rounded,
+                        title: l10n.launchSavedTitle,
+                        body: l10n.launchSavedBody,
+                        onTap: () => context.push('/my-events'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            if (nearby.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: _EditorialSectionTitle(
+                  eyebrow: AppLocalizations.of(context)!.homeNearbyEyebrow,
+                  title: l10n.homeNearYouTitle,
+                  action: l10n.homeNearYouAction,
+                  onActionTap: () => context.go('/explore'),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverList.builder(
+                  itemCount: nearby.length,
+                  itemBuilder: (context, index) =>
+                      VibraEventRow(
+                        event: nearby[index],
+                        onTap: () =>
+                            context.push('/event-detail', extra: nearby[index]),
+                        showDivider: index != nearby.length - 1,
+                      ).animate().fadeIn(
+                        delay: Duration(milliseconds: 100 + index * 45),
+                        duration: 260.ms,
+                      ),
                 ),
               ),
             ],
+            if (trending.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: _EditorialSectionTitle(
+                  eyebrow: AppLocalizations.of(context)!.homeTrendingEyebrow,
+                  title: l10n.homeTrendingTitle,
+                  action: l10n.homeTrendingAction,
+                  onActionTap: () => context.go('/explore'),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 148),
+                sliver: SliverList.builder(
+                  itemCount: trending.length,
+                  itemBuilder: (context, index) =>
+                      VibraEventRow(
+                        event: trending[index],
+                        onTap: () => context.push(
+                          '/event-detail',
+                          extra: trending[index],
+                        ),
+                        showDivider: index != trending.length - 1,
+                      ).animate().fadeIn(
+                        delay: Duration(milliseconds: 100 + index * 45),
+                        duration: 260.ms,
+                      ),
+                ),
+              ),
+            ] else
+              const SliverPadding(padding: EdgeInsets.only(bottom: 148)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LaunchDestination extends StatelessWidget {
+  const _LaunchDestination({
+    required this.icon,
+    required this.title,
+    required this.body,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => VibraSurface(
+    onTap: onTap,
+    semanticLabel: title,
+    padding: const EdgeInsets.all(16),
+    child: Row(
+      children: [
+        Icon(icon, color: context.vibraTokens.accentPrimary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: VibraTextStyles.titleMedium),
+              const SizedBox(height: 4),
+              Text(body, style: VibraTextStyles.bodySmall),
+            ],
           ),
         ),
-      );
-    }
+        const SizedBox(width: 8),
+        const Icon(Icons.arrow_outward_rounded, size: 18),
+      ],
+    ),
+  );
+}
 
-    final displayName = profile.displayName ?? profile.username;
+class _EditorialSectionTitle extends StatelessWidget {
+  const _EditorialSectionTitle({
+    required this.eyebrow,
+    required this.title,
+    required this.action,
+    required this.onActionTap,
+  });
 
-    return VibraPageScaffold(
-      child: CustomScrollView(
-        slivers: [
-          const SliverPadding(padding: EdgeInsets.only(top: 20)),
-          // Greeting Header
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _getGreeting(context),
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: VibraColors.accent,
-                      letterSpacing: 1.2,
-                      fontWeight: FontWeight.w600,
-                    ),
+  final String eyebrow;
+  final String title;
+  final String action;
+  final VoidCallback onActionTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.vibraTokens;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 38, 20, 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  eyebrow,
+                  style: VibraTextStyles.labelSmall.copyWith(
+                    color: t.textSecondary,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    displayName,
-                    style: theme.textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.05, end: 0),
-          ),
-
-          // Added extra spacing instead of the Search Bar
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
-
-          // Incomplete Profile Banner
-          if ((profile.spotifyId == null || profile.spotifyId!.isEmpty) ||
-              (profile.avatarUrl == null || profile.avatarUrl!.isEmpty))
-            SliverToBoxAdapter(
-              child:
-                  VibraGlassmorphicCard(
-                        margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                        padding: const EdgeInsets.all(18),
-                        borderColor: VibraColors.primary.withValues(alpha: 0.4),
-                        gradient: LinearGradient(
-                          colors: [
-                            VibraColors.primary.withValues(alpha: 0.15),
-                            VibraColors.surfaceElevated.withValues(alpha: 0.8),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: VibraColors.primary.withValues(
-                                      alpha: 0.2,
-                                    ),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.person_pin_rounded,
-                                    color: VibraColors.primary,
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Completa il tuo profilo',
-                                        style: theme.textTheme.titleMedium
-                                            ?.copyWith(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'Per suggerimenti migliori',
-                                        style: theme.textTheme.bodySmall
-                                            ?.copyWith(
-                                              color: VibraColors.textSecondary,
-                                            ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Text(
-                                        'Aggiungi una foto o collega Spotify per permetterci di suggerirti gli eventi migliori.',
-                                        style: theme.textTheme.bodyMedium
-                                            ?.copyWith(
-                                              color: VibraColors.textPrimary
-                                                  .withValues(alpha: 0.9),
-                                              height: 1.4,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () => context.push(
-                                  '/profile',
-                                ), // or somewhere else
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: VibraColors.primary,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                  ),
-                                  elevation: 4,
-                                  shadowColor: VibraColors.primary.withValues(
-                                    alpha: 0.4,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: VibraSpacing.borderFull,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Vai al Profilo',
-                                      style: VibraTextStyles.labelLarge
-                                          .copyWith(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w800,
-                                            letterSpacing: 0.8,
-                                          ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Icon(
-                                      Icons.arrow_forward_rounded,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                      .animate()
-                      .fadeIn(delay: 150.ms, duration: 450.ms)
-                      .slideY(begin: 0.1, end: 0),
-            ),
-
-          // For You Section
-          SliverToBoxAdapter(
-            child: VibraSectionHeader(
-              title: l10n.homeForYouTitle,
-              subtitle: l10n.homeForYouSubtitle,
-            ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 8)),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 310,
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                scrollDirection: Axis.horizontal,
-                itemCount: featured.length,
-                itemBuilder: (context, index) {
-                  final event = featured[index];
-                  return SizedBox(
-                    width: 300,
-                    child: VibraEventCard(
-                      event: event,
-                      onTap: () => context.push('/event-detail', extra: event),
-                    ).animate().scaleXY(begin: 0.96, end: 1.0),
-                  );
-                },
-              ),
+                ),
+                const SizedBox(height: 4),
+                Text(title, style: VibraTextStyles.headlineMedium),
+              ],
             ),
           ),
-
-          // Near You Section
-          if (nearby.isNotEmpty) ...[
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            SliverToBoxAdapter(
-              child: VibraSectionHeader(
-                title: l10n.homeNearYouTitle,
-                subtitle: l10n.homeNearYouSubtitle,
-                actionLabel: l10n.homeNearYouAction,
-                onActionTap: () => context.go('/explore'),
-              ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
-            ),
-            SliverList.builder(
-              itemCount: nearby.length,
-              itemBuilder: (context, index) {
-                final event = nearby[index];
-                return VibraEventCard(
-                  event: event,
-                  compact: true,
-                  onTap: () => context.push('/event-detail', extra: event),
-                ).animate().slideY(begin: 0.05, end: 0);
-              },
-            ),
-          ],
-
-          // Trending Section
-          if (trending.isNotEmpty) ...[
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            SliverToBoxAdapter(
-              child: VibraSectionHeader(
-                title: l10n.homeTrendingTitle,
-                subtitle: l10n.homeTrendingSubtitle,
-                actionLabel: l10n.homeTrendingAction,
-                onActionTap: () => context.go('/explore'),
-              ).animate().fadeIn(delay: 400.ms, duration: 400.ms),
-            ),
-            SliverList.builder(
-              itemCount: trending.length,
-              itemBuilder: (context, index) {
-                final event = trending[index];
-                return VibraEventCard(
-                  event: event,
-                  compact: true,
-                  onTap: () => context.push('/event-detail', extra: event),
-                ).animate().slideY(begin: 0.05, end: 0);
-              },
-            ),
-          ],
-          const SliverPadding(padding: EdgeInsets.only(bottom: 140)),
+          TextButton(onPressed: onActionTap, child: Text(action)),
         ],
+      ),
+    );
+  }
+}
+
+class _HomeEmptyEvents extends StatelessWidget {
+  const _HomeEmptyEvents({
+    required this.onTap,
+    required this.hasError,
+    required this.onRetry,
+  });
+
+  final bool hasError;
+  final VoidCallback onRetry;
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.vibraTokens;
+    return VibraSurface(
+      padding: const EdgeInsets.all(20),
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 140,
+            child: VibraSignalWave(
+              height: 32,
+              color: t.accentPrimary,
+              secondaryColor: t.textPrimary,
+              amplitude: 7,
+              animate: true,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            hasError
+                ? AppLocalizations.of(context)!.homeFeedError
+                : AppLocalizations.of(context)!.homeFeedEmpty,
+            style: VibraTextStyles.titleLarge,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            hasError
+                ? AppLocalizations.of(context)!.homeFeedErrorBody
+                : AppLocalizations.of(context)!.homeFeedEmptyBody,
+            style: VibraTextStyles.bodySmall,
+          ),
+          if (hasError) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: Text(AppLocalizations.of(context)!.commonRetry),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _HomeSkeleton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final t = context.vibraTokens;
+    return VibraPageScaffold(
+      child: Shimmer.fromColors(
+        baseColor: t.shimmerBase,
+        highlightColor: t.shimmerHighlight,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 28, 20, 148),
+          children: [
+            Container(width: 110, height: 12, color: t.surfaceElevated),
+            const SizedBox(height: 10),
+            Container(width: 260, height: 38, color: t.surfaceElevated),
+            const SizedBox(height: 40),
+            Container(width: 150, height: 24, color: t.surfaceElevated),
+            const SizedBox(height: 14),
+            Container(height: 420, color: t.surfaceElevated),
+          ],
+        ),
       ),
     );
   }

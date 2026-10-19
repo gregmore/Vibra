@@ -1,0 +1,54 @@
+00:00 +0: loading /path/to/user/development/vibra/test/core/auth_boundary_test.dart
+00:00 +0: /path/to/user/development/vibra/test/core/private_media_url_test.dart: legacy signed chat URL becomes authenticated URL without capability
+00:00 +1: /path/to/user/development/vibra/test/core/private_media_url_test.dart: rejects arbitrary origins, buckets and traversal before adding credentials
+00:00 +2: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: light semantic contrast primary text on backgroundPrimary is AA
+00:00 +3: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: light semantic contrast secondary text on backgroundPrimary is AA
+00:00 +4: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: light semantic contrast primary text on backgroundSecondary is AA
+00:00 +5: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: light semantic contrast secondary text on backgroundSecondary is AA
+00:00 +6: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: light semantic contrast primary text on surface is AA
+00:00 +7: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: light semantic contrast secondary text on surface is AA
+00:00 +8: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: light semantic contrast primary text on surfaceElevated is AA
+00:00 +9: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: light semantic contrast secondary text on surfaceElevated is AA
+00:00 +10: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: light semantic contrast primary text on surfaceMuted is AA
+00:00 +11: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: light semantic contrast secondary text on surfaceMuted is AA
+00:00 +12: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: light semantic contrast CTA copy is AA on both gradient endpoints
+00:00 +13: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: light semantic contrast semantic status copy is AA on cards
+00:00 +14: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: light semantic contrast image copy is AA over the opaque copy panel
+00:00 +15: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: light semantic contrast image scrim protects white copy from a white photograph
+00:00 +16: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: dark semantic contrast primary text on backgroundPrimary is AA
+00:00 +17: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: dark semantic contrast secondary text on backgroundPrimary is AA
+00:00 +18: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: dark semantic contrast primary text on backgroundSecondary is AA
+00:00 +19: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: dark semantic contrast secondary text on backgroundSecondary is AA
+00:00 +20: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: dark semantic contrast primary text on surface is AA
+00:00 +21: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: dark semantic contrast secondary text on surface is AA
+00:00 +22: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: dark semantic contrast primary text on surfaceElevated is AA
+00:00 +23: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: dark semantic contrast secondary text on surfaceElevated is AA
+00:00 +24: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: dark semantic contrast primary text on surfaceMuted is AA
+00:00 +25: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: dark semantic contrast secondary text on surfaceMuted is AA
+00:00 +26: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: dark semantic contrast CTA copy is AA on both gradient endpoints
+00:00 +27: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: dark semantic contrast semantic status copy is AA on cards
+00:00 +28: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: dark semantic contrast image copy is AA over the opaque copy panel
+00:00 +29: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: dark semantic contrast image scrim protects white copy from a white photograph
+00:00 +30: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: large app canvases avoid pure black and pure white
+00:00 +31: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: informational type never drops below the agreed floor
+00:00 +32: /path/to/user/development/vibra/test/core/theme/vibra_contrast_test.dart: paragraph styles use at least 1.4 line height
+00:00 +33: /path/to/user/development/vibra/test/core/auth_boundary_test.dart: failed login B cannot leave the previous Supabase account A active
+00:00 +34: /path/to/user/development/vibra/test/core/theme/vibra_theme_test.dart: light and dark themes expose their own semantic token values
+00:00 +35: /path/to/user/development/vibra/test/core/theme/vibra_theme_test.dart: light and dark themes expose their own semantic token values
+00:00 +36: /path/to/user/development/vibra/test/core/auth_boundary_test.dart: OAuth callback validates exact redirect, one state, and one code
+00:00 +37: /path/to/user/development/vibra/test/core/theme/vibra_theme_test.dart: theme choices map to Flutter theme modes
+00:00 +38: /path/to/user/development/vibra/test/core/auth_boundary_test.dart: Spotify retry is bounded and confined to third-party.example
+00:00 +39: /path/to/user/development/vibra/test/core/auth_boundary_test.dart: Spotify retry is bounded and confined to api.spotify.com
+00:00 +40: /path/to/user/development/vibra/test/core/spotify_refresh_boundary_test.dart: refresh with account change=false keeps identity boundary
+00:00 +41: /path/to/user/development/vibra/test/core/spotify_refresh_boundary_test.dart: refresh with account change=true keeps identity boundary
+00:00 +42: /path/to/user/development/vibra/test/core/security_hardening_test.dart: support diagnostics redact bearer, query and JSON secrets
+00:00 +43: /path/to/user/development/vibra/test/core/security_hardening_test.dart: private cache migrates away from preferences and clears on logout
+00:01 +44: /path/to/user/development/vibra/test/data/event_loading_test.dart: Home publishes database events before external enrichment and deduplicates refresh
+00:01 +45: /path/to/user/development/vibra/test/data/event_loading_test.dart: Home publishes database events before external enrichment and deduplicates refresh
+00:01 +46: /path/to/user/development/vibra/test/data/event_loading_test.dart: Home publishes database events before external enrichment and deduplicates refresh
+00:01 +47: /path/to/user/development/vibra/test/data/event_loading_test.dart: Map publishes database events while external search is pending
+00:01 +48: /path/to/user/development/vibra/test/unit/spotify_account_link_verification_test.dart: Spotify Account Single-User Link Verification exchangeCode succeeds when Spotify account is not linked to any other user
+00:01 +49: /path/to/user/development/vibra/test/data/event_loading_test.dart: Map keeps database events when external search fails
+00:01 +50: /path/to/user/development/vibra/test/unit/spotify_account_link_verification_test.dart: Spotify Account Single-User Link Verification exchangeCode throws ServerException with Italian message when Spotify account is already linked to another user
+00:01 +51: /path/to/user/development/vibra/test/unit/spotify_account_link_verification_test.dart: (tearDownAll)
+00:01 +51: All tests passed!

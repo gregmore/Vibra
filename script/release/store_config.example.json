@@ -1,0 +1,23 @@
+{
+  "supabase_project_ref": "",
+  "legal_name": "",
+  "legal_address": "",
+  "support_email": "",
+  "privacy_email": "",
+  "legal_email": "",
+  "privacy_url": "",
+  "terms_url": "",
+  "support_url": "",
+  "account_deletion_url": "",
+  "apple_team_id": "",
+  "backend_release_deployed": false,
+  "spotify_public_access_verified": false,
+  "push_delivery_verified": false,
+  "moderation_operations_verified": false,
+  "privacy_controls_verified": false,
+  "physical_device_qa_verified": false,
+  "spotify_enabled": false,
+  "spotify_disabled_verified": false,
+  "developer_accounts_registered": false,
+  "public_site_url": ""
+}

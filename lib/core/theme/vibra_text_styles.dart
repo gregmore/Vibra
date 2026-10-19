@@ -1,161 +1,124 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'vibra_colors.dart';
 
-/// Tipografia del brand Vibra.
-/// - Syne: titoli bold e moderni
-/// - Inter: body text leggibile
-/// - JetBrains Mono: dati numerici, score, percentuali
+/// Due sole voci: Syne rende Vibra riconoscibile, Inter rende tutto leggibile.
 class VibraTextStyles {
   VibraTextStyles._();
 
-  // ── Display (Syne) ───────────────────────────────────────
-  /// Titolo display grande — per schermate principali.
-  static TextStyle displayLarge = GoogleFonts.syne(
-    fontSize: 36,
-    fontWeight: FontWeight.w700,
-    color: VibraColors.textPrimary,
-    letterSpacing: -0.5,
-    height: 1.2,
-  );
+  static const double minimumBodyFontSize = 12;
+  static const double minimumLabelFontSize = 11;
+  static const double paragraphLineHeight = 1.5;
 
-  /// Titolo display medio.
-  static TextStyle displayMedium = GoogleFonts.syne(
+  static final TextStyle displayLarge = const TextStyle(
+    fontFamily: 'Syne',
+    fontSize: 48,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -2.0,
+    height: 0.96,
+  );
+  static final TextStyle displayMedium = const TextStyle(
+    fontFamily: 'Syne',
+    fontSize: 34,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -1.2,
+    height: 1.02,
+  );
+  static final TextStyle displaySmall = const TextStyle(
+    fontFamily: 'Syne',
     fontSize: 28,
     fontWeight: FontWeight.w700,
-    color: VibraColors.textPrimary,
+    letterSpacing: -0.8,
+    height: 1.08,
+  );
+
+  static final TextStyle headlineLarge = const TextStyle(
+    fontFamily: 'Syne',
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
     letterSpacing: -0.5,
+    height: 1.12,
+  );
+  static final TextStyle headlineMedium = const TextStyle(
+    fontFamily: 'Syne',
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.35,
+    height: 1.18,
+  );
+  static final TextStyle headlineSmall = const TextStyle(
+    fontFamily: 'Syne',
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.25,
+    height: 1.22,
+  );
+
+  static final TextStyle titleLarge = const TextStyle(
+    fontFamily: 'Syne',
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+    height: 1.22,
+  );
+  static final TextStyle titleMedium = const TextStyle(
+    fontFamily: 'Syne',
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    height: 1.28,
+  );
+  static final TextStyle titleSmall = const TextStyle(
+    fontFamily: 'Inter',
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    height: 1.3,
+  );
+
+  static final TextStyle bodyLarge = const TextStyle(
+    fontFamily: 'Inter',
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    height: paragraphLineHeight,
+  );
+  static final TextStyle bodyMedium = const TextStyle(
+    fontFamily: 'Inter',
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    height: paragraphLineHeight,
+  );
+  static final TextStyle bodySmall = const TextStyle(
+    fontFamily: 'Inter',
+    fontSize: minimumBodyFontSize,
+    fontWeight: FontWeight.w400,
+    height: 1.4,
+  );
+
+  static final TextStyle labelLarge = const TextStyle(
+    fontFamily: 'Inter',
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    height: 1.25,
+  );
+  static final TextStyle labelMedium = const TextStyle(
+    fontFamily: 'Inter',
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    height: 1.25,
+  );
+  static final TextStyle labelSmall = const TextStyle(
+    fontFamily: 'Inter',
+    fontSize: minimumLabelFontSize,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0.7,
     height: 1.25,
   );
 
-  /// Titolo display piccolo.
-  static TextStyle displaySmall = GoogleFonts.syne(
-    fontSize: 24,
-    fontWeight: FontWeight.w600,
-    color: VibraColors.textPrimary,
-    height: 1.3,
+  // Gli score usano il display del brand, non un font tecnico separato.
+  static final TextStyle scoreXL = displayLarge.copyWith(
+    fontSize: 64,
+    letterSpacing: -3,
   );
+  static final TextStyle scoreLarge = displayMedium.copyWith(fontSize: 30);
+  static final TextStyle scoreMedium = displaySmall.copyWith(fontSize: 20);
+  static final TextStyle scoreSmall = labelLarge;
 
-  // ── Headlines (Syne) ─────────────────────────────────────
-  static TextStyle headlineLarge = GoogleFonts.syne(
-    fontSize: 22,
-    fontWeight: FontWeight.w600,
-    color: VibraColors.textPrimary,
-    height: 1.3,
-  );
-
-  static TextStyle headlineMedium = GoogleFonts.syne(
-    fontSize: 20,
-    fontWeight: FontWeight.w600,
-    color: VibraColors.textPrimary,
-    height: 1.3,
-  );
-
-  static TextStyle headlineSmall = GoogleFonts.syne(
-    fontSize: 18,
-    fontWeight: FontWeight.w600,
-    color: VibraColors.textPrimary,
-    height: 1.35,
-  );
-
-  // ── Titles (Syne) ────────────────────────────────────────
-  static TextStyle titleLarge = GoogleFonts.syne(
-    fontSize: 18,
-    fontWeight: FontWeight.w600,
-    color: VibraColors.textPrimary,
-    height: 1.35,
-  );
-
-  static TextStyle titleMedium = GoogleFonts.syne(
-    fontSize: 16,
-    fontWeight: FontWeight.w500,
-    color: VibraColors.textPrimary,
-    height: 1.4,
-  );
-
-  static TextStyle titleSmall = GoogleFonts.syne(
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    color: VibraColors.textPrimary,
-    height: 1.4,
-  );
-
-  // ── Body (Inter) ─────────────────────────────────────────
-  static TextStyle bodyLarge = GoogleFonts.inter(
-    fontSize: 16,
-    fontWeight: FontWeight.w400,
-    color: VibraColors.textPrimary,
-    height: 1.5,
-  );
-
-  static TextStyle bodyMedium = GoogleFonts.inter(
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    color: VibraColors.textPrimary,
-    height: 1.5,
-  );
-
-  static TextStyle bodySmall = GoogleFonts.inter(
-    fontSize: 12,
-    fontWeight: FontWeight.w400,
-    color: VibraColors.textSecondary,
-    height: 1.4,
-  );
-
-  // ── Labels (Inter) ───────────────────────────────────────
-  static TextStyle labelLarge = GoogleFonts.inter(
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    color: VibraColors.textPrimary,
-    height: 1.3,
-  );
-
-  static TextStyle labelMedium = GoogleFonts.inter(
-    fontSize: 12,
-    fontWeight: FontWeight.w500,
-    color: VibraColors.textSecondary,
-    height: 1.3,
-  );
-
-  static TextStyle labelSmall = GoogleFonts.inter(
-    fontSize: 11,
-    fontWeight: FontWeight.w500,
-    color: VibraColors.textSecondary,
-    letterSpacing: 0.5,
-    height: 1.3,
-  );
-
-  // ── Dati / Score (JetBrains Mono) ────────────────────────
-  /// Per score numerici giganti (es: "94%" centrale).
-  static TextStyle scoreXL = GoogleFonts.jetBrainsMono(
-    fontSize: 56,
-    fontWeight: FontWeight.w800,
-    color: VibraColors.matchHigh,
-    letterSpacing: -2.0,
-  );
-
-  /// Per score numerici grandi (es: "94%").
-  static TextStyle scoreLarge = GoogleFonts.jetBrainsMono(
-    fontSize: 28,
-    fontWeight: FontWeight.w700,
-    color: VibraColors.matchHigh,
-  );
-
-  /// Per score numerici medi.
-  static TextStyle scoreMedium = GoogleFonts.jetBrainsMono(
-    fontSize: 18,
-    fontWeight: FontWeight.w600,
-    color: VibraColors.matchHigh,
-  );
-
-  /// Per dati e metriche piccoli.
-  static TextStyle scoreSmall = GoogleFonts.jetBrainsMono(
-    fontSize: 13,
-    fontWeight: FontWeight.w500,
-    color: VibraColors.textSecondary,
-  );
-
-  /// Crea un [TextTheme] completo per Material 3.
   static TextTheme get textTheme => TextTheme(
     displayLarge: displayLarge,
     displayMedium: displayMedium,

@@ -5,13 +5,56 @@ class AppConstants {
   // ── App ──────────────────────────────────────────────────
   static const String appName = 'Vibra';
   static const String appSlogan = 'Non ascoltare la musica. Vivila.';
-  static const String appVersion = '0.1.0';
-  static const String appBuildNumber = '1';
+  static const String appVersion = '1.0.0';
+  static const String appBuildNumber = '3';
+
+  /// First public release: re-enable only after provider approval and QA.
+  static const bool spotifyEnabled = bool.fromEnvironment(
+    'SPOTIFY_ENABLED',
+    defaultValue: false,
+  );
   static const String androidPackageName = 'com.vibra.app';
   static const String iOSBundleId = 'com.vibra.app';
-  static const String supportEmail = 'support@vibra.app';
-  static const String privacyEmail = 'privacy@vibra.app';
-  static const String legalEmail = 'legal@vibra.app';
+  // Public release metadata is injected from local configuration, never Git.
+  static const String supportEmail = String.fromEnvironment(
+    'VIBRA_SUPPORT_EMAIL',
+    defaultValue: 'support@example.com',
+  );
+
+  /// Obiettivo per la prima risposta, da confermare nella gestione operativa.
+  static const String supportResponseSla = 'entro 48 ore lavorative';
+  static const String privacyEmail = String.fromEnvironment(
+    'VIBRA_PRIVACY_EMAIL',
+    defaultValue: 'privacy@example.com',
+  );
+  static const String legalEmail = String.fromEnvironment(
+    'VIBRA_LEGAL_EMAIL',
+    defaultValue: 'legal@example.com',
+  );
+  static const String legalOwner = String.fromEnvironment(
+    'VIBRA_LEGAL_OWNER',
+    defaultValue: 'Titolare da configurare',
+  );
+  static const String publicSiteUrl = String.fromEnvironment(
+    'VIBRA_PUBLIC_SITE_URL',
+    defaultValue: 'https://example.com',
+  );
+  static const String privacyUrl = String.fromEnvironment(
+    'VIBRA_PRIVACY_URL',
+    defaultValue: '$publicSiteUrl/privacy.html',
+  );
+  static const String termsUrl = String.fromEnvironment(
+    'VIBRA_TERMS_URL',
+    defaultValue: '$publicSiteUrl/termini.html',
+  );
+  static const String supportUrl = String.fromEnvironment(
+    'VIBRA_SUPPORT_URL',
+    defaultValue: '$publicSiteUrl/supporto.html',
+  );
+  static const String accountDeletionUrl = String.fromEnvironment(
+    'VIBRA_ACCOUNT_DELETION_URL',
+    defaultValue: '$publicSiteUrl/elimina-account.html',
+  );
 
   // ── Raggi di ricerca eventi (in km) ──────────────────────
   static const List<int> searchRadii = [25, 50, 100, 250];
@@ -32,9 +75,10 @@ class AppConstants {
   static const double weightProximity = 0.15;
   static const double weightPopularity = 0.10;
 
-  /// Pesi dell'algoritmo di compatibilità utenti.
-  static const double weightUserArtists = 0.60;
-  static const double weightUserGenres = 0.40;
+  /// Pesi dell'algoritmo di compatibilità utenti v2.
+  static const double weightUserArtists = 0.50;
+  static const double weightUserGenres = 0.35;
+  static const double weightUserNicheBonus = 0.15;
 
   // ── Live Vibra ───────────────────────────────────────────
   /// Raggio massimo (in metri) per attivare la modalità Live.
@@ -58,7 +102,7 @@ class AppConstants {
   static const int artistScoreDecrement = 1;
 
   // ── UI ────────────────────────────────────────────────────
-  static const double cardBorderRadius = 20.0;
+  static const double cardBorderRadius = 16.0;
   static const double bottomSheetBorderRadius = 24.0;
   static const double buttonBorderRadius = 50.0;
   static const double glassmorphismBlur = 20.0;

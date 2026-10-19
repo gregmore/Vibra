@@ -1,3 +1,5 @@
+import 'music_stat_point.dart';
+
 class MusicArtistPreference {
   const MusicArtistPreference({
     required this.id,
@@ -39,6 +41,7 @@ class MusicProfile {
     required this.topArtists,
     required this.topTracks,
     required this.topGenres,
+    this.listeningHeatmap = const [],
     this.lastSyncedAt,
   });
 
@@ -47,5 +50,6 @@ class MusicProfile {
   final List<MusicArtistPreference> topArtists;
   final List<MusicTrackPreference> topTracks;
   final List<GenrePreference> topGenres;
+  final List<MusicStatPoint> listeningHeatmap;
   final DateTime? lastSyncedAt;
 }

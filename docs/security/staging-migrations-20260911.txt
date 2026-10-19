@@ -1,0 +1,173 @@
+Finished supabase db push.
+
+Using workdir /path/to/user/.supabase/vibra-staging/workspace
+Connecting to remote database...
+Do you want to push these migrations to the remote database?
+ • 0001_init_vibra.sql
+ • 0002_user_matches_and_push_tokens.sql
+ • 0003_auth_errors_log.sql
+ • 0004_chat_notification_trigger.sql
+ • 0005_optimize_geo_and_rls.sql
+ • 0006_database_optimizations.sql
+ • 0007_delete_user_account.sql
+ • 0008_fix_delete_user.sql
+ • 0009_add_top_genres.sql
+ • 0010_enable_realtime.sql
+ • 0011_realtime_and_push_settings.sql
+ • 0012_security_audit_triggers.sql
+ • 0013_onboarding_fields.sql
+ • 0014_chat_features_moderation.sql
+ • 0015_tickets_and_status.sql
+ • 0016_recommendation_engine.sql
+ • 20260724181159_add_push_enabled.sql
+ • 20260728000000_find_compatible_users_rpc.sql
+ • 20260809000000_add_listening_heatmap.sql
+ • 20260818000000_setup_notifications_cron.sql
+ • 20260818000001_security_and_optimizations.sql
+ • 20260818000002_fix_users_public_view.sql
+ • 20260822000000_unique_spotify_id.sql
+ • 20260822000001_backend_security_and_optimizations.sql
+ • 20260822000002_follows_and_message_requests.sql
+ • 20260826000000_harden_identity_storage_and_rpc.sql
+ • 20260827000000_lock_down_security_definer_execute.sql
+ • 20260827000001_revoke_public_security_definer_execute.sql
+ • 20260827000002_complete_backend_hardening.sql
+ • 20260827000003_resolve_advisor_rls_and_view_findings.sql
+ • 20260827000004_gdpr_rights_retention.sql
+ • 20260827000005_support_reports.sql
+ • 20260827000006_retention_and_notification_analytics.sql
+ • 20260828000000_postgis_geo_query_optimization.sql
+ • 20260828000001_harden_users_location_trigger.sql
+ • 20260829000000_add_theme_preference.sql
+ • 20260830000000_test_data_segmentation.sql
+ • 20260830000001_explicit_api_grants.sql
+ • 20260911000000_pentest_identity_and_sessions.sql
+ • 20260911000001_pentest_rate_limits.sql
+ • 20260911000002_pentest_media_ownership.sql
+ • 20260911000003_password_attempt_hook.sql
+ • 20260911000004_validated_image_uploads.sql
+ • 20260911000005_music_discovery_consent.sql
+
+ [Y/n] y
+Applying migration 0001_init_vibra.sql...
+NOTICE (42710): extension "pgcrypto" already exists, skipping
+NOTICE (00000): view "users_public" does not exist, skipping
+Applying migration 0002_user_matches_and_push_tokens.sql...
+Applying migration 0003_auth_errors_log.sql...
+Applying migration 0004_chat_notification_trigger.sql...
+NOTICE (00000): trigger "live_messages_notify_trigger" for relation "public.live_messages" does not exist, skipping
+Applying migration 0005_optimize_geo_and_rls.sql...
+Applying migration 0006_database_optimizations.sql...
+Applying migration 0007_delete_user_account.sql...
+NOTICE (00000): trigger "trg_delete_auth_user" for relation "public.users" does not exist, skipping
+Applying migration 0008_fix_delete_user.sql...
+Applying migration 0009_add_top_genres.sql...
+NOTICE (42701): column "top_genres" of relation "music_profiles" already exists, skipping
+NOTICE (42701): column "top_tracks" of relation "music_profiles" already exists, skipping
+Applying migration 0010_enable_realtime.sql...
+Applying migration 0011_realtime_and_push_settings.sql...
+NOTICE (00000): trigger "messages_notify_trigger" for relation "public.messages" does not exist, skipping
+NOTICE (00000): trigger "friendships_notify_trigger" for relation "public.friendships" does not exist, skipping
+NOTICE (00000): trigger "user_matches_notify_trigger" for relation "public.user_matches" does not exist, skipping
+Applying migration 0012_security_audit_triggers.sql...
+NOTICE (00000): trigger "trg_messages_immutable" for relation "public.messages" does not exist, skipping
+NOTICE (00000): trigger "trg_friendships_immutable" for relation "public.friendships" does not exist, skipping
+NOTICE (00000): trigger "trg_event_attendees_immutable" for relation "public.event_attendees" does not exist, skipping
+NOTICE (00000): trigger "trg_notifications_immutable" for relation "public.notifications" does not exist, skipping
+NOTICE (00000): trigger "trg_user_matches_immutable" for relation "public.user_matches" does not exist, skipping
+WARNING (25P01): there is no transaction in progress
+Applying migration 0013_onboarding_fields.sql...
+Applying migration 0014_chat_features_moderation.sql...
+NOTICE (00000): trigger "tr_check_block_before_message" for relation "public.messages" does not exist, skipping
+NOTICE (00000): trigger "tr_first_contact_limiter" for relation "public.messages" does not exist, skipping
+NOTICE (00000): trigger "tr_content_filter" for relation "public.messages" does not exist, skipping
+Applying migration 0015_tickets_and_status.sql...
+Applying migration 0016_recommendation_engine.sql...
+Applying migration 20260724181159_add_push_enabled.sql...
+Applying migration 20260728000000_find_compatible_users_rpc.sql...
+Applying migration 20260809000000_add_listening_heatmap.sql...
+Applying migration 20260818000000_setup_notifications_cron.sql...
+NOTICE (42710): extension "pg_net" already exists, skipping
+NOTICE (00000): Notification cron not scheduled: add the vibra_service_role_key Vault secret, then run supabase/setup_notification_cron.sql.
+Applying migration 20260818000001_security_and_optimizations.sql...
+NOTICE (42P07): relation "idx_friendships_requester" already exists, skipping
+NOTICE (42P07): relation "idx_friendships_receiver" already exists, skipping
+Applying migration 20260818000002_fix_users_public_view.sql...
+Applying migration 20260822000000_unique_spotify_id.sql...
+Applying migration 20260822000001_backend_security_and_optimizations.sql...
+NOTICE (00000): view "music_profiles_public" does not exist, skipping
+Applying migration 20260822000002_follows_and_message_requests.sql...
+Applying migration 20260826000000_harden_identity_storage_and_rpc.sql...
+NOTICE (00000): trigger "trg_users_enforce_auth_email" for relation "public.users" does not exist, skipping
+NOTICE (00000): trigger "trg_auth_users_sync_profile_email" for relation "auth.users" does not exist, skipping
+NOTICE (00000): policy "avatars_insert_own_folder" for relation "storage.objects" does not exist, skipping
+NOTICE (00000): policy "avatars_update_own_folder" for relation "storage.objects" does not exist, skipping
+NOTICE (00000): policy "avatars_delete_own_folder" for relation "storage.objects" does not exist, skipping
+Applying migration 20260827000000_lock_down_security_definer_execute.sql...
+WARNING (01006): no privileges could be revoked for "st_estimatedextent"
+WARNING (01006): no privileges could be revoked for "st_estimatedextent"
+WARNING (01006): no privileges could be revoked for "st_estimatedextent"
+Applying migration 20260827000001_revoke_public_security_definer_execute.sql...
+WARNING (01006): no privileges could be revoked for "st_estimatedextent"
+WARNING (01006): no privileges could be revoked for "st_estimatedextent"
+WARNING (01006): no privileges could be revoked for "st_estimatedextent"
+Applying migration 20260827000002_complete_backend_hardening.sql...
+NOTICE (00000): trigger "trg_spotify_connections_updated_at" for relation "public.spotify_connections" does not exist, skipping
+NOTICE (00000): constraint "blocked_users_no_self" of relation "blocked_users" does not exist, skipping
+NOTICE (00000): policy "chat_media_insert_sender_folder" for relation "storage.objects" does not exist, skipping
+NOTICE (00000): policy "chat_media_delete_sender_folder" for relation "storage.objects" does not exist, skipping
+NOTICE (00000): policy "chat_media_select_participants" for relation "storage.objects" does not exist, skipping
+Applying migration 20260827000003_resolve_advisor_rls_and_view_findings.sql...
+NOTICE (00000): policy "profile_discovery_authenticated_read" for relation "public.profile_discovery" does not exist, skipping
+NOTICE (00000): trigger "trg_users_sync_profile_discovery" for relation "public.users" does not exist, skipping
+NOTICE (00000): policy "music_profile_discovery_authenticated_read" for relation "public.music_profile_discovery" does not exist, skipping
+NOTICE (00000): trigger "trg_music_profiles_sync_discovery" for relation "public.music_profiles" does not exist, skipping
+Applying migration 20260827000004_gdpr_rights_retention.sql...
+NOTICE (00000): policy "privacy_preferences_owner" for relation "public.privacy_preferences" does not exist, skipping
+Applying migration 20260827000005_support_reports.sql...
+Applying migration 20260827000006_retention_and_notification_analytics.sql...
+NOTICE (00000): policy "notification_preferences_owner" for relation "public.notification_preferences" does not exist, skipping
+NOTICE (00000): policy "notification_campaigns_owner_read" for relation "public.notification_campaigns" does not exist, skipping
+NOTICE (00000): trigger "trg_users_track_retention_opt_out" for relation "public.users" does not exist, skipping
+Applying migration 20260828000000_postgis_geo_query_optimization.sql...
+NOTICE (42710): extension "postgis" already exists, skipping
+NOTICE (42701): column "location" of relation "events" already exists, skipping
+NOTICE (42701): column "last_location" of relation "users" already exists, skipping
+NOTICE (00000): trigger "trg_users_last_location" for relation "public.users" does not exist, skipping
+NOTICE (42P07): relation "idx_events_location_gist" already exists, skipping
+NOTICE (42P07): relation "idx_users_last_location_gist" already exists, skipping
+Applying migration 20260828000001_harden_users_location_trigger.sql...
+Applying migration 20260829000000_add_theme_preference.sql...
+Applying migration 20260830000000_test_data_segmentation.sql...
+NOTICE (00000): trigger "trg_users_enforce_test_segment" for relation "public.users" does not exist, skipping
+NOTICE (00000): policy "profile_discovery_same_segment_read" for relation "public.profile_discovery" does not exist, skipping
+NOTICE (00000): policy "music_profile_discovery_same_segment_read" for relation "public.music_profile_discovery" does not exist, skipping
+NOTICE (00000): policy "events_select_without_test_data" for relation "public.events" does not exist, skipping
+NOTICE (00000): policy "event_attendees_select_own" for relation "public.event_attendees" does not exist, skipping
+NOTICE (00000): trigger "trg_user_matches_same_test_segment" for relation "public.user_matches" does not exist, skipping
+NOTICE (00000): trigger "trg_friendships_same_test_segment" for relation "public.friendships" does not exist, skipping
+NOTICE (00000): trigger "trg_messages_same_test_segment" for relation "public.messages" does not exist, skipping
+NOTICE (00000): trigger "trg_follows_same_test_segment" for relation "public.follows" does not exist, skipping
+NOTICE (00000): trigger "trg_blocked_users_same_test_segment" for relation "public.blocked_users" does not exist, skipping
+Applying migration 20260830000001_explicit_api_grants.sql...
+Applying migration 20260911000000_pentest_identity_and_sessions.sql...
+Applying migration 20260911000001_pentest_rate_limits.sql...
+Applying migration 20260911000002_pentest_media_ownership.sql...
+Applying migration 20260911000003_password_attempt_hook.sql...
+Applying migration 20260911000004_validated_image_uploads.sql...
+Applying migration 20260911000005_music_discovery_consent.sql...
+Warning: failed to cache migrations catalog: error exporting pg-delta catalog: edge-runtime script produced no output:
+runtime has escaped from the event loop unexpectedly: event loop error: Error: Failed to read certificate file '/workspace/supabase/.temp/pgdelta/pgdelta-target-ca.crt': ENOENT: no such file or directory, open '/workspace/supabase/.temp/pgdelta/pgdelta-target-ca.crt'
+    at getCertValue (file:///var/tmp/sb-compile-edge-runtime/node_modules/localhost/@supabase/pg-delta/1.0.0-alpha.27/dist/core/plan/ssl-config.js:44:27)
+    at async parseSslConfig (file:///var/tmp/sb-compile-edge-runtime/node_modules/localhost/@supabase/pg-delta/1.0.0-alpha.27/dist/core/plan/ssl-config.js:62:23)
+    at async createManagedPool (file:///var/tmp/sb-compile-edge-runtime/node_modules/localhost/@supabase/pg-delta/1.0.0-alpha.27/dist/core/postgres-config.js:340:23)
+    at async file:///var/tmp/sb-compile-edge-runtime/index.ts:10:25
+main worker has been destroyed
+event loop error: Error: Failed to read certificate file '/workspace/supabase/.temp/pgdelta/pgdelta-target-ca.crt': ENOENT: no such file or directory, open '/workspace/supabase/.temp/pgdelta/pgdelta-target-ca.crt'
+    at getCertValue (file:///var/tmp/sb-compile-edge-runtime/node_modules/localhost/@supabase/pg-delta/1.0.0-alpha.27/dist/core/plan/ssl-config.js:44:27)
+    at async parseSslConfig (file:///var/tmp/sb-compile-edge-runtime/node_modules/localhost/@supabase/pg-delta/1.0.0-alpha.27/dist/core/plan/ssl-config.js:62:23)
+    at async createManagedPool (file:///var/tmp/sb-compile-edge-runtime/node_modules/localhost/@supabase/pg-delta/1.0.0-alpha.27/dist/core/postgres-config.js:340:23)
+    at async file:///var/tmp/sb-compile-edge-runtime/index.ts:10:25
+
+A new version of Supabase CLI is available: v2.117.0 (currently installed v2.109.0)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli

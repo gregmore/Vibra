@@ -1,0 +1,15 @@
+{
+  "release_flutter_asset_bundle_built": true,
+  "legacy_env_absent": true,
+  "only_allowlisted_keys": true,
+  "keys": [
+    "BANDSINTOWN_APP_ID",
+    "GOOGLE_IOS_CLIENT_ID",
+    "GOOGLE_WEB_CLIENT_ID",
+    "SPOTIFY_CLIENT_ID",
+    "SPOTIFY_REDIRECT_URI",
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_URL"
+  ],
+  "native_release_signed": false
+}

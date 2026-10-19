@@ -5,13 +5,6 @@
 A Dart implementation of Leaflet.markercluster for Flutter apps.
 This is a plugin for [flutter_map](https://github.com/johnpryan/flutter_map) package
 
-<div style="text-align: center"><table><tr>
-  <td style="text-align: center">
-  <a href="https://github.com/lpongetti/flutter_map_marker_cluster/blob/master/example.gif">
-    <img src="https://github.com/lpongetti/flutter_map_marker_cluster/blob/master/example.gif" width="200"/></a>
-</td>
-</tr></table></div>
-
 ## Usage
 
 Add flutter_map and  flutter_map_marker_cluster to your pubspec:

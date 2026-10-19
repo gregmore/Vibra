@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 import '../models/spotify_token_model.dart';
 import '../../core/config/env_config.dart';
 import '../../core/constants/api_constants.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/errors/exceptions.dart';
 import '../../core/utils/logger.dart';
 
@@ -13,6 +14,46 @@ class SpotifyAuthDatasource {
   final SupabaseClient supabaseClient;
 
   SpotifyAuthDatasource({required this.supabaseClient});
+
+  void _requireSpotifyEnabled() {
+    if (!AppConstants.spotifyEnabled) {
+      throw const ServerException(message: 'spotify_temporarily_unavailable');
+    }
+  }
+
+  static String validateCallback(
+    String callback,
+    String redirect,
+    String state,
+  ) {
+    final result = Uri.parse(callback);
+    final expected = Uri.parse(redirect);
+    if (state.isEmpty ||
+        result.scheme != expected.scheme ||
+        result.host != expected.host ||
+        result.port != expected.port ||
+        result.path != expected.path ||
+        result.userInfo.isNotEmpty ||
+        result.hasFragment ||
+        result.queryParametersAll['state']?.length != 1 ||
+        result.queryParameters['state'] != state) {
+      throw const AuthException(
+        message: 'Callback OAuth non valido. Riprova il collegamento.',
+      );
+    }
+    if (result.queryParameters.containsKey('error')) {
+      throw const AuthException(
+        message: 'Autorizzazione Spotify annullata o rifiutata.',
+      );
+    }
+    final codes = result.queryParametersAll['code'];
+    if (codes == null || codes.length != 1 || codes.single.isEmpty) {
+      throw const AuthException(
+        message: 'Codice di autorizzazione Spotify mancante.',
+      );
+    }
+    return codes.single;
+  }
 
   /// Genera un Code Verifier casuale per PKCE.
   String generateCodeVerifier() {
@@ -40,7 +81,7 @@ class SpotifyAuthDatasource {
   String generateState() {
     final rand = Random.secure();
     return List.generate(
-      16,
+      32,
       (index) => rand.nextInt(16).toRadixString(16),
     ).join();
   }
@@ -51,6 +92,7 @@ class SpotifyAuthDatasource {
     required String codeChallenge,
     required String state,
   }) async {
+    _requireSpotifyEnabled();
     final clientId = EnvConfig.spotifyClientId;
     final redirectUri = EnvConfig.spotifyRedirectUri;
     final callbackScheme = Uri.parse(redirectUri).scheme;
@@ -68,34 +110,13 @@ class SpotifyAuthDatasource {
     }).toString();
 
     try {
-      VibraLogger.info('Avvio FlutterWebAuth2 con URL: $authUrl');
+      VibraLogger.info('Avvio autorizzazione Spotify');
       final result = await FlutterWebAuth2.authenticate(
         url: authUrl,
         callbackUrlScheme: callbackScheme,
       );
 
-      final resultUri = Uri.parse(result);
-      final code = resultUri.queryParameters['code'];
-      final returnedState = resultUri.queryParameters['state'];
-      final error = resultUri.queryParameters['error'];
-
-      if (error != null) {
-        throw AuthException(message: 'Errore Spotify OAuth: $error');
-      }
-
-      if (returnedState != state) {
-        throw const AuthException(
-          message: 'Stato non corrispondente. Potenziale attacco CSRF.',
-        );
-      }
-
-      if (code == null) {
-        throw const AuthException(
-          message: 'Codice di autorizzazione non ricevuto da Spotify.',
-        );
-      }
-
-      return code;
+      return validateCallback(result, redirectUri, state);
     } catch (e) {
       VibraLogger.error('Errore durante il login Spotify', error: e);
       if (e is AuthException) rethrow;
@@ -107,10 +128,15 @@ class SpotifyAuthDatasource {
   Future<SpotifyTokenModel> exchangeCode({
     required String code,
     required String codeVerifier,
+    String? vibraAccessToken,
   }) async {
+    _requireSpotifyEnabled();
     try {
       final response = await supabaseClient.functions.invoke(
         'spotify-token-exchange',
+        headers: vibraAccessToken == null
+            ? null
+            : {'Authorization': 'Bearer $vibraAccessToken'},
         body: {
           'action': 'exchange',
           'code': code,
@@ -150,11 +176,16 @@ class SpotifyAuthDatasource {
   /// Rinnova la sessione Spotify tramite Edge Function.
   Future<SpotifyTokenModel> refreshSession({
     required String refreshToken,
+    String? vibraAccessToken,
   }) async {
+    _requireSpotifyEnabled();
     try {
       final response = await supabaseClient.functions.invoke(
         'spotify-token-exchange',
         body: {'action': 'refresh', 'refresh_token': refreshToken},
+        headers: vibraAccessToken == null
+            ? null
+            : {'Authorization': 'Bearer $vibraAccessToken'},
       );
 
       if (response.status != 200) {
@@ -181,6 +212,7 @@ class SpotifyAuthDatasource {
 
   /// Avvia la sincronizzazione del profilo musicale tramite Edge Function.
   Future<Map<String, dynamic>> syncMusicProfile() async {
+    _requireSpotifyEnabled();
     try {
       final response = await supabaseClient.functions.invoke(
         'sync-music-profile',

@@ -179,13 +179,13 @@ abstract class AppLocalizations {
   /// No description provided for @loginSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Log in with your account or connect using one of the supported providers to unlock real recommendations.'**
+  /// **'Discover concerts and people to enjoy them with.'**
   String get loginSubtitle;
 
   /// No description provided for @loginConsent.
   ///
   /// In en, this message translates to:
-  /// **'By authenticating, you accept data consent, JWT session management, and GDPR privacy preferences.'**
+  /// **'Read the terms and privacy information before continuing. Manage optional preferences in settings.'**
   String get loginConsent;
 
   /// No description provided for @loginWithSpotify.
@@ -281,7 +281,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsNotificationsSnackbar.
   ///
   /// In en, this message translates to:
-  /// **'Notifications depend on device permissions, Firebase configuration, and an authenticated account.'**
+  /// **'To receive notifications, sign in and enable Vibra notifications in your device settings.'**
   String get settingsNotificationsSnackbar;
 
   /// No description provided for @settingsPrivacyPolicy.
@@ -557,7 +557,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsDeleteAccountError.
   ///
   /// In en, this message translates to:
-  /// **'Unable to delete account. Ensure the RPC has been loaded in the database.'**
+  /// **'Could not delete your account. Try again or contact support.'**
   String get settingsDeleteAccountError;
 
   /// No description provided for @eventDetailChat.
@@ -833,7 +833,7 @@ abstract class AppLocalizations {
   /// No description provided for @friendsGoToExplore.
   ///
   /// In en, this message translates to:
-  /// **'Go to the Explore section or use Social Match to find people with the same taste.'**
+  /// **'Explore the community to find people and send friend requests.'**
   String get friendsGoToExplore;
 
   /// No description provided for @friendsSentRequests.
@@ -905,8 +905,8 @@ abstract class AppLocalizations {
   /// No description provided for @exploreSearchRadius.
   ///
   /// In en, this message translates to:
-  /// **'Search radius'**
-  String get exploreSearchRadius;
+  /// **'SEARCH RADIUS: {radius} KM'**
+  String exploreSearchRadius(int radius);
 
   /// No description provided for @exploreFindEventsNearYou.
   ///
@@ -1016,6 +1016,234 @@ abstract class AppLocalizations {
   /// **'Privacy, notifications, account and logout'**
   String get myProfileSettingsSubtitle;
 
+  /// No description provided for @myEventsUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get myEventsUpcoming;
+
+  /// No description provided for @myEventsPast.
+  ///
+  /// In en, this message translates to:
+  /// **'Past'**
+  String get myEventsPast;
+
+  /// No description provided for @myEventsPastSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your concert history'**
+  String get myEventsPastSubtitle;
+
+  /// No description provided for @myEventsPastEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No past events yet.'**
+  String get myEventsPastEmpty;
+
+  /// No description provided for @myEventsSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search events, artists or places'**
+  String get myEventsSearchHint;
+
+  /// No description provided for @myEventsSearchEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No events match your search.'**
+  String get myEventsSearchEmpty;
+
+  /// No description provided for @myEventsClearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get myEventsClearSearch;
+
+  /// No description provided for @myEventsExplore.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore events'**
+  String get myEventsExplore;
+
+  /// No description provided for @inboxUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
+  String get inboxUnread;
+
+  /// No description provided for @inboxNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations found.'**
+  String get inboxNoResults;
+
+  /// No description provided for @inboxNoResultsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another name or clear the filters to see all messages.'**
+  String get inboxNoResultsBody;
+
+  /// No description provided for @inboxClearFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filters'**
+  String get inboxClearFilters;
+
+  /// No description provided for @homeFeedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Events could not be loaded.'**
+  String get homeFeedError;
+
+  /// No description provided for @homeFeedErrorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again shortly. You can still explore the map.'**
+  String get homeFeedErrorBody;
+
+  /// No description provided for @homeFeedEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'There’s room for a new night out.'**
+  String get homeFeedEmpty;
+
+  /// No description provided for @homeFeedEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore the map to find your next live show.'**
+  String get homeFeedEmptyBody;
+
+  /// No description provided for @socialSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search people or artists'**
+  String get socialSearchHint;
+
+  /// No description provided for @socialSearchEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No people found.'**
+  String get socialSearchEmpty;
+
+  /// No description provided for @socialSearchEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another name or artist.'**
+  String get socialSearchEmptyBody;
+
+  /// No description provided for @socialDiscoverEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'New connections start here.'**
+  String get socialDiscoverEmpty;
+
+  /// No description provided for @socialDiscoverEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your profile and connect Spotify to find people with similar tastes.'**
+  String get socialDiscoverEmptyBody;
+
+  /// No description provided for @chatSendMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Send message'**
+  String get chatSendMessage;
+
+  /// No description provided for @chatLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'The conversation could not be loaded.'**
+  String get chatLoadError;
+
+  /// No description provided for @chatDraftRecovered.
+  ///
+  /// In en, this message translates to:
+  /// **'The message was not sent. Its text has been restored in the composer.'**
+  String get chatDraftRecovered;
+
+  /// No description provided for @eventLocationUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'The exact location is not available yet.'**
+  String get eventLocationUnknown;
+
+  /// No description provided for @eventDirections.
+  ///
+  /// In en, this message translates to:
+  /// **'Get directions'**
+  String get eventDirections;
+
+  /// No description provided for @eventDirectionsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions could not be opened.'**
+  String get eventDirectionsError;
+
+  /// No description provided for @inboxDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this conversation?'**
+  String get inboxDeleteTitle;
+
+  /// No description provided for @inboxDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The conversation will be removed from your inbox. The other person’s messages will not be deleted.'**
+  String get inboxDeleteBody;
+
+  /// No description provided for @inboxDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete conversation'**
+  String get inboxDeleteAction;
+
+  /// No description provided for @inboxDeleteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation deleted.'**
+  String get inboxDeleteSuccess;
+
+  /// No description provided for @inboxDeleteError.
+  ///
+  /// In en, this message translates to:
+  /// **'The conversation was not deleted. Please try again.'**
+  String get inboxDeleteError;
+
+  /// No description provided for @commonCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get commonCancel;
+
+  /// No description provided for @eventCopyDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy event details'**
+  String get eventCopyDetails;
+
+  /// No description provided for @eventCopyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Event details could not be copied.'**
+  String get eventCopyError;
+
+  /// No description provided for @eventCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Event cancelled'**
+  String get eventCancelled;
+
+  /// No description provided for @eventTicketsOffsale.
+  ///
+  /// In en, this message translates to:
+  /// **'Tickets not on sale'**
+  String get eventTicketsOffsale;
+
+  /// No description provided for @socialMatchSendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibra was not sent. Try again: the profile is still available.'**
+  String get socialMatchSendFailed;
+
   /// No description provided for @myEventsTitle.
   ///
   /// In en, this message translates to:
@@ -1037,7 +1265,7 @@ abstract class AppLocalizations {
   /// No description provided for @myEventsGoingEmpty.
   ///
   /// In en, this message translates to:
-  /// **'You haven\'t confirmed your attendance to any event yet.\\nExplore and find your next concerts!'**
+  /// **'You haven\'t confirmed your attendance to any event yet.\nExplore and find your next concerts!'**
   String get myEventsGoingEmpty;
 
   /// No description provided for @myEventsSaved.
@@ -1055,7 +1283,7 @@ abstract class AppLocalizations {
   /// No description provided for @myEventsSavedEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No saved events.\\nSave the events you are interested in so you don\'t miss them.'**
+  /// **'No saved events.\nSave the events you are interested in so you don\'t miss them.'**
   String get myEventsSavedEmpty;
 
   /// No description provided for @chatEmptyTitle.
@@ -1199,7 +1427,7 @@ abstract class AppLocalizations {
   /// No description provided for @eventDetailNotAvailableMsg.
   ///
   /// In en, this message translates to:
-  /// **'This event is no longer available or hasnt loaded.'**
+  /// **'This event is no longer available or hasn’t loaded yet.'**
   String get eventDetailNotAvailableMsg;
 
   /// No description provided for @eventDetailMapTitle.
@@ -1499,7 +1727,7 @@ abstract class AppLocalizations {
   /// No description provided for @legalSupportBody3.
   ///
   /// In en, this message translates to:
-  /// **'Permissions, Spotify connection status, Firebase configuration, and the presence of an authenticated user.'**
+  /// **'Check your connection, device permissions and sign-in status. If the issue persists, report a problem from settings.'**
   String get legalSupportBody3;
 
   /// No description provided for @legalAboutBody1.
@@ -1517,7 +1745,7 @@ abstract class AppLocalizations {
   /// No description provided for @legalAboutBody3.
   ///
   /// In en, this message translates to:
-  /// **'Vibra helps connect Spotify, discover relevant live events, view event details, meet compatible people, and join live chats during concerts.'**
+  /// **'Vibra helps you discover live events, explore the map, save concerts, meet people and join chats. Spotify features are available only when the service is enabled.'**
   String get legalAboutBody3;
 
   /// No description provided for @legalAboutBody4.
@@ -1577,7 +1805,7 @@ abstract class AppLocalizations {
   /// No description provided for @legalAboutSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Vibra combines music taste, event discovery, and social interaction around live experiences.'**
+  /// **'Live events, a map and a community to share new nights out.'**
   String get legalAboutSubtitle;
 
   /// No description provided for @exploreShowAllEvents.
@@ -1679,7 +1907,7 @@ abstract class AppLocalizations {
   /// No description provided for @authDontHaveAccount.
   ///
   /// In en, this message translates to:
-  /// **'Don t have an account? Register'**
+  /// **'Don’t have an account? Register'**
   String get authDontHaveAccount;
 
   /// No description provided for @authGenericError.
@@ -1777,6 +2005,2184 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'CONNECT SPOTIFY'**
   String get homeSpotifySyncAction;
+
+  /// No description provided for @loginBackToWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to the welcome screen'**
+  String get loginBackToWelcome;
+
+  /// No description provided for @authOr.
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get authOr;
+
+  /// No description provided for @authEmailLoginSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your credentials to log in and explore concerts.'**
+  String get authEmailLoginSubtitle;
+
+  /// No description provided for @authEmailRegisterSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your credentials to register and start enjoying live shows.'**
+  String get authEmailRegisterSubtitle;
+
+  /// No description provided for @authAgeConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'I confirm that I am at least 18 years old.'**
+  String get authAgeConfirmation;
+
+  /// No description provided for @authAgeExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibra helps people meet and is not intended for minors.'**
+  String get authAgeExplanation;
+
+  /// No description provided for @authAgeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'You must confirm that you are at least 18 years old to create an account.'**
+  String get authAgeRequired;
+
+  /// No description provided for @authShowPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get authShowPassword;
+
+  /// No description provided for @authHidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get authHidePassword;
+
+  /// No description provided for @spotifyUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotify is paused'**
+  String get spotifyUnavailableTitle;
+
+  /// No description provided for @spotifyUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotify and music affinity are temporarily disabled. Events, friends and chat remain available.'**
+  String get spotifyUnavailableBody;
+
+  /// No description provided for @launchExploreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find your next concert'**
+  String get launchExploreTitle;
+
+  /// No description provided for @launchExploreBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Search artists, explore the map and save nearby events.'**
+  String get launchExploreBody;
+
+  /// No description provided for @launchCommunityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join the community'**
+  String get launchCommunityTitle;
+
+  /// No description provided for @launchCommunityBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Find people, add friends and plan concerts in your chats.'**
+  String get launchCommunityBody;
+
+  /// No description provided for @launchSavedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your live calendar'**
+  String get launchSavedTitle;
+
+  /// No description provided for @launchSavedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Save concerts and find the ones you want to attend.'**
+  String get launchSavedBody;
+
+  /// No description provided for @launchCommunitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search people by name or username'**
+  String get launchCommunitySubtitle;
+
+  /// No description provided for @launchCommunityEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No people found'**
+  String get launchCommunityEmptyTitle;
+
+  /// No description provided for @launchCommunityEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another name or check back later.'**
+  String get launchCommunityEmptyBody;
+
+  /// No description provided for @launchCommunityLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load people. Try again.'**
+  String get launchCommunityLoadError;
+
+  /// No description provided for @commonOK.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get commonOK;
+
+  /// No description provided for @commonLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get commonLoading;
+
+  /// No description provided for @commonSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get commonSave;
+
+  /// No description provided for @commonClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get commonClose;
+
+  /// No description provided for @commonAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get commonAll;
+
+  /// No description provided for @commonConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get commonConnect;
+
+  /// No description provided for @commonActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get commonActive;
+
+  /// No description provided for @commonNotNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get commonNotNow;
+
+  /// No description provided for @commonSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get commonSkip;
+
+  /// No description provided for @commonTryLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again later.'**
+  String get commonTryLater;
+
+  /// No description provided for @commonConnectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection error'**
+  String get commonConnectionError;
+
+  /// No description provided for @commonLoadingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}, loading'**
+  String commonLoadingLabel(String label);
+
+  /// No description provided for @commonSelectedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}, selected'**
+  String commonSelectedLabel(String label);
+
+  /// No description provided for @commonNotSelectedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}, not selected'**
+  String commonNotSelectedLabel(String label);
+
+  /// No description provided for @commonOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get commonOnline;
+
+  /// No description provided for @commonAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatar'**
+  String get commonAvatar;
+
+  /// No description provided for @commonPercentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{percentage} percent {label}'**
+  String commonPercentLabel(int percentage, String label);
+
+  /// No description provided for @commonAvatarAffinity.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, {percentage} percent affinity'**
+  String commonAvatarAffinity(String name, int percentage);
+
+  /// No description provided for @commonRegistrationComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration complete'**
+  String get commonRegistrationComplete;
+
+  /// No description provided for @profileEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get profileEditTitle;
+
+  /// No description provided for @profileBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to profile'**
+  String get profileBack;
+
+  /// No description provided for @profilePersonalSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'PERSONAL SPACE'**
+  String get profilePersonalSpace;
+
+  /// No description provided for @profileSpotifyConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotify connected'**
+  String get profileSpotifyConnected;
+
+  /// No description provided for @profileFollowers.
+  ///
+  /// In en, this message translates to:
+  /// **'Followers'**
+  String get profileFollowers;
+
+  /// No description provided for @profileFollowing.
+  ///
+  /// In en, this message translates to:
+  /// **'Following'**
+  String get profileFollowing;
+
+  /// No description provided for @profileOpenMusicStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Open music statistics'**
+  String get profileOpenMusicStats;
+
+  /// No description provided for @profileYourVibra.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR VIBRA'**
+  String get profileYourVibra;
+
+  /// No description provided for @profileInRotation.
+  ///
+  /// In en, this message translates to:
+  /// **'In rotation'**
+  String get profileInRotation;
+
+  /// No description provided for @profileSyncMusicBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Spotify to see your music profile.'**
+  String get profileSyncMusicBody;
+
+  /// No description provided for @profileShapeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shape your Vibra'**
+  String get profileShapeTitle;
+
+  /// No description provided for @profileShapeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Spotify to show your musical identity.'**
+  String get profileShapeBody;
+
+  /// No description provided for @profileUsernameEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Username cannot be empty'**
+  String get profileUsernameEmpty;
+
+  /// No description provided for @profileUsernameShort.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 3 characters'**
+  String get profileUsernameShort;
+
+  /// No description provided for @profileUsernameCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Use only letters, numbers, _ or .'**
+  String get profileUsernameCharacters;
+
+  /// No description provided for @profileUsernameCharactersOnboarding.
+  ///
+  /// In en, this message translates to:
+  /// **'Use only letters, numbers and underscores'**
+  String get profileUsernameCharactersOnboarding;
+
+  /// No description provided for @profileUsernameTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Username already taken'**
+  String get profileUsernameTaken;
+
+  /// No description provided for @profileUsernameTakenRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'This username is taken. Choose another one.'**
+  String get profileUsernameTakenRetry;
+
+  /// No description provided for @profilePhotoPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow access to photos in your device settings and try again.'**
+  String get profilePhotoPermission;
+
+  /// No description provided for @profilePhotoPickError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not select the photo. Try again.'**
+  String get profilePhotoPickError;
+
+  /// No description provided for @profilePhotoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo'**
+  String get profilePhotoTitle;
+
+  /// No description provided for @profilePhotoGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get profilePhotoGallery;
+
+  /// No description provided for @profilePhotoGalleryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a photo from your device'**
+  String get profilePhotoGalleryBody;
+
+  /// No description provided for @profilePhotoCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get profilePhotoCamera;
+
+  /// No description provided for @profilePhotoCameraBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the camera to take a new photo'**
+  String get profilePhotoCameraBody;
+
+  /// No description provided for @profilePhotoRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get profilePhotoRemove;
+
+  /// No description provided for @profilePhotoRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore the default avatar'**
+  String get profilePhotoRestore;
+
+  /// No description provided for @profileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated!'**
+  String get profileSaved;
+
+  /// No description provided for @profileSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save your profile. Try again shortly.'**
+  String get profileSaveError;
+
+  /// No description provided for @profilePhotoChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change profile photo'**
+  String get profilePhotoChange;
+
+  /// No description provided for @profileUsernameExample.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. music_fan'**
+  String get profileUsernameExample;
+
+  /// No description provided for @profileName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get profileName;
+
+  /// No description provided for @profileNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your name or nickname'**
+  String get profileNameHint;
+
+  /// No description provided for @profileNameEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Name cannot be empty'**
+  String get profileNameEmpty;
+
+  /// No description provided for @profileDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get profileDescription;
+
+  /// No description provided for @profileDescriptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about yourself…'**
+  String get profileDescriptionHint;
+
+  /// No description provided for @profileMusicStreaming.
+  ///
+  /// In en, this message translates to:
+  /// **'Music and streaming'**
+  String get profileMusicStreaming;
+
+  /// No description provided for @profileAccountConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Account connected'**
+  String get profileAccountConnected;
+
+  /// No description provided for @profileConnectSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your account for better suggestions'**
+  String get profileConnectSuggestions;
+
+  /// No description provided for @profileSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get profileSaveChanges;
+
+  /// No description provided for @homeYourSoundToday.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR SOUND, TODAY'**
+  String get homeYourSoundToday;
+
+  /// No description provided for @homeSpotifySynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotify synced · suggestions learn from you'**
+  String get homeSpotifySynced;
+
+  /// No description provided for @homeSpotifyPersonalize.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Spotify to personalize your suggestions'**
+  String get homeSpotifyPersonalize;
+
+  /// No description provided for @homeCompleteProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your profile'**
+  String get homeCompleteProfile;
+
+  /// No description provided for @homeShapeVibra.
+  ///
+  /// In en, this message translates to:
+  /// **'Make your Vibra your own'**
+  String get homeShapeVibra;
+
+  /// No description provided for @homeNextEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'UP NEXT'**
+  String get homeNextEvent;
+
+  /// No description provided for @homeNearbyEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'NEARBY'**
+  String get homeNearbyEyebrow;
+
+  /// No description provided for @homeTrendingEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'HAPPENING NOW'**
+  String get homeTrendingEyebrow;
+
+  /// No description provided for @settingsPrivateMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Private messages and requests'**
+  String get settingsPrivateMessages;
+
+  /// No description provided for @settingsPersonalizedUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalized updates and reminders'**
+  String get settingsPersonalizedUpdates;
+
+  /// No description provided for @settingsMusicWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Your music week'**
+  String get settingsMusicWeek;
+
+  /// No description provided for @settingsMusicWeekBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Events and affinities selected for you'**
+  String get settingsMusicWeekBody;
+
+  /// No description provided for @settingsWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get settingsWeekly;
+
+  /// No description provided for @settingsMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get settingsMonthly;
+
+  /// No description provided for @settingsNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get settingsNever;
+
+  /// No description provided for @settingsPrivacyData.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy and personal data'**
+  String get settingsPrivacyData;
+
+  /// No description provided for @settingsPrivacyDataBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Consent, data export and deletion'**
+  String get settingsPrivacyDataBody;
+
+  /// No description provided for @settingsHelpCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Help center'**
+  String get settingsHelpCenter;
+
+  /// No description provided for @settingsHelpCenterBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Help with accounts, events, chat and Spotify'**
+  String get settingsHelpCenterBody;
+
+  /// No description provided for @settingsReportProblem.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a problem'**
+  String get settingsReportProblem;
+
+  /// No description provided for @settingsReportProblemBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Send sanitized diagnostics and an optional screenshot'**
+  String get settingsReportProblemBody;
+
+  /// No description provided for @privacySaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save your preference. Try again.'**
+  String get privacySaveError;
+
+  /// No description provided for @privacyExportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data export'**
+  String get privacyExportTitle;
+
+  /// No description provided for @privacySaveJSON.
+  ///
+  /// In en, this message translates to:
+  /// **'Save JSON'**
+  String get privacySaveJSON;
+
+  /// No description provided for @privacyCopyJSON.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy JSON'**
+  String get privacyCopyJSON;
+
+  /// No description provided for @privacyCopiedJSON.
+  ///
+  /// In en, this message translates to:
+  /// **'JSON copied to clipboard.'**
+  String get privacyCopiedJSON;
+
+  /// No description provided for @privacyExportError.
+  ///
+  /// In en, this message translates to:
+  /// **'Data export unavailable. Try again later.'**
+  String get privacyExportError;
+
+  /// No description provided for @privacyExportSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Export saved to {path}'**
+  String privacyExportSaved(String path);
+
+  /// No description provided for @privacyIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose each optional use of your data separately. You can change your mind at any time.'**
+  String get privacyIntro;
+
+  /// No description provided for @privacyPreciseLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Precise location'**
+  String get privacyPreciseLocation;
+
+  /// No description provided for @privacyPreciseLocationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'For nearby events and Live features. Stored for up to 30 days.'**
+  String get privacyPreciseLocationBody;
+
+  /// No description provided for @privacySpotifyMatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotify for music affinity'**
+  String get privacySpotifyMatching;
+
+  /// No description provided for @privacySpotifyMatchingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use synced artists, genres and listening for suggestions and affinity.'**
+  String get privacySpotifyMatchingBody;
+
+  /// No description provided for @privacyServiceNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Service notifications'**
+  String get privacyServiceNotifications;
+
+  /// No description provided for @privacyServiceNotificationsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Matches, messages and saved events.'**
+  String get privacyServiceNotificationsBody;
+
+  /// No description provided for @privacyMarketing.
+  ///
+  /// In en, this message translates to:
+  /// **'Marketing messages'**
+  String get privacyMarketing;
+
+  /// No description provided for @privacyMarketingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Always optional; you can use the app without them.'**
+  String get privacyMarketingBody;
+
+  /// No description provided for @privacyExportAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Export my data'**
+  String get privacyExportAction;
+
+  /// No description provided for @privacyExportBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate a readable JSON copy of your profile, chats, events and interactions, including previous Spotify data if present.'**
+  String get privacyExportBody;
+
+  /// No description provided for @privacyDeletionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting your account removes its data. Sent messages become anonymous and their content and media are removed. Backups follow the retention period stated in the privacy policy.'**
+  String get privacyDeletionBody;
+
+  /// No description provided for @appearanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearanceTitle;
+
+  /// No description provided for @appearanceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the app theme or follow your device.'**
+  String get appearanceBody;
+
+  /// No description provided for @appearanceDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get appearanceDark;
+
+  /// No description provided for @appearanceDarkBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduces brightness in low light'**
+  String get appearanceDarkBody;
+
+  /// No description provided for @appearanceLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get appearanceLight;
+
+  /// No description provided for @appearanceLightBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Bright surfaces and soft shadows'**
+  String get appearanceLightBody;
+
+  /// No description provided for @appearanceSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic (system)'**
+  String get appearanceSystem;
+
+  /// No description provided for @appearanceSystemBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates when your device setting changes'**
+  String get appearanceSystemBody;
+
+  /// No description provided for @onboardingBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to the previous step'**
+  String get onboardingBack;
+
+  /// No description provided for @onboardingStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Let’s start'**
+  String get onboardingStart;
+
+  /// No description provided for @onboardingProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile'**
+  String get onboardingProfileTitle;
+
+  /// No description provided for @onboardingProfileBody.
+  ///
+  /// In en, this message translates to:
+  /// **'How other people will see you'**
+  String get onboardingProfileBody;
+
+  /// No description provided for @onboardingSkipToHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip the rest and go to Home'**
+  String get onboardingSkipToHome;
+
+  /// No description provided for @onboardingPhotoUploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading profile photo'**
+  String get onboardingPhotoUploading;
+
+  /// No description provided for @onboardingPhotoSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose or change your profile photo'**
+  String get onboardingPhotoSelect;
+
+  /// No description provided for @onboardingUsernameExample.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. vibra_user'**
+  String get onboardingUsernameExample;
+
+  /// No description provided for @onboardingRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'REQUIRED'**
+  String get onboardingRequired;
+
+  /// No description provided for @onboardingSpotifyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Find events based on your listening and discover musical affinity with other people.'**
+  String get onboardingSpotifyBody;
+
+  /// No description provided for @onboardingSpotifyCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection cancelled. Try again or skip for now.'**
+  String get onboardingSpotifyCancelled;
+
+  /// No description provided for @onboardingSpotifyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect. Try again later.'**
+  String get onboardingSpotifyError;
+
+  /// No description provided for @onboardingLocationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Events near you'**
+  String get onboardingLocationTitle;
+
+  /// No description provided for @onboardingLocationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable location to discover concerts and venues in your area.'**
+  String get onboardingLocationBody;
+
+  /// No description provided for @onboardingLocationDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission permanently denied. You can enable it later in your device settings.'**
+  String get onboardingLocationDenied;
+
+  /// No description provided for @onboardingAllowLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow location'**
+  String get onboardingAllowLocation;
+
+  /// No description provided for @onboardingNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay up to date'**
+  String get onboardingNotificationsTitle;
+
+  /// No description provided for @onboardingNotificationsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notifications for saved events, friend requests and messages.'**
+  String get onboardingNotificationsBody;
+
+  /// No description provided for @onboardingNotificationsDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications denied. You can enable them in your device settings.'**
+  String get onboardingNotificationsDenied;
+
+  /// No description provided for @onboardingAllowNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable notifications'**
+  String get onboardingAllowNotifications;
+
+  /// No description provided for @liveAttendanceError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not confirm attendance. Try again.'**
+  String get liveAttendanceError;
+
+  /// No description provided for @liveEventsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load Live events.'**
+  String get liveEventsLoadError;
+
+  /// No description provided for @liveLocationHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Live chat is available within 500 m of an event, during the 24 hours before and after the concert. Enable location in privacy settings.'**
+  String get liveLocationHelp;
+
+  /// No description provided for @liveUnavailableHere.
+  ///
+  /// In en, this message translates to:
+  /// **'This event’s chat is unavailable at your location or at this time.'**
+  String get liveUnavailableHere;
+
+  /// No description provided for @liveRefreshLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh location'**
+  String get liveRefreshLocation;
+
+  /// No description provided for @liveEventTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Live event'**
+  String get liveEventTitle;
+
+  /// No description provided for @liveConnectionInterrupted.
+  ///
+  /// In en, this message translates to:
+  /// **'Live chat connection interrupted.'**
+  String get liveConnectionInterrupted;
+
+  /// No description provided for @liveEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages. Start the conversation!'**
+  String get liveEmpty;
+
+  /// No description provided for @liveRetryAttendance.
+  ///
+  /// In en, this message translates to:
+  /// **'Check attendance again'**
+  String get liveRetryAttendance;
+
+  /// No description provided for @liveConfirmingAttendance.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirming attendance…'**
+  String get liveConfirmingAttendance;
+
+  /// No description provided for @liveJoinToChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Join the event to write in chat'**
+  String get liveJoinToChat;
+
+  /// No description provided for @liveInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write in Live chat…'**
+  String get liveInputHint;
+
+  /// No description provided for @liveSendMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Live message'**
+  String get liveSendMessage;
+
+  /// No description provided for @musicReconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect'**
+  String get musicReconnect;
+
+  /// No description provided for @musicReconnectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect Spotify to update music statistics.'**
+  String get musicReconnectBody;
+
+  /// No description provided for @musicStatsUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Music statistics updated.'**
+  String get musicStatsUpdated;
+
+  /// No description provided for @musicStatsRefreshing.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating music statistics'**
+  String get musicStatsRefreshing;
+
+  /// No description provided for @musicStatsNoArtists.
+  ///
+  /// In en, this message translates to:
+  /// **'No artists available after the last sync.'**
+  String get musicStatsNoArtists;
+
+  /// No description provided for @musicStatsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Give your profile a sound.'**
+  String get musicStatsEmptyTitle;
+
+  /// No description provided for @musicStatsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Spotify to see the artists and rhythms that define you.'**
+  String get musicStatsEmptyBody;
+
+  /// No description provided for @musicStatsYourSound.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR SOUND'**
+  String get musicStatsYourSound;
+
+  /// No description provided for @musicStatsHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening that makes a mark.'**
+  String get musicStatsHeroTitle;
+
+  /// No description provided for @musicStatsArtists.
+  ///
+  /// In en, this message translates to:
+  /// **'Artists'**
+  String get musicStatsArtists;
+
+  /// No description provided for @musicStatsRhythm.
+  ///
+  /// In en, this message translates to:
+  /// **'Rhythm'**
+  String get musicStatsRhythm;
+
+  /// No description provided for @spotifyBackToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to login'**
+  String get spotifyBackToLogin;
+
+  /// No description provided for @spotifyConsentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting Spotify allows Vibra to read your profile and top artists, tracks and genres. We use them for event suggestions and musical affinity; you can disconnect Spotify and delete this data in settings.'**
+  String get spotifyConsentBody;
+
+  /// No description provided for @eventBackToEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to events'**
+  String get eventBackToEvents;
+
+  /// No description provided for @eventPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get eventPrice;
+
+  /// No description provided for @eventVenueTBA.
+  ///
+  /// In en, this message translates to:
+  /// **'Venue to be announced'**
+  String get eventVenueTBA;
+
+  /// No description provided for @eventOpenSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Open event {name}, {date}, {place}'**
+  String eventOpenSemantics(String name, String date, String place);
+
+  /// No description provided for @eventAffinitySemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{percentage} percent affinity'**
+  String eventAffinitySemantics(int percentage);
+
+  /// No description provided for @eventForYouScore.
+  ///
+  /// In en, this message translates to:
+  /// **'{percentage}% FOR YOU'**
+  String eventForYouScore(int percentage);
+
+  /// No description provided for @eventCommonSavedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} shared or saved event} other{{count} shared or saved events}}'**
+  String eventCommonSavedCount(int count);
+
+  /// No description provided for @supportReportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a problem'**
+  String get supportReportTitle;
+
+  /// No description provided for @supportReportIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe what is not working. We’ll include the app version, operating system and a few diagnostics with sensitive information removed.'**
+  String get supportReportIntro;
+
+  /// No description provided for @supportDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Problem description'**
+  String get supportDescriptionLabel;
+
+  /// No description provided for @supportDescriptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Include the screen, steps and what you expected.'**
+  String get supportDescriptionHint;
+
+  /// No description provided for @supportAddScreenshot.
+  ///
+  /// In en, this message translates to:
+  /// **'Add screenshot'**
+  String get supportAddScreenshot;
+
+  /// No description provided for @supportScreenshotAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'Screenshot attached'**
+  String get supportScreenshotAttached;
+
+  /// No description provided for @supportRemoveScreenshot.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove screenshot'**
+  String get supportRemoveScreenshot;
+
+  /// No description provided for @supportScreenshotPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Make sure the screenshot does not show passwords, private messages or other sensitive data.'**
+  String get supportScreenshotPrivacy;
+
+  /// No description provided for @supportSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get supportSending;
+
+  /// No description provided for @supportSendReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Send report'**
+  String get supportSendReport;
+
+  /// No description provided for @supportDescriptionTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the problem in at least 8 characters.'**
+  String get supportDescriptionTooShort;
+
+  /// No description provided for @supportDescriptionTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The description can contain up to 4000 characters.'**
+  String get supportDescriptionTooLong;
+
+  /// No description provided for @supportReportSentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report sent'**
+  String get supportReportSentTitle;
+
+  /// No description provided for @supportReportSentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We’ve received your report. Support replies within 48 business hours.'**
+  String get supportReportSentBody;
+
+  /// No description provided for @supportReportSendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send the report. Try again or contact {email}.'**
+  String supportReportSendFailed(String email);
+
+  /// No description provided for @supportReportAuthRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in again to send the report.'**
+  String get supportReportAuthRequired;
+
+  /// No description provided for @supportReportRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'You’ve sent too many reports. Wait a minute and try again.'**
+  String get supportReportRateLimited;
+
+  /// No description provided for @supportScreenshotTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'The screenshot must be smaller than 5 MB.'**
+  String get supportScreenshotTooLarge;
+
+  /// No description provided for @supportScreenshotUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a JPG or PNG screenshot.'**
+  String get supportScreenshotUnsupported;
+
+  /// No description provided for @supportScreenshotPickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not select the screenshot. Try again.'**
+  String get supportScreenshotPickFailed;
+
+  /// No description provided for @supportScreenshotPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow photo access in device settings to attach a screenshot.'**
+  String get supportScreenshotPermissionDenied;
+
+  /// No description provided for @supportAlternativeContact.
+  ///
+  /// In en, this message translates to:
+  /// **'You can also contact {email}. We reply within 48 business hours.'**
+  String supportAlternativeContact(String email);
+
+  /// No description provided for @supportFeedbackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How is Vibra going?'**
+  String get supportFeedbackTitle;
+
+  /// No description provided for @supportFeedbackBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your feedback helps us improve.'**
+  String get supportFeedbackBody;
+
+  /// No description provided for @supportFeedbackNegative.
+  ///
+  /// In en, this message translates to:
+  /// **'Not well'**
+  String get supportFeedbackNegative;
+
+  /// No description provided for @supportFeedbackNeutral.
+  ///
+  /// In en, this message translates to:
+  /// **'So-so'**
+  String get supportFeedbackNeutral;
+
+  /// No description provided for @supportFeedbackPositive.
+  ///
+  /// In en, this message translates to:
+  /// **'Great!'**
+  String get supportFeedbackPositive;
+
+  /// No description provided for @supportFeedbackDescriptionPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback:'**
+  String get supportFeedbackDescriptionPrefix;
+
+  /// No description provided for @chatSendFriendshipRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'To message this person, send a friend request and wait for it to be accepted.'**
+  String get chatSendFriendshipRequired;
+
+  /// No description provided for @chatSendFirstContactLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'You’ve already sent 3 messages. Wait for a reply before sending more.'**
+  String get chatSendFirstContactLimit;
+
+  /// No description provided for @chatSendUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This conversation is unavailable.'**
+  String get chatSendUnavailable;
+
+  /// No description provided for @chatSendRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'You’re sending too many messages. Wait a minute and try again.'**
+  String get chatSendRateLimited;
+
+  /// No description provided for @chatSendSignInRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in again to send your message.'**
+  String get chatSendSignInRequired;
+
+  /// No description provided for @chatRequestFriendship.
+  ///
+  /// In en, this message translates to:
+  /// **'Send friend request'**
+  String get chatRequestFriendship;
+
+  /// No description provided for @chatFriendshipRequestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend request sent'**
+  String get chatFriendshipRequestSent;
+
+  /// No description provided for @chatFriendshipRequestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send the friend request. Try again.'**
+  String get chatFriendshipRequestFailed;
+
+  /// No description provided for @chatMessageTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The message can contain up to 2000 characters.'**
+  String get chatMessageTooLong;
+
+  /// No description provided for @chatPermissionChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking conversation…'**
+  String get chatPermissionChecking;
+
+  /// No description provided for @chatFriendshipRequestPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend request awaiting acceptance'**
+  String get chatFriendshipRequestPending;
+
+  /// No description provided for @chatAcceptFriendship.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept friend request'**
+  String get chatAcceptFriendship;
+
+  /// No description provided for @chatFriendshipAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend request accepted. You can now send messages.'**
+  String get chatFriendshipAccepted;
+
+  /// No description provided for @socialReportUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Report user'**
+  String get socialReportUser;
+
+  /// No description provided for @socialReportSpam.
+  ///
+  /// In en, this message translates to:
+  /// **'Spam'**
+  String get socialReportSpam;
+
+  /// No description provided for @socialReportHarassment.
+  ///
+  /// In en, this message translates to:
+  /// **'Harassment'**
+  String get socialReportHarassment;
+
+  /// No description provided for @socialReportInappropriate.
+  ///
+  /// In en, this message translates to:
+  /// **'Inappropriate content'**
+  String get socialReportInappropriate;
+
+  /// No description provided for @socialReportDetailsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional details (optional)'**
+  String get socialReportDetailsHint;
+
+  /// No description provided for @socialReportSent.
+  ///
+  /// In en, this message translates to:
+  /// **'User reported'**
+  String get socialReportSent;
+
+  /// No description provided for @socialReportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not submit the report. Try again.'**
+  String get socialReportFailed;
+
+  /// No description provided for @socialReportAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get socialReportAction;
+
+  /// No description provided for @socialBlockUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Block user'**
+  String get socialBlockUser;
+
+  /// No description provided for @socialBlockConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Block this person? You will no longer be able to exchange messages.'**
+  String get socialBlockConfirm;
+
+  /// No description provided for @socialBlockSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'User blocked'**
+  String get socialBlockSuccess;
+
+  /// No description provided for @socialBlockFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not block this person. Try again.'**
+  String get socialBlockFailed;
+
+  /// No description provided for @socialBlockAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get socialBlockAction;
+
+  /// No description provided for @chatRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Message request'**
+  String get chatRequestTitle;
+
+  /// No description provided for @chatRequestBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} would like to message you. Reply to accept the conversation.'**
+  String chatRequestBody(String name);
+
+  /// No description provided for @chatRequestRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Request declined and deleted'**
+  String get chatRequestRejected;
+
+  /// No description provided for @chatRequestRejectFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete the request. Try again.'**
+  String get chatRequestRejectFailed;
+
+  /// No description provided for @commonReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get commonReject;
+
+  /// No description provided for @commonReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get commonReply;
+
+  /// No description provided for @userProfileView.
+  ///
+  /// In en, this message translates to:
+  /// **'View profile'**
+  String get userProfileView;
+
+  /// No description provided for @chatConnectionInterrupted.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat connection interrupted.'**
+  String get chatConnectionInterrupted;
+
+  /// No description provided for @chatMeetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Meetup proposal'**
+  String get chatMeetupTitle;
+
+  /// No description provided for @chatMeetupAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'I’m in'**
+  String get chatMeetupAccept;
+
+  /// No description provided for @chatMeetupDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'I can’t'**
+  String get chatMeetupDecline;
+
+  /// No description provided for @chatMeetupAcceptMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'I’m in! {message}'**
+  String chatMeetupAcceptMessage(String message);
+
+  /// No description provided for @chatMeetupDeclineMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'I can’t attend. {message}'**
+  String chatMeetupDeclineMessage(String message);
+
+  /// No description provided for @helpIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick answers and support. We reply within 48 business hours.'**
+  String get helpIntro;
+
+  /// No description provided for @helpSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search frequently asked questions'**
+  String get helpSearchHint;
+
+  /// No description provided for @helpSearchEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No answers found. Try another search.'**
+  String get helpSearchEmpty;
+
+  /// No description provided for @helpNeedMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Still need help?'**
+  String get helpNeedMore;
+
+  /// No description provided for @helpCategoryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get helpCategoryAll;
+
+  /// No description provided for @helpCategoryAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get helpCategoryAccount;
+
+  /// No description provided for @helpCategoryChatMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat and affinity'**
+  String get helpCategoryChatMatch;
+
+  /// No description provided for @helpCategoryPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get helpCategoryPrivacy;
+
+  /// No description provided for @helpLoginQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'I can’t sign in'**
+  String get helpLoginQuestion;
+
+  /// No description provided for @helpLoginAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your email and password, then close and reopen Vibra. If it still fails, use “Report a problem” and include your sign-in method.'**
+  String get helpLoginAnswer;
+
+  /// No description provided for @helpLogoutQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I sign out?'**
+  String get helpLogoutQuestion;
+
+  /// No description provided for @helpLogoutAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Profile > Settings > Log out. To end all sessions, choose “Log out from all devices”.'**
+  String get helpLogoutAnswer;
+
+  /// No description provided for @helpDeleteQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I delete my account?'**
+  String get helpDeleteQuestion;
+
+  /// No description provided for @helpDeleteAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Profile > Settings > Delete account. Confirming removes your account data as described in the privacy policy.'**
+  String get helpDeleteAnswer;
+
+  /// No description provided for @helpEventsQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Why are there no events near me?'**
+  String get helpEventsQuestion;
+
+  /// No description provided for @helpEventsAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Check location access and widen the search radius. Availability depends on event sources in the area; you can also search a city.'**
+  String get helpEventsAnswer;
+
+  /// No description provided for @helpTicketsQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'An event or ticket link won’t open'**
+  String get helpTicketsQuestion;
+
+  /// No description provided for @helpTicketsAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Events and tickets come from external partners. Try again later; if the issue persists, report it and include the event.'**
+  String get helpTicketsAnswer;
+
+  /// No description provided for @helpAffinityQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How is affinity calculated?'**
+  String get helpAffinityQuestion;
+
+  /// No description provided for @helpAffinityAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'The score compares shared artists and genres, with a small bonus for less common tastes. It indicates affinity and is not a guarantee.'**
+  String get helpAffinityAnswer;
+
+  /// No description provided for @helpBlockQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I block or report someone?'**
+  String get helpBlockQuestion;
+
+  /// No description provided for @helpBlockAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the conversation and use its menu to block or report the person. Blocking prevents future interactions; reports are sent to the team.'**
+  String get helpBlockAnswer;
+
+  /// No description provided for @helpSpotifyConnectQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I connect Spotify?'**
+  String get helpSpotifyConnectQuestion;
+
+  /// No description provided for @helpSpotifyConnectAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Profile > Settings > Spotify account and complete authorization in Spotify. You’ll return to Vibra automatically.'**
+  String get helpSpotifyConnectAnswer;
+
+  /// No description provided for @helpSpotifyDisconnectQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I disconnect Spotify?'**
+  String get helpSpotifyDisconnectQuestion;
+
+  /// No description provided for @helpSpotifyDisconnectAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Profile > Settings > Spotify account and choose “Disconnect”.'**
+  String get helpSpotifyDisconnectAnswer;
+
+  /// No description provided for @helpSpotifyErrorQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotify connection fails'**
+  String get helpSpotifyErrorQuestion;
+
+  /// No description provided for @helpSpotifyErrorAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your connection and complete authorization. Never share passwords or tokens with support: reports include only sanitized diagnostics.'**
+  String get helpSpotifyErrorAnswer;
+
+  /// No description provided for @helpReportDataQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'What data does a problem report send?'**
+  String get helpReportDataQuestion;
+
+  /// No description provided for @helpReportDataAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'App version, operating system, the last failing endpoint and a few technical logs with sensitive data removed. A screenshot is optional: check that it contains no private information.'**
+  String get helpReportDataAnswer;
+
+  /// No description provided for @helpPrivacyQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I exercise my data rights?'**
+  String get helpPrivacyQuestion;
+
+  /// No description provided for @helpPrivacyAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Profile > Settings > Privacy and personal data to manage consent and export your data. For other requests, contact {email}.'**
+  String helpPrivacyAnswer(String email);
+
+  /// No description provided for @exploreEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'EVENTS AROUND YOU'**
+  String get exploreEyebrow;
+
+  /// No description provided for @exploreClearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get exploreClearSearch;
+
+  /// No description provided for @exploreEventsVisible.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} EVENT IN VIEW} other{{count} EVENTS IN VIEW}}'**
+  String exploreEventsVisible(int count);
+
+  /// No description provided for @commonReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get commonReset;
+
+  /// No description provided for @exploreLoadErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Events could not be loaded.'**
+  String get exploreLoadErrorTitle;
+
+  /// No description provided for @exploreLoadErrorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your connection and search this area again.'**
+  String get exploreLoadErrorBody;
+
+  /// No description provided for @exploreEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No events found in this area.'**
+  String get exploreEmptyTitle;
+
+  /// No description provided for @exploreEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Widen the radius or change the filters.'**
+  String get exploreEmptyBody;
+
+  /// No description provided for @exploreZoomIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom in'**
+  String get exploreZoomIn;
+
+  /// No description provided for @exploreZoomOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom out'**
+  String get exploreZoomOut;
+
+  /// No description provided for @exploreOpenEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{Open list of {count} event} other{Open list of {count} events}}'**
+  String exploreOpenEvents(int count);
+
+  /// No description provided for @exploreMoveMapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the map to search for events'**
+  String get exploreMoveMapHint;
+
+  /// No description provided for @exploreEventsInArea.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} event in this area} other{{count} events in this area}}'**
+  String exploreEventsInArea(int count);
+
+  /// No description provided for @exploreCloseEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Close event list'**
+  String get exploreCloseEvents;
+
+  /// No description provided for @exploreGenreElectronic.
+  ///
+  /// In en, this message translates to:
+  /// **'Electronic'**
+  String get exploreGenreElectronic;
+
+  /// No description provided for @exploreGenreAlternative.
+  ///
+  /// In en, this message translates to:
+  /// **'Alternative'**
+  String get exploreGenreAlternative;
+
+  /// No description provided for @commonLinkOpenError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the link.'**
+  String get commonLinkOpenError;
+
+  /// No description provided for @authConfirmEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'We’ve sent you a confirmation email. Check your inbox before signing in.'**
+  String get authConfirmEmail;
+
+  /// No description provided for @authEmailNotConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your email address first. Check your inbox.'**
+  String get authEmailNotConfirmed;
+
+  /// No description provided for @authInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Email or password is incorrect. Check them and try again.'**
+  String get authInvalidCredentials;
+
+  /// No description provided for @authProviderUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This sign-in method is unavailable. Use email or try again later.'**
+  String get authProviderUnavailable;
+
+  /// No description provided for @authEmailAlreadyRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered. Try signing in.'**
+  String get authEmailAlreadyRegistered;
+
+  /// No description provided for @authWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a stronger password and try again.'**
+  String get authWeakPassword;
+
+  /// No description provided for @errorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection unavailable. Check your network and try again.'**
+  String get errorNetwork;
+
+  /// No description provided for @errorSessionChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has changed. Sign in again and retry.'**
+  String get errorSessionChanged;
+
+  /// No description provided for @errorRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests. Wait a minute and try again.'**
+  String get errorRateLimited;
+
+  /// No description provided for @errorActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The action failed. Try again shortly.'**
+  String get errorActionFailed;
+
+  /// No description provided for @socialAffinity.
+  ///
+  /// In en, this message translates to:
+  /// **'Affinity'**
+  String get socialAffinity;
+
+  /// No description provided for @socialFollow.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow'**
+  String get socialFollow;
+
+  /// No description provided for @socialFollowing.
+  ///
+  /// In en, this message translates to:
+  /// **'Following'**
+  String get socialFollowing;
+
+  /// No description provided for @socialFollowUpdateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update following. Try again.'**
+  String get socialFollowUpdateError;
+
+  /// No description provided for @socialMessageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get socialMessageAction;
+
+  /// No description provided for @socialFriendRequestSentShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get socialFriendRequestSentShort;
+
+  /// No description provided for @socialFriendRequestError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send the request. Try again.'**
+  String get socialFriendRequestError;
+
+  /// No description provided for @socialAddFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Add friend'**
+  String get socialAddFriend;
+
+  /// No description provided for @socialCommonArtists.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared artists'**
+  String get socialCommonArtists;
+
+  /// No description provided for @socialUsersLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load people.'**
+  String get socialUsersLoadError;
+
+  /// No description provided for @socialFollowersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Followers ({count})'**
+  String socialFollowersCount(int count);
+
+  /// No description provided for @socialFollowingCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Following ({count})'**
+  String socialFollowingCount(int count);
+
+  /// No description provided for @socialNoFollowers.
+  ///
+  /// In en, this message translates to:
+  /// **'No followers'**
+  String get socialNoFollowers;
+
+  /// No description provided for @socialNoFollowersBody.
+  ///
+  /// In en, this message translates to:
+  /// **'People who follow this profile will appear here.'**
+  String get socialNoFollowersBody;
+
+  /// No description provided for @socialNoFollowing.
+  ///
+  /// In en, this message translates to:
+  /// **'Not following anyone'**
+  String get socialNoFollowing;
+
+  /// No description provided for @socialNoFollowingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Followed profiles will appear here.'**
+  String get socialNoFollowingBody;
+
+  /// No description provided for @friendsRequestUpdateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update the request. Try again.'**
+  String get friendsRequestUpdateError;
+
+  /// No description provided for @friendsRemoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove friend'**
+  String get friendsRemoveTitle;
+
+  /// No description provided for @friendsRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} from your friends?'**
+  String friendsRemoveBody(String name);
+
+  /// No description provided for @friendsRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} removed from friends'**
+  String friendsRemoved(String name);
+
+  /// No description provided for @friendsRemoveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove this friend. Try again.'**
+  String get friendsRemoveError;
+
+  /// No description provided for @commonRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get commonRemove;
+
+  /// No description provided for @friendsConnectionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends and connections'**
+  String get friendsConnectionsTitle;
+
+  /// No description provided for @friendsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends ({count})'**
+  String friendsCount(int count);
+
+  /// No description provided for @friendsReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get friendsReceived;
+
+  /// No description provided for @friendsSentCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent ({count})'**
+  String friendsSentCount(int count);
+
+  /// No description provided for @friendsSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search your friends…'**
+  String get friendsSearchHint;
+
+  /// No description provided for @friendsNoneFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No friends found'**
+  String get friendsNoneFound;
+
+  /// No description provided for @friendsFindBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore profiles, send friend requests and share events.'**
+  String get friendsFindBody;
+
+  /// No description provided for @friendsFindPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'Find people'**
+  String get friendsFindPeople;
+
+  /// No description provided for @friendsNoReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests received'**
+  String get friendsNoReceived;
+
+  /// No description provided for @friendsNoReceivedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend requests from other people will appear here.'**
+  String get friendsNoReceivedBody;
+
+  /// No description provided for @friendsVibraUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibra user'**
+  String get friendsVibraUser;
+
+  /// No description provided for @friendsNoSent.
+  ///
+  /// In en, this message translates to:
+  /// **'No sent requests'**
+  String get friendsNoSent;
+
+  /// No description provided for @friendsNoSentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent friend requests awaiting a reply will appear here.'**
+  String get friendsNoSentBody;
+
+  /// No description provided for @inboxOpenConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Open conversation with {name}'**
+  String inboxOpenConversation(String name);
+
+  /// No description provided for @inboxUnreadCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} unread message} other{{count} unread messages}}'**
+  String inboxUnreadCount(int count);
+
+  /// No description provided for @inboxEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'IN TOUCH'**
+  String get inboxEyebrow;
+
+  /// No description provided for @inboxMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get inboxMessages;
+
+  /// No description provided for @inboxDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct'**
+  String get inboxDirect;
+
+  /// No description provided for @inboxRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests'**
+  String get inboxRequests;
+
+  /// No description provided for @inboxSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search conversations'**
+  String get inboxSearchHint;
+
+  /// No description provided for @inboxClearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear conversation search'**
+  String get inboxClearSearch;
+
+  /// No description provided for @inboxRefreshError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not refresh conversations.'**
+  String get inboxRefreshError;
+
+  /// No description provided for @inboxEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations yet.'**
+  String get inboxEmptyTitle;
+
+  /// No description provided for @inboxEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Find someone to share a concert with and start talking.'**
+  String get inboxEmptyBody;
+
+  /// No description provided for @inboxNoRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'No pending requests.'**
+  String get inboxNoRequests;
+
+  /// No description provided for @inboxNoRequestsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'New message requests will appear here.'**
+  String get inboxNoRequestsBody;
+
+  /// No description provided for @socialMatchSend.
+  ///
+  /// In en, this message translates to:
+  /// **'SEND'**
+  String get socialMatchSend;
+
+  /// No description provided for @socialMatchPass.
+  ///
+  /// In en, this message translates to:
+  /// **'PASS'**
+  String get socialMatchPass;
+
+  /// No description provided for @socialMatchSharedListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Your listening has found common ground.'**
+  String get socialMatchSharedListening;
+
+  /// No description provided for @socialYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get socialYou;
+
+  /// No description provided for @socialMatchFrequencyNow.
+  ///
+  /// In en, this message translates to:
+  /// **'same frequency, right now'**
+  String get socialMatchFrequencyNow;
+
+  /// No description provided for @socialMatchSharedSound.
+  ///
+  /// In en, this message translates to:
+  /// **'SHARED LISTENING'**
+  String get socialMatchSharedSound;
+
+  /// No description provided for @socialMatchSameArea.
+  ///
+  /// In en, this message translates to:
+  /// **'SAME AREA'**
+  String get socialMatchSameArea;
+
+  /// No description provided for @friendsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load friends. Try again.'**
+  String get friendsLoadError;
 }
 
 class _AppLocalizationsDelegate

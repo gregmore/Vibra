@@ -9,10 +9,10 @@ class EnvConfig {
 
   static bool _loaded = false;
 
-  /// Carica il file `.env` una sola volta.
+  /// Carica esclusivamente la configurazione pubblica una sola volta.
   static Future<void> load() async {
     if (_loaded) return;
-    await dotenv.load(fileName: '.env');
+    await dotenv.load(fileName: '.env.public');
     _loaded = true;
   }
 
@@ -40,11 +40,6 @@ class EnvConfig {
 
   static String get spotifyRedirectUri =>
       _readOptional('SPOTIFY_REDIRECT_URI') ?? 'com.vibra.app://callback';
-
-  static String? get ticketmasterApiKey =>
-      _readOptional('TICKETMASTER_API_KEY');
-
-  static String? get songkickApiKey => _readOptional('SONGKICK_API_KEY');
 
   static String? get bandsintownAppId => _readOptional('BANDSINTOWN_APP_ID');
 }

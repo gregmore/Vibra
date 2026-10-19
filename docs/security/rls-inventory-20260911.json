@@ -1,0 +1,152 @@
+[
+    {
+        "rls": true,
+        "table": "algorithm_config",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "auth_errors_log",
+        "anon_select": false,
+        "authenticated_select": false
+    },
+    {
+        "rls": true,
+        "table": "blocked_users",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "event_attendees",
+        "anon_select": true,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "events",
+        "anon_select": true,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "follows",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "friendships",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "live_messages",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "messages",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "music_profile_discovery",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "music_profiles",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "notification_campaigns",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "notification_preferences",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "notifications",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "privacy_preferences",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "profile_discovery",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "reports",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "service_incidents",
+        "anon_select": true,
+        "authenticated_select": true
+    },
+    {
+        "rls": false,
+        "table": "spatial_ref_sys",
+        "anon_select": true,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "spotify_connections",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "support_reports",
+        "anon_select": false,
+        "authenticated_select": false
+    },
+    {
+        "rls": true,
+        "table": "ticket_clicks",
+        "anon_select": false,
+        "authenticated_select": false
+    },
+    {
+        "rls": true,
+        "table": "user_interactions_log",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "user_matches",
+        "anon_select": false,
+        "authenticated_select": true
+    },
+    {
+        "rls": true,
+        "table": "users",
+        "anon_select": false,
+        "authenticated_select": true
+    }
+]

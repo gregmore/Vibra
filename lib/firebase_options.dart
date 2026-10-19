@@ -25,7 +25,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError('Vibra is configured for iOS and Android.');
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -68,14 +68,5 @@ class DefaultFirebaseOptions {
     projectId: 'vibra-3f307',
     storageBucket: 'vibra-3f307.firebasestorage.app',
     iosBundleId: 'com.vibra.app',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyA9V3kB42eLnyPZRkHuK111iyiszQB4Ogw',
-    appId: '1:495632436565:ios:6967134f9cb575138173dc',
-    messagingSenderId: '495632436565',
-    projectId: 'vibra-3f307',
-    storageBucket: 'vibra-3f307.firebasestorage.app',
-    iosBundleId: 'com.example.vibra',
   );
 }

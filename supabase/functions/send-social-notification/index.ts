@@ -1,154 +1,210 @@
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
-import { sendFcmLegacy } from "../_shared/fcm.ts";
+import { sendFcm } from "../_shared/fcm.ts";
+import { notificationWorkerAuthorized } from "../_shared/notification_worker_auth.ts";
+import { skipDisabledSpotifyJob } from "../_shared/spotify-feature.ts";
 
 type WebhookPayload = {
   type: "INSERT" | "UPDATE" | "DELETE";
   table: string;
-  record: any;
+  record: Record<string, unknown>;
   schema: string;
 };
+
+type Recipient = {
+  userId: string;
+  actorId: string;
+  kind: "message" | "friendship" | "match";
+};
+
+async function usersAreFriends(
+  supabase: ReturnType<typeof createSupabaseServiceClient>,
+  firstUserId: string,
+  secondUserId: string,
+) {
+  const { data, error } = await supabase
+    .from("friendships")
+    .select("id")
+    .eq("status", "accepted")
+    .or(
+      `and(requester_id.eq.${firstUserId},receiver_id.eq.${secondUserId}),and(requester_id.eq.${secondUserId},receiver_id.eq.${firstUserId})`,
+    )
+    .limit(1);
+
+  if (error) throw error;
+  return (data?.length ?? 0) > 0;
+}
 
 Deno.serve(async (req) => {
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 
-  try {
-    if (req.method.toUpperCase() !== "POST") {
-      return new Response(JSON.stringify({ error: "Method not allowed" }), {
-        status: 405,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+  if (!await notificationWorkerAuthorized(req)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
-    const payload: WebhookPayload = await req.json();
+  if (req.method.toUpperCase() !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  try {
+    const payload = (await req.json()) as WebhookPayload;
     if (payload.type !== "INSERT") {
       return new Response(JSON.stringify({ ok: true, ignored: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const supabase = createSupabaseServiceClient();
+    // Friendship and chat delivery remain operational while musical affinities
+    // are paused. Ignore only the music-derived webhook before reading users.
+    if (payload.table === "user_matches") {
+      const paused = skipDisabledSpotifyJob();
+      if (paused) return paused;
+    }
     const record = payload.record;
-    let targetUserId = null;
-    let senderUserId = null;
-    let title = "";
-    let body = "";
-    let notificationType = "";
-    let actionKey = "";
+    const supabase = createSupabaseServiceClient();
+    const recipients: Recipient[] = [];
 
     if (payload.table === "messages") {
-      targetUserId = record.receiver_id;
-      senderUserId = record.sender_id;
-      actionKey = "chat";
-      notificationType = "chat_message";
+      const receiverId = String(record.receiver_id ?? "");
+      const senderId = String(record.sender_id ?? "");
+      if (receiverId && senderId) {
+        recipients.push({ userId: receiverId, actorId: senderId, kind: "message" });
+      }
     } else if (payload.table === "friendships") {
-      targetUserId = record.receiver_id;
-      senderUserId = record.requester_id;
-      actionKey = "friend_request";
-      notificationType = "friend_request";
+      const receiverId = String(record.receiver_id ?? "");
+      const requesterId = String(record.requester_id ?? "");
+      if (receiverId && requesterId) {
+        recipients.push({ userId: receiverId, actorId: requesterId, kind: "friendship" });
+      }
     } else if (payload.table === "user_matches") {
-      // Per i match, avvisiamo user_id_b dell'affinità con user_id_a (triggerato da A o dal sistema)
-      // oppure notifichiamo entrambi. Semplifichiamo notificando user_id_b.
-      targetUserId = record.user_id_b;
-      senderUserId = record.user_id_a;
-      actionKey = "match";
-      notificationType = "match";
+      const firstUserId = String(record.user_id_a ?? "");
+      const secondUserId = String(record.user_id_b ?? "");
+      if (firstUserId && secondUserId) {
+        // A new match is meaningful to both people, not just the row's second ID.
+        recipients.push(
+          { userId: firstUserId, actorId: secondUserId, kind: "match" },
+          { userId: secondUserId, actorId: firstUserId, kind: "match" },
+        );
+      }
     } else {
       return new Response(JSON.stringify({ ok: true, skipped: "Table not supported" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    if (!targetUserId || !senderUserId) {
-      return new Response(JSON.stringify({ ok: true, skipped: "Missing user IDs" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const uniqueRecipients = recipients.filter(
+      (recipient, index) =>
+        recipients.findIndex((candidate) => candidate.userId === recipient.userId) === index,
+    );
 
-    // Carica target user
-    const { data: targetUser } = await supabase
-      .from("users")
-      .select("fcm_token, push_settings, push_enabled")
-      .eq("id", targetUserId)
-      .single();
+    let inAppCreated = 0;
+    let pushesSent = 0;
+    const skipped: string[] = [];
 
-    if (!targetUser || !targetUser.fcm_token) {
-      return new Response(JSON.stringify({ ok: true, skipped: "No FCM token" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    for (const recipient of uniqueRecipients) {
+      const [{ data: targetUser, error: targetError }, { data: actor, error: actorError }] =
+        await Promise.all([
+          supabase
+            .from("users")
+            .select("fcm_token, push_settings, push_enabled")
+            .eq("id", recipient.userId)
+            .maybeSingle(),
+          supabase
+            .from("users")
+            .select("username, display_name")
+            .eq("id", recipient.actorId)
+            .maybeSingle(),
+        ]);
 
-    // Controlla settings
-    if (targetUser.push_enabled === false) {
-      return new Response(JSON.stringify({ ok: true, skipped: "Push disabled globally" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const settings = targetUser.push_settings || {};
-    if (settings[actionKey] === false) {
-      return new Response(JSON.stringify({ ok: true, skipped: `Push disabled for ${actionKey}` }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+      if (targetError) throw targetError;
+      if (actorError) throw actorError;
+      if (!targetUser) {
+        skipped.push(recipient.userId);
+        continue;
+      }
 
-    // Carica sender info
-    const { data: senderUser } = await supabase
-      .from("users")
-      .select("username")
-      .eq("id", senderUserId)
-      .single();
+      const actorName = actor?.display_name ?? actor?.username ?? "Un utente";
+      let notificationType = "chat_message";
+      let actionKey = "chat";
+      let title = `Nuovo messaggio da ${actorName}`;
+      let body = String(record.content ?? "").slice(0, 100);
 
-    const senderName = senderUser?.username ?? "Un utente";
+      if (recipient.kind === "message") {
+        const isFriend = await usersAreFriends(supabase, recipient.userId, recipient.actorId);
+        if (!isFriend) {
+          notificationType = "message_request";
+          title = `Nuova richiesta di messaggio da ${actorName}`;
+        }
+      } else if (recipient.kind === "friendship") {
+        notificationType = "friend_request";
+        actionKey = "friend_request";
+        title = "Nuova richiesta Vibra";
+        body = `${actorName} ti ha inviato una richiesta di connessione.`;
+      } else {
+        notificationType = "match";
+        actionKey = "match";
+        title = "Nuova affinità trovata!";
+        body = `Hai un'affinità del ${Math.round(Number(record.compatibility ?? 0))}% con ${actorName}.`;
+      }
 
-    // Costruisci payload Push e In-App
-    if (payload.table === "messages") {
-      title = `Nuovo messaggio da ${senderName}`;
-      body = record.content.length > 100 ? record.content.substring(0, 97) + "..." : record.content;
-    } else if (payload.table === "friendships") {
-      title = "Nuova richiesta Vibra";
-      body = `${senderName} ti ha inviato una richiesta di connessione.`;
-    } else if (payload.table === "user_matches") {
-      title = "Nuova affinità trovata!";
-      body = `Hai un'affinità del ${Math.round(record.compatibility)}% con ${senderName}.`;
-    }
-
-    // Push FCM
-    const ok = await sendFcmLegacy(targetUser.fcm_token, title, body, {
-      type: notificationType,
-      sender_id: senderUserId,
-      record_id: record.id,
-    });
-
-    // In-App Notification (per match e amicizie)
-    if (payload.table !== "messages") {
-      await supabase.from("notifications").insert({
-        user_id: targetUserId,
+      // An in-app notification is useful even if the device has no FCM token
+      // or push is disabled. Push preferences affect delivery, not history.
+      const { error: notificationError } = await supabase.from("notifications").insert({
+        user_id: recipient.userId,
         type: notificationType,
-        title: title,
-        body: body,
+        title,
+        body,
         data: {
-          sender_id: senderUserId,
-          record_id: record.id,
+          sender_id: recipient.actorId,
+          record_id: record.id ?? null,
         },
         read: false,
       });
+      if (notificationError) throw notificationError;
+      inAppCreated++;
+
+      const settings = targetUser.push_settings ?? {};
+      const canPush =
+        Boolean(targetUser.fcm_token) &&
+        targetUser.push_enabled !== false &&
+        settings[actionKey] !== false;
+
+      if (canPush) {
+        const sent = await sendFcm(targetUser.fcm_token, title, body, {
+          type: notificationType,
+          sender_id: recipient.actorId,
+          record_id: String(record.id ?? ""),
+        });
+        if (sent) pushesSent++;
+      }
     }
 
     return new Response(
       JSON.stringify({
         ok: true,
-        pushed: ok,
+        in_app_created: inAppCreated,
+        pushes_sent: pushesSent,
+        skipped_users: skipped,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
-  } catch (e: any) {
+  } catch (error) {
     return new Response(
       JSON.stringify({
         error: "internal_error",
-        message: e.message,
+        message: String(error instanceof Error ? error.message : error),
       }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });

@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "main", "develop" ]
 
+permissions:
+  contents: read
+
 jobs:
   flutter-test:
     name: Flutter Frontend Tests
@@ -15,14 +18,33 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      - name: Check public Git tree
+        run: python3 script/security/check_public_tree.py
+
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.44.2'
           channel: 'stable'
           cache: true
 
-      - name: Create dummy .env for CI
-        run: touch .env
+      - name: Create public fixture configuration
+        run: |
+          cat > .env.public <<'EOF'
+          SUPABASE_URL=https://ci.supabase.invalid
+          SUPABASE_ANON_KEY=sb_publishable_ci_fixture
+          SPOTIFY_CLIENT_ID=ci-fixture-client
+          SPOTIFY_REDIRECT_URI=com.vibra.app://callback
+          GOOGLE_WEB_CLIENT_ID=ci-fixture-web-client
+          GOOGLE_IOS_CLIENT_ID=ci-fixture-ios-client
+          BANDSINTOWN_APP_ID=ci-fixture-app
+          EOF
 
       - name: Install Dependencies
         run: flutter pub get
@@ -33,47 +55,56 @@ jobs:
       - name: Analyze Code
         run: flutter analyze
 
+      - name: Test Release Tooling
+        run: python3 -m unittest discover -s script/release -p 'test_*.py'
+
       - name: Run Unit & Widget Tests with Coverage
         run: flutter test --coverage
 
-      # (Opzionale) Upload coverage ad un servizio come Codecov
-      # - name: Upload coverage reports to Codecov
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     file: ./coverage/lcov.info
+      - name: Run Map Package Tests
+        working-directory: packages/flutter_map_marker_cluster
+        run: |
+          flutter pub get
+          flutter test
 
-      # The files in integration_test are currently mock/skeleton flows. Keep
-      # Android compilation as the reliable native smoke check until those
-      # scenarios have deterministic test accounts and assertions.
+      # This checks native compilation without Firebase config or release keys.
+      # Physical-device acceptance remains a separately recorded release gate.
       - name: Build Android Debug APK
         run: flutter build apk --debug
 
   supabase-test:
     name: Supabase Backend Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
 
       - name: Setup Deno
-        uses: denoland/setup-deno@v2
+        uses: denoland/setup-deno@v2.0.5
         with:
-          deno-version: v1.x
+          deno-version: v2.x
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v3
         with:
-          version: latest
+          version: '2.109.0'
 
       - name: Start Supabase Local
         run: supabase start
 
       - name: Run Supabase DB & RLS Tests
-        run: supabase test db
+        run: bash script/security/test_database.sh "$GITHUB_WORKSPACE"
 
       - name: Run Edge Functions Unit Tests
-        run: deno test --allow-all supabase/functions/calculate-match/index.test.ts
+        run: >-
+          deno test
+          --allow-read=supabase/functions
+          --allow-env=FCM_SERVICE_ACCOUNT_JSON,FIREBASE_SERVICE_ACCOUNT_JSON,SPOTIFY_ENABLED,SPOTIFY_CLIENT_ID,SPOTIFY_CLIENT_SECRET,SUPABASE_URL,SUPABASE_ANON_KEY,SUPABASE_SERVICE_ROLE_KEY,VIBRA_NOTIFICATION_WORKER_KEY,VIBRA_CATALOGUE_JOB_SECRET,TICKETMASTER_API_KEY
+          supabase/functions/
+
+      - name: Check Edge Functions
+        run: deno check supabase/functions/*/index.ts
 
       - name: Stop Supabase Local
         if: always()

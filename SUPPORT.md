@@ -1,51 +1,45 @@
-# Vibra Support
+> Modello pubblico: compilare i dati del titolare nella configurazione privata prima della pubblicazione.
 
-## Support Contact
+# Ci siamo. Scrivici. — Vibra
 
-Before release, replace these placeholders with real production contacts:
+Versione 13 ottobre 2026. Titolare: {{LEGAL_NAME}}. Contatto: {{SUPPORT_EMAIL}}
 
-- Support email: `support@vibra.app`
-- Privacy contact: `privacy@vibra.app`
-- Legal contact: `legal@vibra.app`
+[Testo pubblico completo]({{PUBLIC_SITE_URL}}/supporto.html). Copia generata da `script/store/build_site.py`.
 
-## Recommended Support Scope
+Il collegamento Spotify e le affinità musicali sono temporaneamente disattivati nella prima versione pubblica. Sono disponibili eventi, mappa, salvataggi, amicizie, messaggi e chat Live.
+CONTATTO UFFICIALE
 
-Support should cover at least:
-- login and account issues
-- Spotify connection issues
-- event discovery problems
-- live chat and messaging problems
-- notification and permission issues
-- privacy and data deletion requests
+## {{SUPPORT_EMAIL}}
 
-## Recommended Response Flows
+Descrivi il problema e indica versione dell’app e dispositivo. Non inviare password, codici di accesso o token. L’obiettivo è una prima risposta entro 48 ore lavorative.
+[Scrivi all’assistenza ↗](mailto:{{SUPPORT_EMAIL}}?subject=Assistenza%20Vibra)
 
-### Account Access
-- verify the user’s registered email
-- check authentication provider used
-- confirm whether the issue is login, redirect, or token related
+## Risposte veloci
 
-### Spotify Connection
-- verify Spotify permissions were granted
-- confirm redirect URI is configured correctly
-- confirm Edge Functions and secrets are deployed
+Non riesco ad accedere
 
-### Notifications
-- confirm system notification permission is enabled
-- confirm Firebase files are installed
-- confirm `users.fcm_token` is populated in Supabase
+Usa lo stesso metodo della registrazione: email, Google o Apple. Per email controlla anche la cartella spam. Se il problema continua, scrivi dal recapito associato all’account.
 
-### Privacy Requests
-- route data access, correction, export, and deletion requests through a dedicated privacy contact
+Perché non vedo il collegamento Spotify e le affinità musicali?
 
-## Public Support URL
+Sono temporaneamente disattivati nella prima versione pubblica. Puoi usare ricerca eventi, mappa, salvataggi, amicizie, messaggi e chat Live. Se avevi collegato Spotify in precedenza, puoi revocarlo nelle impostazioni, dove disponibile, o scrivere all’assistenza per la rimozione dei dati musicali.
 
-Before app store submission, publish a real support page and add its URL to store metadata.
+Non vedo concerti nella mia zona
 
-## Internal Note
+Controlla la zona e i filtri in Esplora. Posizione e disponibilità degli eventi dipendono dai permessi e dai fornitori. Dati e biglietti vanno sempre confermati sul sito dell’organizzatore.
 
-If you ship without a website, at minimum provide:
-- a working support email
-- a working privacy policy URL
-- a working legal contact
+Non ricevo notifiche
 
+Verifica il permesso nelle impostazioni del telefono e l’interruttore notifiche di Vibra. Se il permesso era disabilitato, riapri l’app dopo averlo riattivato.
+
+Come segnalo una persona o un contenuto?
+
+Usa Segnala nell’app dove disponibile o scrivi all’assistenza indicando il contesto. Per contenuti riguardanti minori usa le istruzioni della [pagina sicurezza]({{PUBLIC_SITE_URL}}/sicurezza.html). Non inoltrare materiale illegale.
+
+Come gestisco o cancello i miei dati?
+
+Apri Impostazioni → Privacy e dati personali per le scelte e l’esportazione. Per eliminare l’account usa l’app oppure la [richiesta esterna]({{PUBLIC_SITE_URL}}/elimina-account.html).
+
+## Inviare una segnalazione dall’app
+
+Dal centro assistenza puoi inviare una descrizione e uno screenshot facoltativo. La segnalazione include diagnostica essenziale e log ripuliti. Se non hai più l’app, puoi sempre contattarci via email.

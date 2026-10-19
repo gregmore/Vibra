@@ -4,10 +4,14 @@ class ServerException implements Exception {
   final int? statusCode;
   final String? endpoint;
 
+  /// Stable backend code, kept separate from text shown to the user.
+  final String? errorCode;
+
   const ServerException({
     required this.message,
     this.statusCode,
     this.endpoint,
+    this.errorCode,
   });
 
   @override

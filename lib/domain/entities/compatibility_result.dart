@@ -2,13 +2,30 @@
 class CompatibilityResult {
   const CompatibilityResult({
     required this.percentage,
-    required this.sharedArtistsPercentage,
-    required this.sharedGenresPercentage,
+    required this.artistScore,
+    required this.genreScore,
+    required this.nicheBonus,
+    this.sharedArtistNames = const [],
+    this.sharedGenreNames = const [],
   });
 
+  /// Score finale di compatibilità (0–100).
   final double percentage;
-  final double sharedArtistsPercentage;
-  final double sharedGenresPercentage;
+
+  /// Contributo degli artisti in comune, pesato per posizione (0–100).
+  final double artistScore;
+
+  /// Contributo dei generi in comune, pesato per weight (0–100).
+  final double genreScore;
+
+  /// Bonus per generi di nicchia condivisi (0–100).
+  final double nicheBonus;
+
+  /// Nomi degli artisti in comune, ordinati per rilevanza.
+  final List<String> sharedArtistNames;
+
+  /// Nomi dei generi in comune, ordinati per peso medio.
+  final List<String> sharedGenreNames;
 }
 
 /// Risultato del punteggio di raccomandazione di un evento.

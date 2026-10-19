@@ -1,0 +1,9 @@
+{"test": "password stored as bcrypt hash", "passed": true}
+{"test": "short password rejected server-side", "passed": true, "status": 422}
+{"test": "storage rejects fake PNG content", "passed": false, "status": 200}
+{"test": "local logout succeeds", "passed": true, "status": 204}
+{"test": "local logout revokes first JWT", "passed": true, "status": 401}
+{"test": "local logout preserves other device", "passed": true, "status": 200}
+{"test": "logged-out refresh token rejected", "passed": true, "status": 400}
+{"test": "global logout revokes remaining device", "passed": true, "status": 401}
+{"test": "bounded failed-login rate limit", "passed": false, "attempts": 35, "statuses": [400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400]}

@@ -3,14 +3,21 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../utils/logger.dart';
 
 class SecureLocalStorage extends LocalStorage {
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
-  static const String _supabaseSessionKey = 'supabase_auth_token';
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
+    iOptions: IOSOptions(
+      accessibility: KeychainAccessibility.unlocked_this_device,
+    ),
+  );
+  final String projectHost;
+  String get _supabaseSessionKey => 'supabase_auth_token_$projectHost';
 
-  const SecureLocalStorage() : super();
+  const SecureLocalStorage({required this.projectHost}) : super();
 
   @override
   Future<void> initialize() async {
-    // Non c'è bisogno di inizializzazione per FlutterSecureStorage
+    // Old sessions had a shared key across production and staging. Require a
+    // fresh login once instead of restoring an account into the wrong backend.
+    await _secureStorage.delete(key: 'supabase_auth_token');
     VibraLogger.debug('SecureLocalStorage inizializzato', tag: 'Auth');
   }
 

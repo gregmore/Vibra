@@ -1,0 +1,35 @@
+{
+  "project_ref": "ppecqwnctxygbofdmxkf",
+  "cleanup": [
+    {
+      "users": 0,
+      "storage_objects": 0,
+      "cron_jobs": 0,
+      "migrations": 44
+    }
+  ],
+  "functions": 16,
+  "credential_file_mode": "0o600",
+  "suites": {
+    "http": {
+      "total": 41,
+      "passed": 41,
+      "failed": 0,
+      "skipped": 0,
+      "latest_evidence": "staging-http-cleanup-retest-20260911.jsonl"
+    },
+    "realtime": {
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "latest_evidence": "staging-realtime-cleanup-retest-20260911.jsonl"
+    },
+    "auth_storage": {
+      "total": 14,
+      "passed": 11,
+      "failed": 1,
+      "skipped": 2
+    }
+  }
+}

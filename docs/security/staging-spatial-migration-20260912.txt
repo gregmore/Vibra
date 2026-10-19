@@ -1,0 +1,36 @@
+Using workdir /path/to/user/.supabase/vibra-staging/workspace
+Connecting to remote database...
+Do you want to push these migrations to the remote database?
+ • 20260912000006_revoke_inherited_spatial_access.sql
+
+ [Y/n] y
+Applying migration 20260912000006_revoke_inherited_spatial_access.sql...
+WARNING (01006): no privileges could be revoked for "spatial_ref_sys"
+WARNING (01006): no privileges could be revoked for column "tableoid" of relation "spatial_ref_sys"
+WARNING (01006): no privileges could be revoked for column "cmax" of relation "spatial_ref_sys"
+WARNING (01006): no privileges could be revoked for column "xmax" of relation "spatial_ref_sys"
+WARNING (01006): no privileges could be revoked for column "cmin" of relation "spatial_ref_sys"
+WARNING (01006): no privileges could be revoked for column "xmin" of relation "spatial_ref_sys"
+WARNING (01006): no privileges could be revoked for column "ctid" of relation "spatial_ref_sys"
+WARNING (01006): no privileges could be revoked for column "srid" of relation "spatial_ref_sys"
+WARNING (01006): no privileges could be revoked for column "auth_name" of relation "spatial_ref_sys"
+WARNING (01006): no privileges could be revoked for column "auth_srid" of relation "spatial_ref_sys"
+WARNING (01006): no privileges could be revoked for column "srtext" of relation "spatial_ref_sys"
+WARNING (01006): no privileges could be revoked for column "proj4text" of relation "spatial_ref_sys"
+WARNING (01007): no privileges were granted for "spatial_ref_sys"
+Warning: failed to cache migrations catalog: error exporting pg-delta catalog: edge-runtime script produced no output:
+runtime has escaped from the event loop unexpectedly: event loop error: Error: Failed to read certificate file '/workspace/supabase/.temp/pgdelta/pgdelta-target-ca.crt': ENOENT: no such file or directory, open '/workspace/supabase/.temp/pgdelta/pgdelta-target-ca.crt'
+    at getCertValue (file:///var/tmp/sb-compile-edge-runtime/node_modules/localhost/@supabase/pg-delta/1.0.0-alpha.27/dist/core/plan/ssl-config.js:44:27)
+    at async parseSslConfig (file:///var/tmp/sb-compile-edge-runtime/node_modules/localhost/@supabase/pg-delta/1.0.0-alpha.27/dist/core/plan/ssl-config.js:62:23)
+    at async createManagedPool (file:///var/tmp/sb-compile-edge-runtime/node_modules/localhost/@supabase/pg-delta/1.0.0-alpha.27/dist/core/postgres-config.js:340:23)
+    at async file:///var/tmp/sb-compile-edge-runtime/index.ts:10:25
+main worker has been destroyed
+event loop error: Error: Failed to read certificate file '/workspace/supabase/.temp/pgdelta/pgdelta-target-ca.crt': ENOENT: no such file or directory, open '/workspace/supabase/.temp/pgdelta/pgdelta-target-ca.crt'
+    at getCertValue (file:///var/tmp/sb-compile-edge-runtime/node_modules/localhost/@supabase/pg-delta/1.0.0-alpha.27/dist/core/plan/ssl-config.js:44:27)
+    at async parseSslConfig (file:///var/tmp/sb-compile-edge-runtime/node_modules/localhost/@supabase/pg-delta/1.0.0-alpha.27/dist/core/plan/ssl-config.js:62:23)
+    at async createManagedPool (file:///var/tmp/sb-compile-edge-runtime/node_modules/localhost/@supabase/pg-delta/1.0.0-alpha.27/dist/core/postgres-config.js:340:23)
+    at async file:///var/tmp/sb-compile-edge-runtime/index.ts:10:25
+
+Finished supabase db push.
+A new version of Supabase CLI is available: v2.117.0 (currently installed v2.109.0)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli

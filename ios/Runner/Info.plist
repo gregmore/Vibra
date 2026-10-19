@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 	<dict>
+		<key>FirebaseMessagingAutoInitEnabled</key>
+		<false/>
+		<key>FIREBASE_ANALYTICS_COLLECTION_ENABLED</key>
+		<false/>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
 		<key>CFBundleDevelopmentRegion</key>
@@ -26,6 +30,8 @@
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
 		<!-- URL Scheme per OAuth redirect (Spotify PKCE) -->
 		<key>CFBundleURLTypes</key>
 		<array>
@@ -52,8 +58,6 @@
 		<!-- Permessi localizzazione -->
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>Vibra utilizza la tua posizione per trovare concerti ed eventi vicino a te e per attivare la modalità Live durante gli eventi.</string>
-		<key>NSLocationAlwaysUsageDescription</key>
-		<string>Vibra utilizza la tua posizione in background per inviarti notifiche su eventi nelle vicinanze.</string>
 		<!-- Permesso fotocamera/galleria per foto profilo -->
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Vibra ha bisogno di accedere alla galleria per impostare la tua foto profilo.</string>

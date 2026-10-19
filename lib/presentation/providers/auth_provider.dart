@@ -6,10 +6,17 @@ import 'core_providers.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsign;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
+import 'package:flutter/painting.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:crypto/crypto.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'app_state_providers.dart';
 import 'spotify_auth_provider.dart';
+import 'location_provider.dart';
+import 'live_events_provider.dart';
+import 'public_users_provider.dart';
+import 'public_friends_provider.dart';
+import 'direct_message_permission_provider.dart';
 
 enum GeneralAuthStatus { idle, loading, authenticated, error }
 
@@ -54,6 +61,19 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
 
   bool _isGoogleSignInInitialized = false;
 
+  Future<void> _prepareSignIn() async {
+    final auth = _ref.read(supabaseDatasourceProvider).client.auth;
+    final previousTokens = _ref.read(spotifyTokenStorageProvider);
+    try {
+      if (auth.currentSession != null) {
+        await auth.signOut(scope: SignOutScope.local);
+      }
+    } finally {
+      // A failed or cancelled new login must never restore the previous user.
+      await Future.wait([previousTokens.clear(), clearLocalState()]);
+    }
+  }
+
   /// Pulisce forzatamente tutto lo stato locale (Riverpod, Cache, Spotify, Google SignIn).
   /// Deve essere chiamato al logout e PRIMA di ogni nuovo login per garantire l'isolamento degli account.
   Future<void> clearLocalState() async {
@@ -66,24 +86,47 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
     _ref.invalidate(myEventsProvider);
     _ref.invalidate(allEventsProvider);
     _ref.invalidate(matchedUsersProvider);
+    _ref.invalidate(publicUsersProvider);
+    _ref.invalidate(publicFriendsProvider);
+    _ref.invalidate(publicConnectionProfilesProvider);
+    _ref.invalidate(directMessagePermissionProvider);
     _ref.invalidate(pendingFriendshipsProvider);
     _ref.invalidate(directMessagesProvider);
+    _ref.invalidate(conversationsProvider);
+    _ref.invalidate(notificationsProvider);
+    _ref.invalidate(userFollowStatsProvider);
+    _ref.invalidate(userProfileDetailProvider);
+    _ref.invalidate(userLocationProvider);
+    _ref.invalidate(liveMessagesProvider);
+    _ref.invalidate(liveEventsProvider);
+    _ref.invalidate(liveAttendanceProvider);
     _ref.invalidate(myProfileProvider);
     _ref.invalidate(myMusicProfileProvider);
     _ref.invalidate(settingsStateProvider);
+    _ref.invalidate(digestFrequencyProvider);
     _ref.invalidate(pushEnabledProvider);
     _ref.invalidate(presenceProvider);
     _ref.invalidate(spotifyAuthProvider);
 
-    await _ref.read(spotifyTokenStorageProvider).clear();
-    await CacheService.clearAll();
-    await _ref.read(localeStateProvider.notifier).setLocale(null);
+    try {
+      // Run every cleanup even if one storage backend reports an error.
+      await Future.wait([
+        _ref.read(spotifyTokenStorageProvider).clear(),
+        CacheService.clearAll(),
+        DefaultCacheManager().emptyCache(),
+      ]);
+      await _ref.read(localeStateProvider.notifier).setLocale(null);
+    } finally {
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
+      VibraLogger.clear();
+    }
   }
 
   Future<void> signInWithGoogle() async {
     try {
       state = const GeneralAuthState.loading();
-      await clearLocalState();
+      await _prepareSignIn();
       final supabase = _ref.read(supabaseDatasourceProvider);
 
       final webClientId = dotenv.env['GOOGLE_WEB_CLIENT_ID'];
@@ -135,7 +178,7 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
   Future<void> signInWithApple() async {
     try {
       state = const GeneralAuthState.loading();
-      await clearLocalState();
+      await _prepareSignIn();
       final supabase = _ref.read(supabaseDatasourceProvider);
 
       final rawNonce = supabase.client.auth.generateRawNonce();
@@ -177,7 +220,7 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
   Future<void> signInWithEmail(String email, String password) async {
     try {
       state = const GeneralAuthState.loading();
-      await clearLocalState();
+      await _prepareSignIn();
       final supabase = _ref.read(supabaseDatasourceProvider);
 
       final response = await supabase.client.auth.signInWithPassword(
@@ -211,17 +254,23 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
   Future<void> signUpWithEmail(
     String email,
     String password,
-    String username,
-  ) async {
+    String username, {
+    required bool ageConfirmed,
+  }) async {
     try {
       state = const GeneralAuthState.loading();
-      await clearLocalState();
+      await _prepareSignIn();
       final supabase = _ref.read(supabaseDatasourceProvider);
 
       final response = await supabase.client.auth.signUp(
         email: email,
         password: password,
-        data: {'username': username, 'display_name': username},
+        data: {
+          'username': username,
+          'display_name': username,
+          'age_confirmed_18': ageConfirmed,
+          'age_confirmed_at': DateTime.now().toUtc().toIso8601String(),
+        },
       );
 
       if (response.user != null) {
@@ -249,6 +298,7 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
     try {
       state = const GeneralAuthState.loading();
       final supabase = _ref.read(supabaseDatasourceProvider);
+      final previousTokens = _ref.read(spotifyTokenStorageProvider);
 
       final user = supabase.currentUser;
       if (user != null) {
@@ -265,9 +315,11 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
         }
       }
 
-      await clearLocalState();
-
-      await supabase.client.auth.signOut(scope: scope);
+      try {
+        await supabase.client.auth.signOut(scope: scope);
+      } finally {
+        await Future.wait([previousTokens.clear(), clearLocalState()]);
+      }
       state = const GeneralAuthState.idle();
     } catch (e) {
       VibraLogger.error('Errore durante il logout', error: e);
@@ -280,14 +332,44 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
     try {
       state = const GeneralAuthState.loading();
       final supabase = _ref.read(supabaseDatasourceProvider);
+      final userId = supabase.currentUser?.id;
+      if (userId == null) {
+        throw const AuthException('Authentication required');
+      }
 
-      // Call the RPC to delete the account in Supabase
-      await supabase.client.rpc('delete_user_account');
+      // Storage cleanup precedes Auth deletion on the server. Only its explicit
+      // completion acknowledgement means the account was actually erased.
+      final response = await supabase.client.functions.invoke('delete-account');
+      if (response.status != 200 ||
+          response.data is! Map ||
+          response.data['deleted'] != true) {
+        throw const AuthException('Account deletion was not confirmed');
+      }
 
-      await clearLocalState();
+      // A response for the previous account must not sign out a new one.
+      if (supabase.currentUser?.id == userId) {
+        try {
+          await clearLocalState();
+        } catch (error) {
+          // The server has already erased the account. A cache/plugin failure
+          // must not leave its session active or suggest retrying the deletion.
+          VibraLogger.warning('Pulizia locale dopo eliminazione: $error');
+        }
 
-      await supabase.client.auth.signOut();
-      state = const GeneralAuthState.idle();
+        if (supabase.currentUser?.id == userId) {
+          try {
+            // Supabase removes the local session before contacting the server,
+            // where this account's sessions have already been revoked.
+            await supabase.client.auth.signOut(scope: SignOutScope.local);
+          } catch (error) {
+            VibraLogger.warning('Logout dopo eliminazione: $error');
+          }
+        }
+      }
+      final currentUser = supabase.currentUser;
+      state = currentUser == null
+          ? const GeneralAuthState.idle()
+          : GeneralAuthState.authenticated(currentUser);
     } catch (e) {
       VibraLogger.error(
         'Errore durante l\'eliminazione dell\'account',

@@ -24,17 +24,22 @@ class SupabaseProfileDatasource {
         filters: {'id': user.id},
         limit: 1,
       );
+      _requireProfileAccount(user.id);
       if (rows.isEmpty) {
         throw const ServerException(message: 'Profilo utente non trovato');
       }
 
       final userModel = UserModel.fromJson(rows.first);
-      await CacheService.saveObject(
-        'CACHE_USER_PROFILE_${user.id}',
-        userModel.toJson(),
-      );
+      if (userModel.id != user.id) {
+        throw const ServerException(
+          message: 'ID profilo non coerente con auth',
+        );
+      }
+      // ProfileController caches only accepted responses. A delayed fetch must
+      // not replace a newer confirmed profile in the offline fallback.
       return userModel;
     } catch (e) {
+      _requireProfileAccount(user.id);
       final cachedJson = CacheService.getObject(
         'CACHE_USER_PROFILE_${user.id}',
       );
@@ -56,15 +61,27 @@ class SupabaseProfileDatasource {
 
     final row = await _supabase.upsert(
       DbTables.users,
-      model.toJson(),
+      model.toJson()
+        ..remove('spotify_id')
+        ..remove('spotify_access_token')
+        ..remove('spotify_refresh_token'),
       onConflict: 'id',
     );
+    _requireProfileAccount(user.id);
     final userModel = UserModel.fromJson(row);
-    await CacheService.saveObject(
-      'CACHE_USER_PROFILE_${user.id}',
-      userModel.toJson(),
-    );
+    if (userModel.id != user.id) {
+      throw const ServerException(message: 'ID profilo non coerente con auth');
+    }
     return userModel;
+  }
+
+  void _requireProfileAccount(String userId) {
+    if (_supabase.currentUser?.id != userId) {
+      throw const AuthException(
+        message: 'Account cambiato durante il caricamento del profilo',
+        errorCode: 'account_changed',
+      );
+    }
   }
 
   Future<MusicProfileModel?> getMyMusicProfile() async {
@@ -102,7 +119,7 @@ class SupabaseProfileDatasource {
 
       final profile = MusicProfileModel.fromJson(row);
       await CacheService.saveObject(
-        '${CacheService.keyMusicProfile}_${user.id}',
+        CacheService.musicProfileKey(user.id),
         profile.toJson(),
       );
       return profile;
@@ -113,7 +130,7 @@ class SupabaseProfileDatasource {
         stackTrace: st,
       );
       final cachedJson = CacheService.getObject(
-        '${CacheService.keyMusicProfile}_${user.id}',
+        CacheService.musicProfileKey(user.id),
       );
       if (cachedJson != null) {
         return MusicProfileModel.fromJson(cachedJson);
@@ -140,7 +157,7 @@ class SupabaseProfileDatasource {
     );
     final profile = MusicProfileModel.fromJson(row);
     await CacheService.saveObject(
-      '${CacheService.keyMusicProfile}_${user.id}',
+      CacheService.musicProfileKey(user.id),
       profile.toJson(),
     );
     VibraLogger.info('Music profile upsert completato', tag: 'SupabaseProfile');

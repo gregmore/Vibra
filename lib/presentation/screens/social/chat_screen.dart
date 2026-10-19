@@ -2,18 +2,26 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
-import '../../../core/theme/vibra_colors.dart';
 import '../../../core/theme/vibra_spacing.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../../domain/entities/direct_message.dart';
+import '../../../domain/entities/direct_message_permission.dart';
+import '../../../core/errors/exceptions.dart' as app_errors;
 import '../../../domain/usecases/social_usecases.dart';
+import '../../providers/app_state_providers.dart';
+import '../../providers/direct_message_permission_provider.dart';
 import '../../providers/usecase_providers.dart';
+import '../../widgets/common/vibra_input.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
 import '../../widgets/common/vibra_state_views.dart';
+import '../../widgets/vibra_signal_wave.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/config/env_config.dart';
+import '../../../core/services/private_media_url.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -32,13 +40,21 @@ class ChatScreen extends ConsumerStatefulWidget {
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _controller = TextEditingController();
+  final _composerFocus = FocusNode();
+  final Map<String, DirectMessage> _pendingMessages = {};
   List<DirectMessage> _messages = [];
   bool _isLoading = true;
+  bool _hasLoadError = false;
+  bool _isSending = false;
+  bool _isRequestingFriendship = false;
 
   String get _currentUserId =>
       Supabase.instance.client.auth.currentUser?.id ?? '';
 
   StreamSubscription<List<DirectMessage>>? _subscription;
+  int _subscriptionGeneration = 0;
+  int _conversationGeneration = 0;
+  Future<void>? _markReadInFlight;
 
   @override
   void initState() {
@@ -48,41 +64,122 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
+    _subscriptionGeneration++;
+    _conversationGeneration++;
     _controller.dispose();
+    _composerFocus.dispose();
     _subscription?.cancel();
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(covariant ChatScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.otherUserId != widget.otherUserId) {
+      _conversationGeneration++;
+      _messages = [];
+      _pendingMessages.clear();
+      _controller.clear();
+      _isSending = false;
+      _isRequestingFriendship = false;
+      _markReadInFlight = null;
+      _subscribeMessages();
+    }
+  }
+
   Future<void> _subscribeMessages() async {
+    final generation = ++_subscriptionGeneration;
+    setState(() {
+      _isLoading = true;
+      _hasLoadError = false;
+    });
+    unawaited(_subscription?.cancel());
+
     try {
       final stream = await ref
           .read(streamConversationUseCaseProvider)
           .call(widget.otherUserId);
+      if (!mounted || generation != _subscriptionGeneration) return;
       _subscription = stream.listen(
         (messages) {
-          if (mounted) {
+          if (mounted && generation == _subscriptionGeneration) {
             setState(() {
-              _messages = messages;
+              _messages = [..._pendingMessages.values, ...messages];
               _isLoading = false;
+              _hasLoadError = false;
             });
+            if (messages.any(
+              (message) =>
+                  message.senderId == widget.otherUserId &&
+                  message.readAt == null,
+            )) {
+              unawaited(_markRead());
+            }
+            ref.invalidate(directMessagePermissionProvider(widget.otherUserId));
           }
         },
         onError: (error) {
           VibraLogger.error('Errore realtime chat stream', error: error);
-          if (mounted) {
-            setState(() => _isLoading = false);
+          if (mounted && generation == _subscriptionGeneration) {
+            setState(() {
+              _isLoading = false;
+              _hasLoadError = true;
+            });
           }
         },
       );
     } catch (_) {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted && generation == _subscriptionGeneration) {
+        setState(() {
+          _isLoading = false;
+          _hasLoadError = true;
+        });
+      }
     }
   }
 
-  Future<void> _sendMessage() async {
-    final text = _controller.text.trim();
-    if (text.isEmpty) return;
-    _controller.clear();
+  Future<void> _markRead() {
+    final existing = _markReadInFlight;
+    if (existing != null) return existing;
+    late final Future<void> operation;
+    operation = _performMarkRead().whenComplete(() {
+      // An older conversation finishing must not unlock its successor's read.
+      if (identical(_markReadInFlight, operation)) _markReadInFlight = null;
+    });
+    return _markReadInFlight = operation;
+  }
+
+  Future<void> _performMarkRead() async {
+    try {
+      await ref
+          .read(markMessagesAsReadUseCaseProvider)
+          .call(widget.otherUserId);
+      if (!mounted) return;
+      await ref.read(conversationsProvider.notifier).refresh();
+    } catch (error) {
+      VibraLogger.warning('Unable to mark conversation as read: $error');
+    }
+  }
+
+  Future<void> _sendMessage({String? content}) async {
+    final text = (content ?? _controller.text).trim();
+    if (text.isEmpty || _isSending) return;
+    if (text.length > 2000) {
+      _showError(AppLocalizations.of(context)!.chatMessageTooLong);
+      return;
+    }
+    final permission = ref.read(
+      directMessagePermissionProvider(widget.otherUserId),
+    );
+    if (permission.isLoading || permission.hasError) return;
+    if (permission.valueOrNull?.canSend != true) {
+      _showError(_permissionMessage(permission.valueOrNull));
+      return;
+    }
+    final receiverId = widget.otherUserId;
+    final conversationGeneration = _conversationGeneration;
+    setState(() => _isSending = true);
+    if (content == null) _controller.clear();
 
     // Optimistic UI — add immediately
     final optimistic = DirectMessage(
@@ -92,38 +189,203 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       content: text,
       createdAt: DateTime.now(),
     );
+    _pendingMessages[optimistic.id] = optimistic;
     setState(() => _messages = [optimistic, ..._messages]);
 
     try {
-      await ref
+      final sent = await ref
           .read(sendDirectMessageUseCaseProvider)
-          .call(
-            SendDirectMessageParams(
-              receiverId: widget.otherUserId,
-              content: text,
-            ),
-          );
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.chatSendFailed)),
+          .call(SendDirectMessageParams(receiverId: receiverId, content: text));
+      if (!mounted ||
+          conversationGeneration != _conversationGeneration ||
+          receiverId != widget.otherUserId) {
+        return;
+      }
+      _pendingMessages.remove(optimistic.id);
+      setState(() {
+        _messages = _messages
+            .where((message) => message.id != optimistic.id)
+            .toList();
+        if (!_messages.any((message) => message.id == sent.id)) {
+          _messages.insert(0, sent);
+        }
+      });
+      ref.read(conversationsProvider.notifier).refresh();
+      ref.invalidate(directMessagePermissionProvider(receiverId));
+    } catch (error) {
+      if (mounted &&
+          conversationGeneration == _conversationGeneration &&
+          receiverId == widget.otherUserId) {
+        _pendingMessages.remove(optimistic.id);
+        setState(() {
+          _messages = _messages.where((m) => m.id != optimistic.id).toList();
+        });
+        // Preserve both the failed message and any draft typed during the request.
+        final draft = _controller.text;
+        _controller.text = draft.isEmpty ? text : '$text\n\n$draft';
+        _controller.selection = TextSelection.collapsed(
+          offset: _controller.text.length,
         );
+        final l10n = AppLocalizations.of(context)!;
+        final reason = error is DirectMessageSendException
+            ? _permissionMessage(error.permission)
+            : error is app_errors.AuthException ||
+                  error is PostgrestException && error.code == 'PT401'
+            ? l10n.chatSendSignInRequired
+            : '';
+        _showError(
+          reason.isEmpty
+              ? l10n.chatDraftRecovered
+              : '$reason ${l10n.chatDraftRecovered}',
+        );
+        ref.invalidate(directMessagePermissionProvider(receiverId));
+      }
+    } finally {
+      if (mounted &&
+          conversationGeneration == _conversationGeneration &&
+          receiverId == widget.otherUserId) {
+        setState(() => _isSending = false);
       }
     }
   }
 
+  String _permissionMessage(DirectMessagePermission? permission) {
+    final l10n = AppLocalizations.of(context)!;
+    return switch (permission) {
+      DirectMessagePermission.friendshipRequired =>
+        l10n.chatSendFriendshipRequired,
+      DirectMessagePermission.awaitingReply => l10n.chatSendFirstContactLimit,
+      DirectMessagePermission.rateLimited => l10n.chatSendRateLimited,
+      _ => l10n.chatSendUnavailable,
+    };
+  }
+
+  Future<void> _requestFriendship({String? incomingFriendshipId}) async {
+    if (_isRequestingFriendship) return;
+    final receiverId = widget.otherUserId;
+    final generation = _conversationGeneration;
+    setState(() => _isRequestingFriendship = true);
+    try {
+      if (incomingFriendshipId != null) {
+        await ref
+            .read(pendingFriendshipsProvider.notifier)
+            .acceptFriendRequest(incomingFriendshipId);
+      } else {
+        await ref.read(requestFriendshipUseCaseProvider).call(receiverId);
+        await ref.read(pendingFriendshipsProvider.notifier).refresh();
+      }
+      if (!mounted || generation != _conversationGeneration) return;
+      ref.invalidate(userProfileDetailProvider(receiverId));
+      ref.invalidate(directMessagePermissionProvider(receiverId));
+      final l10n = AppLocalizations.of(context)!;
+      _showError(
+        incomingFriendshipId == null
+            ? l10n.chatFriendshipRequestSent
+            : l10n.chatFriendshipAccepted,
+      );
+    } catch (_) {
+      if (mounted && generation == _conversationGeneration) {
+        _showError(AppLocalizations.of(context)!.chatFriendshipRequestFailed);
+      }
+    } finally {
+      if (mounted && generation == _conversationGeneration) {
+        setState(() => _isRequestingFriendship = false);
+      }
+    }
+  }
+
+  Widget _buildPermissionBanner(
+    AsyncValue<DirectMessagePermission> permission,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    if (!permission.isLoading &&
+        !permission.hasError &&
+        permission.valueOrNull?.canSend == true) {
+      return const SizedBox.shrink();
+    }
+    final pending = ref.watch(pendingFriendshipsProvider);
+    final outgoing = pending.any(
+      (f) =>
+          f.requesterId == _currentUserId && f.receiverId == widget.otherUserId,
+    );
+    final incoming = pending
+        .where(
+          (f) =>
+              f.receiverId == _currentUserId &&
+              f.requesterId == widget.otherUserId,
+        )
+        .firstOrNull;
+    final requiresFriendship =
+        !permission.isLoading &&
+        !permission.hasError &&
+        permission.valueOrNull == DirectMessagePermission.friendshipRequired;
+    final message = permission.isLoading
+        ? l10n.chatPermissionChecking
+        : permission.hasError
+        ? permission.error is app_errors.AuthException ||
+                  permission.error is PostgrestException &&
+                      (permission.error as PostgrestException).code == 'PT401'
+              ? l10n.chatSendSignInRequired
+              : l10n.chatLoadError
+        : requiresFriendship && outgoing
+        ? l10n.chatFriendshipRequestPending
+        : _permissionMessage(permission.valueOrNull);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(message, style: Theme.of(context).textTheme.bodySmall),
+          if (!permission.isLoading)
+            Wrap(
+              spacing: 8,
+              alignment: WrapAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => ref.invalidate(
+                    directMessagePermissionProvider(widget.otherUserId),
+                  ),
+                  child: Text(l10n.commonRetry),
+                ),
+                if (requiresFriendship && !outgoing)
+                  FilledButton.tonal(
+                    onPressed: _isRequestingFriendship
+                        ? null
+                        : () => _requestFriendship(
+                            incomingFriendshipId: incoming?.id,
+                          ),
+                    child: Text(
+                      incoming == null
+                          ? l10n.chatRequestFriendship
+                          : l10n.chatAcceptFriendship,
+                    ),
+                  ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
   void _showReportDialog() {
+    final t = context.vibraTokens;
+    final l10n = AppLocalizations.of(context)!;
     String selectedReason = 'spam';
     final descController = TextEditingController();
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: VibraColors.surfaceElevated,
-        title: const Text(
-          'Segnala Utente',
-          style: TextStyle(color: VibraColors.textPrimary),
-        ),
+        backgroundColor: t.surfaceElevated,
+        title: Text(l10n.socialReportUser),
+        scrollable: true,
         content: StatefulBuilder(
           builder: (builderContext, setDialogState) {
             return Column(
@@ -131,17 +393,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               children: [
                 DropdownButtonFormField<String>(
                   initialValue: selectedReason,
-                  dropdownColor: VibraColors.surfaceVariant,
-                  style: const TextStyle(color: VibraColors.textPrimary),
-                  items: const [
-                    DropdownMenuItem(value: 'spam', child: Text('Spam')),
+                  dropdownColor: t.surfaceElevated,
+                  style: TextStyle(color: t.textPrimary),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'spam',
+                      child: Text(l10n.socialReportSpam),
+                    ),
                     DropdownMenuItem(
                       value: 'harassment',
-                      child: Text('Molestie'),
+                      child: Text(l10n.socialReportHarassment),
                     ),
                     DropdownMenuItem(
                       value: 'inappropriate',
-                      child: Text('Contenuto Inappropriato'),
+                      child: Text(l10n.socialReportInappropriate),
                     ),
                   ],
                   onChanged: (val) {
@@ -151,14 +416,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: descController,
-                  style: const TextStyle(color: VibraColors.textPrimary),
+                  style: TextStyle(color: t.textPrimary),
                   decoration: InputDecoration(
-                    hintText: 'Dettagli aggiuntivi (opzionale)',
-                    hintStyle: const TextStyle(
-                      color: VibraColors.textSecondary,
-                    ),
+                    hintText: l10n.socialReportDetailsHint,
+                    hintStyle: TextStyle(color: t.textSecondary),
                     filled: true,
-                    fillColor: VibraColors.surfaceVariant,
+                    fillColor: t.surfaceMuted,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(
                         VibraSpacing.radiusMedium,
@@ -174,11 +437,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annulla'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () async {
+              final description = descController.text;
               Navigator.pop(dialogContext);
               try {
                 await ref
@@ -187,45 +451,47 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       ReportUserParams(
                         reportedId: widget.otherUserId,
                         reason: selectedReason,
-                        description: descController.text,
+                        description: description,
                       ),
                     );
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Utente segnalato con successo'),
-                    ),
+                    SnackBar(content: Text(l10n.socialReportSent)),
                   );
                 }
-              } catch (_) {}
+              } catch (_) {
+                _showError(l10n.socialReportFailed);
+              }
             },
-            child: const Text('Segnala'),
+            child: Text(l10n.socialReportAction),
           ),
         ],
       ),
-    );
+    ).whenComplete(descController.dispose);
   }
 
   void _showBlockDialog() {
+    final t = context.vibraTokens;
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: VibraColors.surfaceElevated,
-        title: const Text(
-          'Blocca Utente',
-          style: TextStyle(color: VibraColors.textPrimary),
-        ),
-        content: const Text(
-          'Sei sicuro di voler bloccare questo utente? Non potrete più scambiarvi messaggi.',
-          style: TextStyle(color: VibraColors.textSecondary),
+        backgroundColor: t.surfaceElevated,
+        title: Text(l10n.socialBlockUser),
+        content: Text(
+          l10n.socialBlockConfirm,
+          style: TextStyle(color: t.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Annulla'),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: VibraColors.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: t.error,
+              foregroundColor: t.onAccent,
+            ),
             onPressed: () async {
               Navigator.pop(dialogContext);
               try {
@@ -233,16 +499,137 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     .read(blockUserUseCaseProvider)
                     .call(widget.otherUserId);
                 if (mounted) {
-                  if (context.mounted) Navigator.pop(context); // Close chat
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Utente bloccato')),
-                    );
-                  }
+                  ref.invalidate(matchedUsersProvider);
+                  ref.invalidate(pendingFriendshipsProvider);
+                  ref.invalidate(userProfileDetailProvider(widget.otherUserId));
+                  await ref.read(conversationsProvider.notifier).refresh();
+                  if (!mounted) return;
+                  final messenger = ScaffoldMessenger.of(context);
+                  Navigator.pop(context);
+                  messenger.showSnackBar(
+                    SnackBar(content: Text(l10n.socialBlockSuccess)),
+                  );
                 }
-              } catch (_) {}
+              } catch (_) {
+                _showError(l10n.socialBlockFailed);
+              }
             },
-            child: const Text('Blocca'),
+            child: Text(l10n.socialBlockAction),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageRequestBanner(DirectMessagePermission? permission) {
+    final t = context.vibraTokens;
+    final l10n = AppLocalizations.of(context)!;
+    final friends = ref.watch(friendsProvider);
+    final isFriend =
+        permission == DirectMessagePermission.friends ||
+        friends.any((f) => f.user.id == widget.otherUserId);
+    final hasIncomingMessages = _messages.any(
+      (m) => m.senderId == widget.otherUserId,
+    );
+    final hasReplied = _messages.any(
+      (message) => message.receiverId == widget.otherUserId,
+    );
+    final isMessageRequest = !isFriend && hasIncomingMessages && !hasReplied;
+
+    if (!isMessageRequest) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: t.surfaceElevated,
+        borderRadius: VibraSpacing.borderMedium,
+        border: Border.all(color: t.borderDefault),
+        boxShadow: [t.cardShadow],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: t.accentPrimary,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.mark_email_unread_rounded,
+                  color: t.onAccent,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.chatRequestTitle,
+                      style: TextStyle(
+                        color: t.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.chatRequestBody(widget.otherDisplayName),
+                      style: TextStyle(color: t.textSecondary, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              TextButton(
+                onPressed: _showBlockDialog,
+                style: TextButton.styleFrom(foregroundColor: t.error),
+                child: Text(l10n.socialBlockAction),
+              ),
+              OutlinedButton(
+                onPressed: () async {
+                  try {
+                    await ref
+                        .read(softDeleteChatUseCaseProvider)
+                        .call(widget.otherUserId);
+                    if (!mounted) return;
+                    await ref.read(conversationsProvider.notifier).refresh();
+                    if (!mounted) return;
+                    final messenger = ScaffoldMessenger.of(context);
+                    Navigator.pop(context);
+                    messenger.showSnackBar(
+                      SnackBar(content: Text(l10n.chatRequestRejected)),
+                    );
+                  } catch (_) {
+                    _showError(l10n.chatRequestRejectFailed);
+                  }
+                },
+                child: Text(l10n.commonReject),
+              ),
+              FilledButton.tonal(
+                style: FilledButton.styleFrom(
+                  backgroundColor: t.accentSecondary,
+                  foregroundColor: t.onAccent,
+                ),
+                onPressed: _composerFocus.requestFocus,
+                child: Text(
+                  l10n.commonReply,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -252,10 +639,58 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final t = context.vibraTokens;
+    final l10n = AppLocalizations.of(context)!;
+    final permission = ref.watch(
+      directMessagePermissionProvider(widget.otherUserId),
+    );
+    final canSend =
+        !permission.isLoading &&
+        !permission.hasError &&
+        permission.valueOrNull?.canSend == true;
     return VibraPageScaffold(
       appBar: AppBar(
-        title: Text(widget.otherDisplayName),
+        title: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () => context.push('/user-profile', extra: widget.otherUserId),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 24,
+                  height: 18,
+                  child: VibraSignalWave(
+                    color: t.textPrimary,
+                    secondaryColor: t.accentPrimary,
+                    strokeWidth: 1.4,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    widget.otherDisplayName,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 18,
+                  color: t.textSecondary,
+                ),
+              ],
+            ),
+          ),
+        ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.person_outline_rounded),
+            tooltip: l10n.userProfileView,
+            onPressed: () =>
+                context.push('/user-profile', extra: widget.otherUserId),
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert_rounded),
             onSelected: (value) {
@@ -272,7 +707,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   children: [
                     const Icon(Icons.flag_rounded, size: 20),
                     const SizedBox(width: 8),
-                    const Text('Segnala Utente'),
+                    Text(l10n.socialReportUser),
                   ],
                 ),
               ),
@@ -280,15 +715,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 value: 'block',
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.block_rounded,
-                      size: 20,
-                      color: VibraColors.error,
-                    ),
+                    Icon(Icons.block_rounded, size: 20, color: t.error),
                     const SizedBox(width: 8),
-                    const Text(
-                      'Blocca Utente',
-                      style: TextStyle(color: VibraColors.error),
+                    Text(
+                      l10n.socialBlockUser,
+                      style: TextStyle(color: t.error),
                     ),
                   ],
                 ),
@@ -299,16 +730,50 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       child: Column(
         children: [
+          _buildPermissionBanner(permission),
+          _buildMessageRequestBanner(permission.valueOrNull),
+          if (_hasLoadError && _messages.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.chatConnectionInterrupted,
+                      style: TextStyle(color: t.error),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _subscribeMessages,
+                    child: Text(AppLocalizations.of(context)!.commonRetry),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
+                : _hasLoadError && _messages.isEmpty
+                ? SingleChildScrollView(
+                    child: VibraEmptyView(
+                      title: AppLocalizations.of(context)!.chatLoadError,
+                      message: AppLocalizations.of(context)!.commonRetry,
+                      icon: Icons.cloud_off_rounded,
+                      actionLabel: AppLocalizations.of(context)!.commonRetry,
+                      onActionTap: _subscribeMessages,
+                    ),
+                  )
                 : _messages.isEmpty
-                ? VibraEmptyView(
-                    title: AppLocalizations.of(context)!.chatEmptyTitle,
-                    message: AppLocalizations.of(context)!.chatEmptyMessage,
-                    icon: Icons.chat_bubble_rounded,
+                ? SingleChildScrollView(
+                    child: VibraEmptyView(
+                      title: AppLocalizations.of(context)!.chatEmptyTitle,
+                      message: AppLocalizations.of(context)!.chatEmptyMessage,
+                      icon: Icons.chat_bubble_rounded,
+                    ),
                   )
                 : ListView.builder(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
                     reverse: true,
                     padding: EdgeInsets.fromLTRB(
                       VibraSpacing.pagePadding,
@@ -345,17 +810,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     vertical: 12,
                                   ),
                                   decoration: BoxDecoration(
-                                    gradient: mine
-                                        ? LinearGradient(
-                                            colors: [
-                                              VibraColors.primary,
-                                              VibraColors.accent,
-                                            ],
-                                          )
-                                        : null,
                                     color: mine
-                                        ? null
-                                        : VibraColors.surfaceElevated,
+                                        ? t.accentPrimary
+                                        : t.surfaceElevated,
                                     borderRadius: BorderRadius.only(
                                       topLeft: Radius.circular(
                                         VibraSpacing.radiusLarge,
@@ -376,9 +833,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     ),
                                     border: mine
                                         ? null
-                                        : Border.all(
-                                            color: VibraColors.glassBorder,
-                                          ),
+                                        : Border.all(color: t.borderDefault),
                                   ),
                                   child: _buildMessageContent(
                                     message,
@@ -402,8 +857,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               child: Text(
                                 timeString,
                                 style: theme.textTheme.labelSmall?.copyWith(
-                                  color: VibraColors.textSecondary,
-                                  fontSize: 10,
+                                  color: t.textSecondary,
                                 ),
                               ),
                             ),
@@ -423,41 +877,42 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: VibraColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(
-                        VibraSpacing.radiusFull,
-                      ),
-                      border: Border.all(color: VibraColors.glassBorder),
-                    ),
-                    child: TextField(
-                      controller: _controller,
-                      onSubmitted: (_) => _sendMessage(),
-                      style: const TextStyle(color: VibraColors.textPrimary),
-                      decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context)!.chatInputHint,
-                        hintStyle: const TextStyle(
-                          color: VibraColors.textSecondary,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 14,
-                        ),
-                      ),
-                    ),
+                  child: VibraInput(
+                    controller: _controller,
+                    focusNode: _composerFocus,
+                    maxLength: 2000,
+                    minLines: 1,
+                    maxLines: 4,
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _sendMessage(),
+                    hintText: AppLocalizations.of(context)!.chatInputHint,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Container(
-                  decoration: const BoxDecoration(
-                    color: VibraColors.accent,
+                  decoration: BoxDecoration(
+                    color: t.accentPrimary,
                     shape: BoxShape.circle,
                   ),
-                  child: IconButton(
-                    onPressed: _sendMessage,
-                    icon: const Icon(Icons.send_rounded, color: Colors.white),
+                  child: ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _controller,
+                    builder: (context, value, _) => IconButton(
+                      tooltip: AppLocalizations.of(context)!.chatSendMessage,
+                      onPressed:
+                          !canSend || _isSending || value.text.trim().isEmpty
+                          ? null
+                          : _sendMessage,
+                      icon: _isSending
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: t.onAccent,
+                              ),
+                            )
+                          : Icon(Icons.send_rounded, color: t.onAccent),
+                    ),
                   ),
                 ),
               ],
@@ -473,18 +928,35 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     ThemeData theme,
     bool mine,
   ) {
+    final t = context.vibraTokens;
+    final l10n = AppLocalizations.of(context)!;
+    final messageColor = mine ? t.onAccent : t.textPrimary;
     if (message.messageType == 'image' &&
         message.metadata != null &&
         message.metadata!['url'] != null) {
+      final mediaUrl = message.metadata!['url'];
+      if (mediaUrl is! String) {
+        return const Icon(Icons.broken_image_rounded);
+      }
+      final uri = privateChatMediaUri(mediaUrl, EnvConfig.supabaseUrl);
+      final token = Supabase.instance.client.auth.currentSession?.accessToken;
+      if (uri == null || token == null) {
+        return const Icon(Icons.broken_image_rounded);
+      }
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
-        child: CachedNetworkImage(
-          imageUrl: message.metadata!['url'] as String,
+        child: Image.network(
+          uri.toString(),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'apikey': EnvConfig.supabaseAnonKey,
+          },
           fit: BoxFit.cover,
-          memCacheWidth: 600,
-          placeholder: (context, url) => Container(color: Colors.white10),
-          errorWidget: (context, url, error) => const Center(
-            child: Icon(Icons.broken_image, color: Colors.white54),
+          cacheWidth: 600,
+          loadingBuilder: (context, child, progress) =>
+              progress == null ? child : Container(color: t.surfaceMuted),
+          errorBuilder: (context, error, stackTrace) => Center(
+            child: Icon(Icons.broken_image_rounded, color: t.textSecondary),
           ),
         ),
       );
@@ -497,43 +969,61 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.location_on_rounded,
-                color: VibraColors.accent,
+                color: mine ? t.onAccent : t.accentPrimary,
                 size: 18,
               ),
               const SizedBox(width: 6),
-              Text(
-                'Proposta di Incontro',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+              Flexible(
+                child: Text(
+                  l10n.chatMeetupTitle,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: messageColor,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 4),
-          Text(message.content, style: theme.textTheme.bodyMedium),
+          Text(
+            message.content,
+            style: theme.textTheme.bodyMedium?.copyWith(color: messageColor),
+          ),
           const SizedBox(height: 12),
           if (!mine)
-            Row(
-              mainAxisSize: MainAxisSize.min,
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
               children: [
                 FilledButton.tonal(
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     minimumSize: Size.zero,
                   ),
-                  onPressed: () {},
-                  child: const Text('Ci Sto'),
+                  onPressed: _isSending
+                      ? null
+                      : () => _sendMessage(
+                          content: l10n.chatMeetupAcceptMessage(
+                            message.content,
+                          ),
+                        ),
+                  child: Text(l10n.chatMeetupAccept),
                 ),
-                const SizedBox(width: 8),
                 TextButton(
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     minimumSize: Size.zero,
                   ),
-                  onPressed: () {},
-                  child: const Text('Non Posso'),
+                  onPressed: _isSending
+                      ? null
+                      : () => _sendMessage(
+                          content: l10n.chatMeetupDeclineMessage(
+                            message.content,
+                          ),
+                        ),
+                  child: Text(l10n.chatMeetupDecline),
                 ),
               ],
             ),
@@ -543,9 +1033,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     return Text(
       message.content,
-      style: theme.textTheme.bodyMedium?.copyWith(
-        color: VibraColors.textPrimary,
-      ),
+      style: theme.textTheme.bodyMedium?.copyWith(color: messageColor),
     );
   }
 }

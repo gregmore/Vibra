@@ -16,6 +16,9 @@ GRANT SELECT ON TABLE public.events, public.users TO authenticated;
 DROP POLICY IF EXISTS "event_attendees_select_authenticated"
 ON public.event_attendees;
 
+DROP POLICY IF EXISTS "event_attendees_select_own"
+ON public.event_attendees;
+
 CREATE POLICY "event_attendees_select_own"
 ON public.event_attendees
 FOR SELECT

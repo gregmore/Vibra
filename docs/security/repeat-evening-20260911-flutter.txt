@@ -1,0 +1,7 @@
+00:00 +0: loading /path/to/user/development/vibra/test/core/security_hardening_test.dart
+00:00 +0: /path/to/user/development/vibra/test/core/security_hardening_test.dart: support diagnostics redact bearer, query and JSON secrets
+00:00 +1: /path/to/user/development/vibra/test/unit/spotify_account_link_verification_test.dart: Spotify Account Single-User Link Verification exchangeCode succeeds when Spotify account is not linked to any other user
+00:00 +2: /path/to/user/development/vibra/test/unit/spotify_account_link_verification_test.dart: Spotify Account Single-User Link Verification exchangeCode succeeds when Spotify account is not linked to any other user
+00:00 +3: /path/to/user/development/vibra/test/unit/spotify_account_link_verification_test.dart: Spotify Account Single-User Link Verification exchangeCode throws ServerException with Italian message when Spotify account is already linked to another user
+00:00 +4: /path/to/user/development/vibra/test/unit/spotify_account_link_verification_test.dart: (tearDownAll)
+00:00 +4: All tests passed!

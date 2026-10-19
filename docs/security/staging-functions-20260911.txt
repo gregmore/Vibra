@@ -1,0 +1,98 @@
+Deploying Function: calculate-match
+Uploading asset (calculate-match): supabase/functions/calculate-match/index.ts
+Uploading asset (calculate-match): supabase/functions/_shared/geo.ts
+Uploading asset (calculate-match): supabase/functions/_shared/supabase.ts
+Uploading asset (calculate-match): supabase/functions/_shared/env.ts
+Uploading asset (calculate-match): supabase/functions/_shared/cors.ts
+Uploading asset (calculate-match): supabase/functions/_shared/session-guard.ts
+Deploying Function: compute-event-embeddings
+Uploading asset (compute-event-embeddings): supabase/functions/compute-event-embeddings/deno.json
+Uploading asset (compute-event-embeddings): supabase/functions/compute-event-embeddings/index.ts
+Uploading asset (compute-event-embeddings): supabase/functions/_shared/env.ts
+Uploading asset (compute-event-embeddings): supabase/functions/_shared/supabase.ts
+Uploading asset (compute-event-embeddings): supabase/functions/_shared/cors.ts
+Deploying Function: delete-account
+Uploading asset (delete-account): supabase/functions/delete-account/index.ts
+Uploading asset (delete-account): supabase/functions/_shared/supabase.ts
+Uploading asset (delete-account): supabase/functions/_shared/env.ts
+Uploading asset (delete-account): supabase/functions/_shared/cors.ts
+Uploading asset (delete-account): supabase/functions/_shared/session-guard.ts
+Deploying Function: event-reminders
+Uploading asset (event-reminders): supabase/functions/event-reminders/index.ts
+Uploading asset (event-reminders): supabase/functions/_shared/fcm.ts
+Uploading asset (event-reminders): supabase/functions/_shared/env.ts
+Deploying Function: recommend-events
+Uploading asset (recommend-events): supabase/functions/recommend-events/index.ts
+Uploading asset (recommend-events): supabase/functions/_shared/spotify_app_token.ts
+Uploading asset (recommend-events): supabase/functions/_shared/env.ts
+Uploading asset (recommend-events): supabase/functions/_shared/geo.ts
+Uploading asset (recommend-events): supabase/functions/_shared/supabase.ts
+Uploading asset (recommend-events): supabase/functions/_shared/cors.ts
+Uploading asset (recommend-events): supabase/functions/_shared/session-guard.ts
+Deploying Function: retention-notifications
+Uploading asset (retention-notifications): supabase/functions/retention-notifications/index.ts
+Uploading asset (retention-notifications): supabase/functions/_shared/fcm.ts
+Uploading asset (retention-notifications): supabase/functions/_shared/env.ts
+Uploading asset (retention-notifications): supabase/functions/_shared/supabase.ts
+Uploading asset (retention-notifications): supabase/functions/_shared/cors.ts
+Deploying Function: seed-compatible-users
+Uploading asset (seed-compatible-users): supabase/functions/seed-compatible-users/deno.json
+Uploading asset (seed-compatible-users): supabase/functions/seed-compatible-users/index.ts
+Deploying Function: send-chat-notification
+Uploading asset (send-chat-notification): supabase/functions/send-chat-notification/index.ts
+Uploading asset (send-chat-notification): supabase/functions/_shared/fcm.ts
+Uploading asset (send-chat-notification): supabase/functions/_shared/env.ts
+Uploading asset (send-chat-notification): supabase/functions/_shared/supabase.ts
+Uploading asset (send-chat-notification): supabase/functions/_shared/cors.ts
+Deploying Function: send-notifications
+Uploading asset (send-notifications): supabase/functions/send-notifications/index.ts
+Uploading asset (send-notifications): supabase/functions/_shared/fcm.ts
+Uploading asset (send-notifications): supabase/functions/_shared/env.ts
+Uploading asset (send-notifications): supabase/functions/_shared/spotify_app_token.ts
+Uploading asset (send-notifications): supabase/functions/_shared/geo.ts
+Uploading asset (send-notifications): supabase/functions/_shared/supabase.ts
+Uploading asset (send-notifications): supabase/functions/_shared/cors.ts
+Deploying Function: send-social-notification
+Uploading asset (send-social-notification): supabase/functions/send-social-notification/index.ts
+Uploading asset (send-social-notification): supabase/functions/_shared/fcm.ts
+Uploading asset (send-social-notification): supabase/functions/_shared/env.ts
+Uploading asset (send-social-notification): supabase/functions/_shared/supabase.ts
+Uploading asset (send-social-notification): supabase/functions/_shared/cors.ts
+Deploying Function: spotify-disconnect
+Uploading asset (spotify-disconnect): supabase/functions/spotify-disconnect/index.ts
+Uploading asset (spotify-disconnect): supabase/functions/_shared/supabase.ts
+Uploading asset (spotify-disconnect): supabase/functions/_shared/env.ts
+Uploading asset (spotify-disconnect): supabase/functions/_shared/cors.ts
+Uploading asset (spotify-disconnect): supabase/functions/_shared/session-guard.ts
+Deploying Function: spotify-token-exchange
+Uploading asset (spotify-token-exchange): supabase/functions/spotify-token-exchange/index.ts
+Uploading asset (spotify-token-exchange): supabase/functions/_shared/token-crypto.ts
+Uploading asset (spotify-token-exchange): supabase/functions/_shared/supabase.ts
+Uploading asset (spotify-token-exchange): supabase/functions/_shared/env.ts
+Uploading asset (spotify-token-exchange): supabase/functions/_shared/cors.ts
+Uploading asset (spotify-token-exchange): supabase/functions/_shared/session-guard.ts
+Deploying Function: sync-music-profile
+Uploading asset (sync-music-profile): supabase/functions/sync-music-profile/index.ts
+Uploading asset (sync-music-profile): supabase/functions/sync-music-profile/genres.ts
+Uploading asset (sync-music-profile): supabase/functions/_shared/token-crypto.ts
+Uploading asset (sync-music-profile): supabase/functions/_shared/env.ts
+Uploading asset (sync-music-profile): supabase/functions/_shared/supabase.ts
+Uploading asset (sync-music-profile): supabase/functions/_shared/cors.ts
+Uploading asset (sync-music-profile): supabase/functions/_shared/session-guard.ts
+Deploying Function: ticketmaster-sync
+Uploading asset (ticketmaster-sync): supabase/functions/ticketmaster-sync/index.ts
+Uploading asset (ticketmaster-sync): supabase/functions/_shared/supabase.ts
+Uploading asset (ticketmaster-sync): supabase/functions/_shared/env.ts
+Uploading asset (ticketmaster-sync): supabase/functions/_shared/cors.ts
+Deploying Function: track-ticket-click
+Uploading asset (track-ticket-click): supabase/functions/track-ticket-click/index.ts
+Uploading asset (track-ticket-click): supabase/functions/_shared/session-guard.ts
+Uploading asset (track-ticket-click): supabase/functions/_shared/env.ts
+Uploading asset (track-ticket-click): supabase/functions/_shared/cors.ts
+Deploying Function: upload-image
+Uploading asset (upload-image): supabase/functions/upload-image/index.ts
+Uploading asset (upload-image): supabase/functions/_shared/cors.ts
+Uploading asset (upload-image): supabase/functions/_shared/supabase.ts
+Uploading asset (upload-image): supabase/functions/_shared/env.ts
+Uploading asset (upload-image): supabase/functions/_shared/session-guard.ts
+{"project_ref":"ppecqwnctxygbofdmxkf","functions":["calculate-match","compute-event-embeddings","delete-account","event-reminders","recommend-events","retention-notifications","seed-compatible-users","send-chat-notification","send-notifications","send-social-notification","spotify-disconnect","spotify-token-exchange","sync-music-profile","ticketmaster-sync","track-ticket-click","upload-image"],"dashboard_url":"https://supabase.com/dashboard/project/ppecqwnctxygbofdmxkf/functions","message":"Deployed Functions."}

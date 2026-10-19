@@ -1,6 +1,7 @@
-import { corsHeaders } from "../_shared/cors.ts";
+import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
 import { requireEnv } from "../_shared/env.ts";
+import { skipDisabledSpotifyJob } from "../_shared/spotify-feature.ts";
 
 async function getSpotifyAppToken() {
   const clientId = requireEnv("SPOTIFY_CLIENT_ID");
@@ -25,7 +26,30 @@ async function getSpotifyAppToken() {
 }
 
 Deno.serve(async (req) => {
+  const preflight = handleOptions(req);
+  if (preflight) return preflight;
   try {
+    const authHeader = req.headers.get("Authorization");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized", message: "Missing Authorization" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!serviceRoleKey || authHeader !== `Bearer ${serviceRoleKey}`) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (req.method.toUpperCase() !== "POST") return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+    const paused = skipDisabledSpotifyJob();
+    if (paused) return paused;
     const supabase = createSupabaseServiceClient();
 
     // Find up to 50 events that don't have an embedding yet and have a spotify artist ID
@@ -50,32 +74,32 @@ Deno.serve(async (req) => {
 
     for (const event of events) {
       if (!event.artist_spotify_id) continue;
-      
+
       // Get artist's top tracks
       const topRes = await fetch(`https://api.spotify.com/v1/artists/${event.artist_spotify_id}/top-tracks?market=IT`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       if (!topRes.ok) continue;
       const topData = await topRes.json();
-      
+
       const trackIds = (topData.tracks || []).slice(0, 10).map((t: any) => t.id).join(",");
       if (!trackIds) continue;
-      
+
       // Get audio features for these tracks
       const audioRes = await fetch(`https://api.spotify.com/v1/audio-features?ids=${trackIds}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       if (!audioRes.ok) continue;
       const audioData = await audioRes.json();
-      
+
       const validFeatures = (audioData.audio_features || []).filter((f: any) => f !== null);
       if (validFeatures.length > 0) {
         const num = validFeatures.length;
         let acousticness = 0, danceability = 0, energy = 0, instrumentalness = 0;
         let liveness = 0, loudness = 0, speechiness = 0, tempo = 0, valence = 0;
-        
+
         validFeatures.forEach((f: any) => {
           acousticness += f.acousticness || 0;
           danceability += f.danceability || 0;
@@ -90,7 +114,7 @@ Deno.serve(async (req) => {
 
         const avgTempo = Math.min(Math.max((tempo / num) / 200.0, 0), 1);
         const avgLoudness = Math.min(Math.max(((loudness / num) + 60) / 60.0, 0), 1);
-        
+
         let popularitySum = 0;
         (topData.tracks || []).slice(0, 10).forEach((t: any) => {
           popularitySum += t.popularity || 50;
@@ -109,9 +133,9 @@ Deno.serve(async (req) => {
           valence / num,
           avgPopularity
         ];
-        
+
         const embedding = `[${embeddingArr.join(',')}]`;
-        
+
         await supabase.from("events").update({ embedding }).eq("id", event.id);
         processed++;
       }

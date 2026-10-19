@@ -51,11 +51,13 @@ class SupabaseEventsDatasource {
   }) async {
     try {
       final rows = await _supabase.client.rpc(
-        'get_nearby_events_with_distance',
+        'find_events_in_radius',
         params: {
-          'user_lat': latitude,
-          'user_lon': longitude,
-          'radius_meters': radiusMeters,
+          'p_latitude': latitude,
+          'p_longitude': longitude,
+          'p_radius_meters': radiusMeters,
+          'p_status': null,
+          'p_limit': 500,
         },
       );
       final events = List<Map<String, dynamic>>.from(rows)
@@ -68,52 +70,120 @@ class SupabaseEventsDatasource {
           })
           .toList(growable: false);
 
-      // Salviamo anche gli eventi nearby in cache per avere sempre qualcosa sulla mappa offline
-      await CacheService.saveList(
-        '${CacheService.keyEvents}_nearby',
-        events.map((e) => e.toJson()).toList(),
-      );
+      // An offline result is usable only for the area actually queried. The
+      // single cache entry avoids persisting a history of device locations.
+      await CacheService.saveObject('${CacheService.keyEvents}_nearby', {
+        'latitude': latitude,
+        'longitude': longitude,
+        'radius_meters': radiusMeters,
+        'events': events.map((event) => event.toJson()).toList(),
+      });
       return events;
     } catch (e) {
-      final cachedJson = CacheService.getList(
-        '${CacheService.keyEvents}_nearby',
-      );
-      if (cachedJson != null && cachedJson.isNotEmpty) {
-        return cachedJson.map(EventModel.fromJson).toList(growable: false);
+      final cached = CacheService.getObject('${CacheService.keyEvents}_nearby');
+      if (cached?['latitude'] == latitude &&
+          cached?['longitude'] == longitude &&
+          cached?['radius_meters'] == radiusMeters &&
+          cached?['events'] is List) {
+        try {
+          final now = DateTime.now();
+          return (cached!['events'] as List)
+              .map((row) => EventModel.fromJson(Map<String, dynamic>.from(row)))
+              .where((event) => event.eventDate.isAfter(now))
+              .toList(growable: false);
+        } catch (_) {
+          // An invalid cache cannot turn an offline error into a parsing crash.
+        }
       }
       throw ServerException(
-        message: 'Errore RPC get_nearby_events_with_distance e cache vuota',
-        endpoint: 'rpc/get_nearby_events_with_distance',
+        message: 'Errore RPC find_events_in_radius e cache vuota',
+        endpoint: 'rpc/find_events_in_radius',
       );
     }
   }
 
-  Future<String> syncEvent(EventModel event) async {
-    final payload = {
-      'external_id': event.externalId,
-      'source': event.source,
-      'name': event.name,
-      'artist_name': event.artistName,
-      'artist_spotify_id': event.artistSpotifyId,
-      'venue_name': event.venueName,
-      'city': event.city,
-      'country': event.country,
-      'latitude': event.latitude,
-      'longitude': event.longitude,
-      'event_date': event.eventDate.toUtc().toIso8601String(),
-      'ticket_url': event.ticketUrl,
-      'price_min': event.priceMin,
-      'price_max': event.priceMax,
-      'image_url': event.imageUrl,
-      'description': event.description,
-    };
+  /// Refresh the queried area with the provider key retained on the backend.
+  Future<List<EventModel>> searchNearbyEvents(
+    double latitude,
+    double longitude,
+    int radiusKm,
+  ) async {
+    final response = await _supabase.client.functions
+        .invoke(
+          'search-events',
+          body: {
+            'latitude': latitude,
+            'longitude': longitude,
+            'radius_km': radiusKm,
+          },
+        )
+        .timeout(const Duration(seconds: 35));
+    if (response.status != 200 ||
+        response.data is! Map ||
+        response.data['events'] is! List) {
+      throw const ServerException(
+        message: 'Event provider unavailable',
+        endpoint: 'search-events',
+      );
+    }
+    return (response.data['events'] as List)
+        .map(
+          (row) => EventModel.fromJson({
+            ...Map<String, dynamic>.from(row),
+            'latitude': row['location_lat'],
+            'longitude': row['location_lon'],
+          }),
+        )
+        .toList(growable: false);
+  }
 
-    final row = await _supabase.upsert(
-      DbTables.events,
-      payload,
-      onConflict: 'source,external_id',
+  Future<String> syncEvent(EventModel event) async {
+    final existingId = await _findEventId(event);
+    if (existingId != null) return existingId;
+    final response = await _supabase.client.functions.invoke(
+      'resolve-event',
+      body: {
+        'source': event.source,
+        'external_id': event.externalId,
+        'artist_name': event.artistName,
+      },
     );
-    return row['id'] as String;
+    if (response.status != 200 ||
+        response.data is! Map ||
+        response.data['id'] is! String) {
+      throw ServerException(
+        message:
+            'Impossibile verificare l’evento con il fornitore. Riprova più tardi.',
+        endpoint: 'resolve-event',
+      );
+    }
+    return response.data['id'] as String;
+  }
+
+  Future<String?> _findEventId(EventModel event) async {
+    final row = await _supabase.client
+        .from(DbTables.events)
+        .select('id')
+        .eq('source', event.source)
+        .eq('external_id', event.externalId)
+        .maybeSingle();
+    return row?['id'] as String?;
+  }
+
+  Future<String?> getMyAttendanceStatus(EventModel event) async {
+    final user = _supabase.currentUser;
+    if (user == null) return null;
+
+    final eventId = await _findEventId(event);
+    if (eventId == null) return null;
+
+    final row = await _supabase.client
+        .from(DbTables.eventAttendees)
+        .select('status')
+        .eq('user_id', user.id)
+        .eq('event_id', eventId)
+        .maybeSingle();
+    return row?['status'] as String?;
   }
 
   Future<EventAttendeeModel> setAttendance({

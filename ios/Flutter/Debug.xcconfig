@@ -1,2 +1,7 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
 #include "Generated.xcconfig"
+// Match Flutter's simulator binary on Apple Silicon, including arm64e hosts.
+ARCHS[sdk=iphonesimulator*] = arm64
+
+// Personal signing settings are local and excluded from Git.
+#include? "Signing.local.xcconfig"

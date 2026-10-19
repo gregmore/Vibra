@@ -1,0 +1,2 @@
+# Keep the upstream font license files in their original formatting.
+dist/assets/*-OFL.txt whitespace=-blank-at-eol

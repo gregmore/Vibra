@@ -1,8 +1,8 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../core/theme/vibra_colors.dart';
+import '../../core/theme/vibra_motion.dart';
 import '../../core/theme/vibra_spacing.dart';
+import '../../core/theme/vibra_theme_tokens.dart';
 import '../../core/constants/app_constants.dart';
 
 /// Card con effetto glassmorphism — vetro smerigliato su sfondo scuro.
@@ -46,69 +46,43 @@ class _VibraGlassmorphicCardState extends State<VibraGlassmorphicCard> {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveBlur = widget.blur ?? AppConstants.glassmorphismBlur;
+    final t = context.vibraTokens;
     final effectiveRadius =
         widget.borderRadius ?? AppConstants.cardBorderRadius;
 
     return AnimatedScale(
       scale: _isPressed ? 0.98 : 1.0,
-      duration: VibraSpacing.animFast,
+      duration: VibraMotion.durationFor(context, VibraSpacing.animFast),
       child: Container(
         width: widget.width,
         height: widget.height,
         margin: widget.margin,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(effectiveRadius),
-          boxShadow: [
-            widget.glow ??
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-          ],
+          border: Border.all(color: widget.borderColor ?? t.borderDefault),
+          boxShadow: [widget.glow ?? t.cardShadow],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(effectiveRadius),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: effectiveBlur,
-              sigmaY: effectiveBlur,
+          child: Container(
+            decoration: BoxDecoration(
+              color: t.surfaceElevated,
+              gradient: widget.gradient,
             ),
-            child: Container(
-              padding: const EdgeInsets.all(1), // Bordo gradiente
-              decoration: BoxDecoration(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: widget.onTap,
+                onHighlightChanged: (h) => setState(() => _isPressed = h),
+                splashColor: t.accentPrimary.withValues(alpha: 0.14),
+                hoverColor: t.accentPrimary.withValues(alpha: 0.08),
+                focusColor: t.accentPrimary.withValues(alpha: 0.12),
+                highlightColor: t.accentPrimary.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(effectiveRadius),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withValues(alpha: 0.3),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: VibraColors.glassBackground,
-                  borderRadius: BorderRadius.circular(effectiveRadius - 1),
-                  gradient: widget.gradient,
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: widget.onTap,
-                    onHighlightChanged: (h) => setState(() => _isPressed = h),
-                    splashColor: VibraColors.primary.withValues(alpha: 0.1),
-                    highlightColor: Colors.transparent,
-                    borderRadius: BorderRadius.circular(effectiveRadius - 1),
-                    child: Padding(
-                      padding:
-                          widget.padding ??
-                          const EdgeInsets.all(VibraSpacing.lg),
-                      child: widget.child,
-                    ),
-                  ),
+                child: Padding(
+                  padding:
+                      widget.padding ?? const EdgeInsets.all(VibraSpacing.lg),
+                  child: widget.child,
                 ),
               ),
             ),
@@ -150,12 +124,13 @@ class _VibraGlassmorphicImageCardState
 
   @override
   Widget build(BuildContext context) {
+    final t = context.vibraTokens;
     final effectiveRadius =
         widget.borderRadius ?? AppConstants.cardBorderRadius;
 
     return AnimatedScale(
       scale: _isPressed ? 0.98 : 1.0,
-      duration: VibraSpacing.animFast,
+      duration: VibraMotion.durationFor(context, VibraSpacing.animFast),
       child: Container(
         height: widget.height,
         margin:
@@ -175,28 +150,23 @@ class _VibraGlassmorphicImageCardState
                 fit: BoxFit.cover,
                 memCacheWidth: 600,
                 placeholder: (context, url) {
-                  final isTest = WidgetsBinding.instance.runtimeType
-                      .toString()
-                      .contains('Test');
-                  if (isTest) {
-                    return Container(color: VibraColors.surfaceVariant);
-                  }
                   return Container(
-                    color: VibraColors.surfaceVariant,
+                    color: t.surfaceMuted,
                     child: const Center(
                       child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   );
                 },
                 errorWidget: (context, url, error) => Container(
-                  color: VibraColors.surfaceVariant,
-                  child: const Icon(
+                  color: t.surfaceMuted,
+                  child: Icon(
                     Icons.music_note_rounded,
                     size: 48,
-                    color: VibraColors.textDisabled,
+                    color: t.textDisabled,
                   ),
                 ),
               ),
+              ColoredBox(color: t.imageScrim),
               // Overlay gradiente per leggibilità del testo
               Container(
                 decoration: BoxDecoration(
@@ -205,8 +175,8 @@ class _VibraGlassmorphicImageCardState
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      VibraColors.background.withValues(alpha: 0.5),
-                      VibraColors.background.withValues(alpha: 0.87),
+                      t.imageOverlay.withValues(alpha: 0.35),
+                      t.imageOverlay,
                     ],
                   ),
                 ),
@@ -217,8 +187,10 @@ class _VibraGlassmorphicImageCardState
                 child: InkWell(
                   onTap: widget.onTap,
                   onHighlightChanged: (h) => setState(() => _isPressed = h),
-                  splashColor: VibraColors.primary.withValues(alpha: 0.1),
-                  highlightColor: Colors.transparent,
+                  splashColor: t.accentPrimary.withValues(alpha: 0.1),
+                  hoverColor: t.onImage.withValues(alpha: 0.08),
+                  focusColor: t.onImage.withValues(alpha: 0.12),
+                  highlightColor: t.onImage.withValues(alpha: 0.10),
                   child: const SizedBox.expand(),
                 ),
               ),
@@ -228,23 +200,18 @@ class _VibraGlassmorphicImageCardState
                 right: 0,
                 bottom: 0,
                 child: IgnorePointer(
-                  child: ClipRRect(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        padding: const EdgeInsets.all(VibraSpacing.lg),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          border: const Border(
-                            top: BorderSide(
-                              color: VibraColors.glassBorder,
-                              width: 0.5,
-                            ),
-                          ),
+                  child: Container(
+                    padding: const EdgeInsets.all(VibraSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: t.imageOverlay,
+                      border: Border(
+                        top: BorderSide(
+                          color: t.onImage.withValues(alpha: 0.18),
+                          width: 1,
                         ),
-                        child: widget.child,
                       ),
                     ),
+                    child: widget.child,
                   ),
                 ),
               ),

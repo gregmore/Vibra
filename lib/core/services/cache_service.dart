@@ -7,11 +7,20 @@ class CacheService {
   static const String keyEvents = 'CACHE_EVENTS';
   static const String keyMusicProfile = 'CACHE_MUSIC_PROFILE';
 
+  static String musicProfileKey(String userId) => '${keyMusicProfile}_$userId';
+
   static SharedPreferences? _prefs;
+  // Private profile data stays in memory; session tokens use secure storage.
+  static final Map<String, Map<String, dynamic>> _privateObjects = {};
+  static bool _isPrivate(String key) =>
+      key.startsWith('CACHE_USER_PROFILE') || key.startsWith(keyMusicProfile);
 
   /// Inizializza il servizio (da chiamare in main.dart)
   static Future<void> initialize() async {
     _prefs = await SharedPreferences.getInstance();
+    for (final key in _prefs!.getKeys().where(_isPrivate).toList()) {
+      await _prefs!.remove(key);
+    }
     VibraLogger.debug('CacheService inizializzato', tag: 'Cache');
   }
 
@@ -48,6 +57,12 @@ class CacheService {
 
   /// Salva un oggetto singolo in cache.
   static Future<void> saveObject(String key, Map<String, dynamic> data) async {
+    if (_isPrivate(key)) {
+      _privateObjects[key] =
+          jsonDecode(jsonEncode(data)) as Map<String, dynamic>;
+      await _prefs?.remove(key);
+      return;
+    }
     if (_prefs == null) return;
     try {
       final jsonString = jsonEncode(data);
@@ -66,6 +81,12 @@ class CacheService {
 
   /// Recupera un oggetto singolo dalla cache.
   static Map<String, dynamic>? getObject(String key) {
+    if (_isPrivate(key)) {
+      final value = _privateObjects[key];
+      return value == null
+          ? null
+          : jsonDecode(jsonEncode(value)) as Map<String, dynamic>;
+    }
     if (_prefs == null) return null;
 
     final jsonString = _prefs!.getString(key);
@@ -84,6 +105,7 @@ class CacheService {
 
   /// Pulisce tutta la cache (es: al logout)
   static Future<void> clearAll() async {
+    _privateObjects.clear();
     if (_prefs != null) {
       await _prefs!.clear();
     }
@@ -92,6 +114,7 @@ class CacheService {
 
   /// Rimuove una singola chiave dalla cache
   static Future<void> remove(String key) async {
+    _privateObjects.remove(key);
     await _prefs?.remove(key);
     VibraLogger.debug('Chiave $key rimossa dalla cache', tag: 'Cache');
   }

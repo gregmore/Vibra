@@ -1,0 +1,5 @@
+{
+  "packages_checked": 255,
+  "findings": [],
+  "limitations": "Known OSV entries only; CocoaPods, native Gradle and unpinned remote/transitive Edge imports not covered."
+}

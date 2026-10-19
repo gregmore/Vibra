@@ -1,0 +1,10 @@
+{"test": "recipient cannot forge sender reaction", "passed": false, "status": 200}
+{"test": "recipient cannot hide chat for sender", "passed": false, "status": 200}
+{"test": "reaction RPC accepts own reaction", "passed": true, "status": 204}
+{"test": "reaction RPC rejects oversized payload", "passed": false, "status": 204}
+{"test": "support status is backend managed", "passed": true, "status": 403}
+{"test": "moderation status is backend managed", "passed": false, "status": 201}
+{"test": "report cannot reference outsider message", "passed": false, "status": 201}
+{"test": "client cannot publish unverified canonical event", "passed": false, "status": 201}
+{"test": "support uploads must use validated gateway", "passed": false, "status": 200}
+{"test": "account erasure succeeds with conversation history", "passed": false, "status": 500}

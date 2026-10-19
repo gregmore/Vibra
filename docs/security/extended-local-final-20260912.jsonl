@@ -1,0 +1,22 @@
+{"test": "recipient cannot forge sender reaction", "passed": true, "status": 403}
+{"test": "recipient cannot hide chat for sender", "passed": true, "status": 403}
+{"test": "reaction RPC accepts own reaction", "passed": true, "status": 204}
+{"test": "reaction RPC rejects oversized payload", "passed": true, "status": 400}
+{"test": "support status is backend managed", "passed": true, "status": 403}
+{"test": "legitimate support report accepted", "passed": true, "status": 201}
+{"test": "moderation status is backend managed", "passed": true, "status": 403}
+{"test": "report cannot reference outsider message", "passed": true, "status": 403}
+{"test": "client cannot publish unverified canonical event", "passed": true, "status": 403}
+{"test": "event resolver uses canonical existing event", "passed": true, "status": 200}
+{"test": "profile cannot be deleted outside erasure endpoint", "passed": true, "status": 403}
+{"test": "support uploads must use validated gateway", "passed": true, "status": 400}
+{"test": "support gateway accepts real screenshot", "passed": true, "status": 200}
+{"test": "truncated JPEG fails without server error", "passed": true, "status": 415}
+{"test": "account erasure succeeds with conversation history", "passed": true, "status": 200}
+{"test": "erasure removes Auth row", "passed": true, "status": 404}
+{"test": "erasure removes private profile", "passed": true, "status": 200}
+{"test": "erasure revokes old JWT", "passed": true, "status": 401}
+{"test": "erasure removes orphan avatars", "passed": true, "status": 200}
+{"test": "erasure removes orphan chat-media", "passed": true, "status": 200}
+{"test": "erasure removes orphan support-attachments", "passed": true, "status": 200}
+{"test": "other participant survives erasure", "passed": true, "status": 200}

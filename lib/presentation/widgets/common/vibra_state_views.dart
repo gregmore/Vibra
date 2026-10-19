@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../core/theme/vibra_colors.dart';
 import '../../../core/theme/vibra_spacing.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
 import 'vibra_logo.dart';
 import '../vibra_pill_button.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 
 class VibraLoadingView extends StatelessWidget {
-  const VibraLoadingView({this.message = 'Caricamento in corso...', super.key});
+  const VibraLoadingView({this.message, super.key});
 
-  final String message;
+  final String? message;
 
   @override
   Widget build(BuildContext context) {
+    final t = context.vibraTokens;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -23,11 +24,11 @@ class VibraLoadingView extends StatelessWidget {
             child: const VibraLogo(width: 64, height: 64),
           ),
           const SizedBox(height: VibraSpacing.lg),
-          const CircularProgressIndicator(color: VibraColors.accent),
+          CircularProgressIndicator(color: t.accentPrimary),
           const SizedBox(height: VibraSpacing.lg),
           Text(
-            message,
-            style: const TextStyle(color: VibraColors.textSecondary),
+            message ?? AppLocalizations.of(context)!.commonLoading,
+            style: TextStyle(color: t.textSecondary),
           ),
         ],
       ),
@@ -58,6 +59,7 @@ class VibraEmptyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final t = context.vibraTokens;
     final isTest = WidgetsBinding.instance.runtimeType.toString().contains(
       'Test',
     );
@@ -77,7 +79,7 @@ class VibraEmptyView extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: VibraColors.primary.withValues(alpha: 0.2),
+                          color: t.accentPrimary.withValues(alpha: 0.24),
                           width: 2,
                         ),
                       ),
@@ -98,7 +100,7 @@ class VibraEmptyView extends StatelessWidget {
                   height: 80,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: VibraColors.primary.withValues(alpha: 0.1),
+                    color: t.accentSoft,
                   ),
                 ),
                 Icon(icon, size: 64, color: theme.colorScheme.primary),
@@ -117,7 +119,7 @@ class VibraEmptyView extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
+                color: t.textSecondary,
               ),
             ),
             if (actionLabel != null && onActionTap != null) ...[
@@ -136,7 +138,7 @@ class VibraEmptyView extends StatelessWidget {
                 child: Text(
                   secondaryActionLabel!,
                   style: theme.textTheme.labelLarge?.copyWith(
-                    color: VibraColors.textSecondary,
+                    color: t.textSecondary,
                   ),
                 ),
               ),
@@ -163,6 +165,7 @@ class VibraErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final t = context.vibraTokens;
 
     return Center(
       child: Padding(
@@ -173,7 +176,7 @@ class VibraErrorView extends StatelessWidget {
             Icon(
               Icons.error_outline_rounded,
               size: 64,
-              color: VibraColors.error,
+              color: t.error,
             ).animate().shake(duration: VibraSpacing.animNormal, hz: 4),
             const SizedBox(height: VibraSpacing.lg),
             Text(
@@ -188,7 +191,7 @@ class VibraErrorView extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
+                color: t.textSecondary,
               ),
             ),
             if (onRetry != null) ...[
@@ -196,10 +199,8 @@ class VibraErrorView extends StatelessWidget {
               OutlinedButton(
                 onPressed: onRetry,
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(
-                    color: VibraColors.error.withValues(alpha: 0.5),
-                  ),
-                  foregroundColor: VibraColors.error,
+                  side: BorderSide(color: t.error),
+                  foregroundColor: t.error,
                   padding: const EdgeInsets.symmetric(
                     horizontal: VibraSpacing.xl,
                     vertical: VibraSpacing.md,

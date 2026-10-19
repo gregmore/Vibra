@@ -25,6 +25,11 @@ _MusicProfileModel _$MusicProfileModelFromJson(Map<String, dynamic> json) =>
               ?.map((e) => e as Map<String, dynamic>)
               .toList() ??
           const <Map<String, dynamic>>[],
+      listeningHeatmap:
+          (json['listening_heatmap'] as List<dynamic>?)
+              ?.map((e) => e as Map<String, dynamic>)
+              .toList() ??
+          const <Map<String, dynamic>>[],
       lastSyncedAt: json['last_synced_at'] == null
           ? null
           : DateTime.parse(json['last_synced_at'] as String),
@@ -37,5 +42,6 @@ Map<String, dynamic> _$MusicProfileModelToJson(_MusicProfileModel instance) =>
       'top_artists': instance.topArtists,
       'top_tracks': instance.topTracks,
       'top_genres': instance.topGenres,
+      'listening_heatmap': instance.listeningHeatmap,
       'last_synced_at': instance.lastSyncedAt?.toIso8601String(),
     };

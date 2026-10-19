@@ -1,0 +1,16 @@
+{"test": "anonymous private profiles", "passed": true, "status": 401}
+{"test": "cross-user private profile read", "passed": true, "status": 200}
+{"test": "cross-user profile update", "passed": true, "status": 200}
+{"test": "forged Spotify identity", "passed": false, "status": 200}
+{"test": "forged musical profile", "passed": false, "status": 201}
+{"test": "self-accepted friendship", "passed": false, "status": 201}
+{"test": "unrelated friendship update", "passed": true, "status": 200}
+{"test": "unrelated message read", "passed": true, "status": 200}
+{"test": "recipient rewrites sender message", "passed": true, "status": 400}
+{"test": "recipient may mark read", "passed": true, "status": 200}
+{"test": "saved events isolation", "passed": true, "status": 200}
+{"test": "Spotify credentials isolation", "passed": true, "status": 200}
+{"test": "overlong bio", "passed": true, "status": 400}
+{"test": "own profile positive control", "passed": true, "status": 200}
+{"test": "logout", "passed": true, "status": 204}
+{"test": "JWT replay after logout", "passed": false, "status": 200}

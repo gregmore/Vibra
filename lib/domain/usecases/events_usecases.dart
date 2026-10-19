@@ -116,6 +116,17 @@ class SetEventAttendanceUseCase
   }
 }
 
+class GetMyEventAttendanceUseCase implements UseCase<String?, Event> {
+  GetMyEventAttendanceUseCase(this._repository);
+
+  final EventsRepository _repository;
+
+  @override
+  Future<String?> call(Event event) {
+    return _repository.getMyAttendanceStatus(event: event);
+  }
+}
+
 class GetEventAttendeesUseCase implements UseCase<List<EventAttendee>, String> {
   GetEventAttendeesUseCase(this._repository);
 

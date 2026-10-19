@@ -1,0 +1,180 @@
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 85.0.0 (107.0.0 available)
+  _flutterfire_internals 1.3.59 (1.3.77 available)
+  analyzer 7.6.0 (14.3.0 available)
+  analyzer_plugin 0.13.4 (0.14.16 available)
+  archive 4.0.9 (4.2.0 available)
+  build 2.5.4 (4.0.11 available)
+  build_config 1.1.2 (1.3.3 available)
+  build_daemon 4.1.2 (4.1.6 available)
+  build_resolvers 2.5.4 (3.0.4 available)
+  build_runner 2.5.4 (2.16.1 available)
+  build_runner_core 9.1.2 (9.3.2 available)
+  built_value 8.12.6 (8.13.0 available)
+  cached_network_image 3.4.1 (4.0.0 available)
+  cached_network_image_platform_interface 4.1.1 (5.0.0 available)
+  cached_network_image_web 1.3.1 (2.0.0 available)
+  cli_util 0.4.2 (0.6.0 available)
+  clock 1.1.2 (1.1.3 available)
+  code_assets 1.2.1 (2.0.0 available)
+  code_builder 4.11.1 (4.12.0 available)
+  connectivity_plus 6.1.5 (7.3.1 available)
+  cross_file 0.3.5+4 (0.3.5+5 available)
+  custom_lint 0.7.6 (0.8.1 available)
+  custom_lint_builder 0.7.6 (0.8.1 available)
+  custom_lint_core 0.7.5 (0.8.2 available)
+  custom_lint_visitor 1.0.0+7.7.0 (1.0.0+9.0.0 available)
+  dart_style 3.1.1 (3.1.13 available)
+  dbus 0.7.13 (0.7.15 available)
+  device_info_plus 11.5.0 (13.2.0 available)
+  device_info_plus_platform_interface 7.0.3 (8.1.0 available)
+  dio 5.10.0 (5.11.1 available)
+  dio_web_adapter 2.2.0 (2.2.2 available)
+  file_selector_linux 0.9.4 (0.9.4+1 available)
+  file_selector_macos 0.9.5 (0.9.5+1 available)
+  file_selector_windows 0.9.3+5 (0.9.3+6 available)
+  firebase_core 3.15.2 (4.14.0 available)
+  firebase_core_platform_interface 6.0.3 (8.1.1 available)
+  firebase_core_web 2.24.1 (3.11.0 available)
+  firebase_messaging 15.2.10 (16.6.0 available)
+  firebase_messaging_platform_interface 4.6.10 (4.10.0 available)
+  firebase_messaging_web 3.10.10 (4.2.5 available)
+  flutter_appauth 12.0.2 (12.1.0 available)
+  flutter_appauth_platform_interface 12.0.1 (12.1.0 available)
+  flutter_dotenv 5.2.1 (6.0.1 available)
+  flutter_map 7.0.2 (8.3.2 available)
+! flutter_map_marker_cluster 1.4.0 from path packages/flutter_map_marker_cluster (overridden)
+  flutter_map_marker_popup 7.0.0 (8.1.1 available)
+  flutter_riverpod 2.6.1 (3.4.3 available)
+  flutter_secure_storage 10.3.1 (11.1.0 available)
+  flutter_secure_storage_darwin 0.3.2 (0.4.1 available)
+  flutter_secure_storage_linux 3.0.1 (3.0.2 available)
+  flutter_secure_storage_platform_interface 2.0.2 (2.1.0 available)
+  flutter_secure_storage_windows 4.1.0 (4.2.2 available)
+  flutter_web_auth_2 6.0.0-alpha.5 (6.0.0-alpha.8 available)
+  freezed 3.1.0 (4.0.1 available)
+  functions_client 2.6.4 (2.7.1 available)
+  geocoding 3.0.0 (5.0.0 available)
+  geocoding_android 3.3.1 (5.1.0 available)
+  geocoding_platform_interface 3.2.0 (5.0.0 available)
+  geolocator 13.0.4 (14.0.3 available)
+  geolocator_android 4.6.2 (5.0.3 available)
+  geolocator_platform_interface 4.2.8 (4.3.0 available)
+  glob 2.1.3 (2.2.0 available)
+  go_router 14.8.1 (18.0.1 available)
+  google_fonts 6.3.3 (8.2.1 available)
+  google_sign_in_android 7.2.15 (7.2.17 available)
+  google_sign_in_ios 6.3.0 (6.3.3 available)
+  gotrue 2.26.0 (2.27.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  html 0.15.6 (0.15.7 available)
+  image 4.9.1 (4.9.2 available)
+  image_picker_android 0.8.13+19 (0.8.13+22 available)
+  image_picker_ios 0.8.13+6 (0.8.13+7 available)
+  intl 0.20.2 (0.20.3 available)
+  io 1.0.5 (1.1.0 available)
+  jni 1.0.0 (1.0.3 available)
+  jni_flutter 1.0.1 (1.0.3 available)
+  json_annotation 4.9.0 (4.12.0 available)
+  json_serializable 6.9.5 (6.14.1 available)
+  latlong2 0.9.1 (0.10.1 available)
+  logger 2.7.0 (2.8.0 available)
+  matcher 0.12.19 (0.12.20 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.0 (1.19.0 available)
+  mgrs_dart 2.0.0 (3.0.0 available)
+  mime 2.0.0 (2.1.0 available)
+  objective_c 9.4.1 (9.6.0 available)
+  package_config 2.2.0 (3.0.0 available)
+  package_info_plus 8.3.1 (10.2.1 available)
+  package_info_plus_platform_interface 3.2.1 (4.1.0 available)
+  platform 3.1.6 (3.2.0 available)
+  pool 1.5.2 (1.5.3 available)
+  postgrest 2.8.0 (2.9.1 available)
+  process 5.0.5 (5.0.6 available)
+  proj4dart 2.1.0 (3.0.0 available)
+  pub_semver 2.2.0 (2.2.1 available)
+  pubspec_parse 1.5.0 (1.6.0 available)
+  realtime_client 2.11.0 (2.13.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  riverpod 2.6.1 (3.4.3 available)
+  riverpod_annotation 2.6.1 (4.0.7 available)
+  riverpod_generator 2.6.5 (4.0.9 available)
+  riverpod_lint 2.6.5 (3.1.9 available)
+  shared_preferences_android 2.4.27 (2.4.28 available)
+  shared_preferences_foundation 2.5.6 (2.5.7 available)
+  shimmer 3.0.0 (4.0.0 available)
+  sign_in_with_apple 8.1.0 (8.2.0 available)
+  source_gen 2.0.0 (4.3.0 available)
+  source_helper 1.3.7 (1.3.13 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  storage_client 2.6.0 (2.8.0 available)
+  stream_transform 2.1.1 (2.1.2 available)
+  supabase 2.14.0 (2.16.1 available)
+  supabase_flutter 2.16.0 (2.17.2 available)
+  synchronized 3.4.1+1 (3.4.1+2 available)
+  test_api 0.7.11 (0.7.14 available)
+  unicode 0.3.1 (1.1.9 available)
+  url_launcher_android 6.3.32 (6.3.33 available)
+  url_launcher_ios 6.4.1 (6.4.2 available)
+  url_launcher_linux 3.2.2 (3.2.3 available)
+  url_launcher_macos 3.2.5 (3.2.6 available)
+  url_launcher_windows 3.1.5 (3.1.6 available)
+  vector_math 2.2.0 (2.4.2 available)
+  vm_service 15.2.0 (15.3.0 available)
+  webdriver 3.1.0 (3.2.0 available)
+  win32 5.15.0 (6.4.0 available)
+  win32_registry 2.1.0 (3.0.3 available)
+  yaml 3.1.3 (3.1.4 available)
+Got dependencies!
+126 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleRelease'...
+Vibra Gradle: Overriding compileSdkVersion to 36 for app
+Vibra Gradle: Overriding compileSdkVersion to 36 for app_links
+Vibra Gradle: Overriding compileSdkVersion to 36 for connectivity_plus
+Vibra Gradle: Overriding compileSdkVersion to 36 for device_info_plus
+Vibra Gradle: Overriding compileSdkVersion to 36 for firebase_core
+Vibra Gradle: Overriding compileSdkVersion to 36 for firebase_messaging
+Vibra Gradle: Overriding compileSdkVersion to 36 for flutter_appauth
+Vibra Gradle: Overriding compileSdkVersion to 36 for flutter_plugin_android_lifecycle
+Vibra Gradle: Overriding compileSdkVersion to 36 for flutter_secure_storage
+Vibra Gradle: Overriding compileSdkVersion to 36 for flutter_web_auth_2
+Vibra Gradle: Overriding compileSdkVersion to 36 for geocoding_android
+Vibra Gradle: Overriding compileSdkVersion to 36 for geolocator_android
+Vibra Gradle: Overriding compileSdkVersion to 36 for google_sign_in_android
+Vibra Gradle: Overriding compileSdkVersion to 36 for image_picker_android
+Vibra Gradle: Overriding compileSdkVersion to 36 for in_app_review
+Vibra Gradle: Overriding compileSdkVersion to 36 for integration_test
+Vibra Gradle: Overriding compileSdkVersion to 36 for jni
+Vibra Gradle: Overriding compileSdkVersion to 36 for jni_flutter
+Vibra Gradle: Overriding compileSdkVersion to 36 for package_info_plus
+Vibra Gradle: Overriding compileSdkVersion to 36 for shared_preferences_android
+Vibra Gradle: Overriding compileSdkVersion to 36 for sign_in_with_apple
+Vibra Gradle: Overriding compileSdkVersion to 36 for sqflite_android
+Vibra Gradle: Overriding compileSdkVersion to 36 for url_launcher_android
+WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): device_info_plus, in_app_review, package_info_plus, sign_in_with_apple
+Future versions of Flutter will fail to build if your app uses plugins that apply KGP.
+
+Please check the changelogs of these plugins and upgrade to a version that supports Built-in Kotlin.
+If no such version exists, report the issue to the plugin. If necessary, here is a guide on filing
+an issue against a plugin: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-app-developers#report-incompatible-kotlin-gradle-plugin-usage-to-plugin-authors
+
+If you are a plugin author, please migrate your plugin to Built-in Kotlin using this guide: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
+Font asset "CupertinoIcons.ttf" was tree-shaken, reducing it from 257628 to 848 bytes (99.7% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
+Font asset "MaterialIcons-Regular.otf" was tree-shaken, reducing it from 1645184 to 14588 bytes (99.1% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+Note: /path/to/user/.pub-cache/hosted/pub.dev/geocoding_android-3.3.1/android/src/main/java/com/baseflow/geocoding/utils/LocaleConverter.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+3 warnings
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+3 warnings
+Running Gradle task 'assembleRelease'...                           96,5s
+✓ Built build/app/outputs/flutter-apk/app-release.apk (69.6MB)

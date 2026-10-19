@@ -12,8 +12,8 @@
   "onboardingContinue": "Continue",
   "onboardingGoToLogin": "Go to Login",
   "loginTitle": "Log in to Vibra",
-  "loginSubtitle": "Log in with your account or connect using one of the supported providers to unlock real recommendations.",
-  "loginConsent": "By authenticating, you accept data consent, JWT session management, and GDPR privacy preferences.",
+  "loginSubtitle": "Discover concerts and people to enjoy them with.",
+  "loginConsent": "Read the terms and privacy information before continuing. Manage optional preferences in settings.",
   "loginWithSpotify": "Continue with Spotify",
   "loginWithGoogle": "Continue with Google",
   "loginWithApple": "Continue with Apple",
@@ -29,7 +29,7 @@
   "settingsOptionDiscoverVisible": "Profile visible in Discover",
   "settingsNotifications": "Notifications",
   "settingsNotificationsSub": "Check device permissions and push delivery status",
-  "settingsNotificationsSnackbar": "Notifications depend on device permissions, Firebase configuration, and an authenticated account.",
+  "settingsNotificationsSnackbar": "To receive notifications, sign in and enable Vibra notifications in your device settings.",
   "settingsPrivacyPolicy": "Privacy Policy",
   "settingsPrivacyPolicySub": "Data usage, consents, and user rights",
   "settingsTermsOfService": "Terms of Service",
@@ -103,7 +103,7 @@
     }
   },
   "settingsSpotifyConnected": "Connected as @{username}",
-  "settingsDeleteAccountError": "Unable to delete account. Ensure the RPC has been loaded in the database.",
+  "settingsDeleteAccountError": "Could not delete your account. Try again or contact support.",
   "eventDetailChat": "Chat",
   "eventDetailTicketsUnavailable": "Ticket link unavailable.",
   "eventDetailTicketsError": "Unable to open ticket link.",
@@ -184,7 +184,7 @@
   "friendsYourFriends": "Your friends",
   "friendsYourConnections": "Your Vibra connections",
   "friendsNoFriendsYet": "No friends yet",
-  "friendsGoToExplore": "Go to the Explore section or use Social Match to find people with the same taste.",
+  "friendsGoToExplore": "Explore the community to find people and send friend requests.",
   "friendsSentRequests": "Sent requests",
   "friendsWaitingForReply": "Waiting for reply",
   "friendsPendingApproval": "Pending approval",
@@ -196,7 +196,7 @@
   "exploreSearchHint": "Search by name or city (e.g. Milan)",
   "exploreInteractiveMap": "Interactive map",
   "exploreLiveAroundYou": "Explore live events around you in real time",
-  "exploreSearchRadius": "Search radius",
+  "exploreSearchRadius": "SEARCH RADIUS: {radius} KM",
   "exploreFindEventsNearYou": "Find events near you",
   "exploreMusicGenre": "Music genre",
   "exploreFilterByGenre": "Filter by your favorite genres",
@@ -246,13 +246,51 @@
       }
     }
   },
+  "myEventsUpcoming": "Upcoming",
+  "myEventsPast": "Past",
+  "myEventsPastSubtitle": "Your concert history",
+  "myEventsPastEmpty": "No past events yet.",
+  "myEventsSearchHint": "Search events, artists or places",
+  "myEventsSearchEmpty": "No events match your search.",
+  "myEventsClearSearch": "Clear search",
+  "myEventsExplore": "Explore events",
+  "inboxUnread": "Unread",
+  "inboxNoResults": "No conversations found.",
+  "inboxNoResultsBody": "Try another name or clear the filters to see all messages.",
+  "inboxClearFilters": "Clear filters",
+  "homeFeedError": "Events could not be loaded.",
+  "homeFeedErrorBody": "Try again shortly. You can still explore the map.",
+  "homeFeedEmpty": "There’s room for a new night out.",
+  "homeFeedEmptyBody": "Explore the map to find your next live show.",
+  "socialSearchHint": "Search people or artists",
+  "socialSearchEmpty": "No people found.",
+  "socialSearchEmptyBody": "Try another name or artist.",
+  "socialDiscoverEmpty": "New connections start here.",
+  "socialDiscoverEmptyBody": "Complete your profile and connect Spotify to find people with similar tastes.",
+  "chatSendMessage": "Send message",
+  "chatLoadError": "The conversation could not be loaded.",
+  "chatDraftRecovered": "The message was not sent. Its text has been restored in the composer.",
+  "eventLocationUnknown": "The exact location is not available yet.",
+  "eventDirections": "Get directions",
+  "eventDirectionsError": "Directions could not be opened.",
+  "inboxDeleteTitle": "Delete this conversation?",
+  "inboxDeleteBody": "The conversation will be removed from your inbox. The other person’s messages will not be deleted.",
+  "inboxDeleteAction": "Delete conversation",
+  "inboxDeleteSuccess": "Conversation deleted.",
+  "inboxDeleteError": "The conversation was not deleted. Please try again.",
+  "commonCancel": "Cancel",
+  "eventCopyDetails": "Copy event details",
+  "eventCopyError": "Event details could not be copied.",
+  "eventCancelled": "Event cancelled",
+  "eventTicketsOffsale": "Tickets not on sale",
+  "socialMatchSendFailed": "Vibra was not sent. Try again: the profile is still available.",
   "myEventsTitle": "My Events",
   "myEventsGoing": "Going",
   "myEventsGoingSubtitle": "Confirmed or upcoming events",
-  "myEventsGoingEmpty": "You haven't confirmed your attendance to any event yet.\\nExplore and find your next concerts!",
+  "myEventsGoingEmpty": "You haven't confirmed your attendance to any event yet.\nExplore and find your next concerts!",
   "myEventsSaved": "Saved",
   "myEventsSavedSubtitle": "Keep an eye on",
-  "myEventsSavedEmpty": "No saved events.\\nSave the events you are interested in so you don't miss them.",
+  "myEventsSavedEmpty": "No saved events.\nSave the events you are interested in so you don't miss them.",
   "chatEmptyTitle": "No messages",
   "chatEmptyMessage": "Start the conversation!",
   "chatInputHint": "Write a message...",
@@ -283,7 +321,7 @@
   "liveScreenChatTitle": "Event Chat",
   "liveScreenChatSub": "Realtime chat auto-closes in 24h",
   "eventDetailNotAvailableTitle": "Event unavailable",
-  "eventDetailNotAvailableMsg": "This event is no longer available or hasnt loaded.",
+  "eventDetailNotAvailableMsg": "This event is no longer available or hasn’t loaded yet.",
   "eventDetailMapTitle": "Venue Map",
   "eventDetailMapSub": "Event location",
   "eventDetailAttendeesTitle": "Attendees",
@@ -361,7 +399,7 @@
     }
   },
   "legalSupportBody2": "Login issues, Spotify connection, event discovery, notifications, chat, privacy requests, and account deletion.",
-  "legalSupportBody3": "Permissions, Spotify connection status, Firebase configuration, and the presence of an authenticated user.",
+  "legalSupportBody3": "Check your connection, device permissions and sign-in status. If the issue persists, report a problem from settings.",
   "legalAboutBody1": "Version {version} ({build})",
   "@legalAboutBody1": {
     "placeholders": {
@@ -384,7 +422,7 @@
       }
     }
   },
-  "legalAboutBody3": "Vibra helps connect Spotify, discover relevant live events, view event details, meet compatible people, and join live chats during concerts.",
+  "legalAboutBody3": "Vibra helps you discover live events, explore the map, save concerts, meet people and join chats. Spotify features are available only when the service is enabled.",
   "legalAboutBody4": "{email}",
   "@legalAboutBody4": {
     "placeholders": {
@@ -401,7 +439,7 @@
   "legalPrivacySubtitle": "A summary of the privacy information available in the app, including categories of processed data and purposes of use.",
   "legalTermsSubtitle": "A summary of the rules, responsibilities, and terms of service applicable to using Vibra.",
   "legalSupportSubtitle": "Support information for account access, notifications, Spotify connection, and live features.",
-  "legalAboutSubtitle": "Vibra combines music taste, event discovery, and social interaction around live experiences.",
+  "legalAboutSubtitle": "Live events, a map and a community to share new nights out.",
   "exploreShowAllEvents": "Show all events",
   "musicStatsSyncSpotify": "Sync Spotify",
   "liveModeDisabled": "Live mode is disabled",
@@ -418,7 +456,7 @@
   "authRegister": "Register",
   "authLogin": "Login",
   "authAlreadyHaveAccount": "Already have an account? Login",
-  "authDontHaveAccount": "Don t have an account? Register",
+  "authDontHaveAccount": "Don’t have an account? Register",
   "authGenericError": "An error occurred",
   "eventCardLocation": "Location",
   "matchScore": "MATCH SCORE",
@@ -434,5 +472,576 @@
   "homeSpotifySyncTitle": "Unlock Personalized Recommendations",
   "homeSpotifySyncSub": "Sync your music listening",
   "homeSpotifySyncDesc": "Connect Spotify to get event recommendations and find people with your same tastes.",
-  "homeSpotifySyncAction": "CONNECT SPOTIFY"
+  "homeSpotifySyncAction": "CONNECT SPOTIFY",
+  "loginBackToWelcome": "Back to the welcome screen",
+  "authOr": "or",
+  "authEmailLoginSubtitle": "Enter your credentials to log in and explore concerts.",
+  "authEmailRegisterSubtitle": "Enter your credentials to register and start enjoying live shows.",
+  "authAgeConfirmation": "I confirm that I am at least 18 years old.",
+  "authAgeExplanation": "Vibra helps people meet and is not intended for minors.",
+  "authAgeRequired": "You must confirm that you are at least 18 years old to create an account.",
+  "authShowPassword": "Show password",
+  "authHidePassword": "Hide password",
+  "spotifyUnavailableTitle": "Spotify is paused",
+  "spotifyUnavailableBody": "Spotify and music affinity are temporarily disabled. Events, friends and chat remain available.",
+  "launchExploreTitle": "Find your next concert",
+  "launchExploreBody": "Search artists, explore the map and save nearby events.",
+  "launchCommunityTitle": "Join the community",
+  "launchCommunityBody": "Find people, add friends and plan concerts in your chats.",
+  "launchSavedTitle": "Your live calendar",
+  "launchSavedBody": "Save concerts and find the ones you want to attend.",
+  "launchCommunitySubtitle": "Search people by name or username",
+  "launchCommunityEmptyTitle": "No people found",
+  "launchCommunityEmptyBody": "Try another name or check back later.",
+  "launchCommunityLoadError": "Could not load people. Try again.",
+  "commonOK": "OK",
+  "commonLoading": "Loading…",
+  "commonSave": "Save",
+  "commonClose": "Close",
+  "commonAll": "All",
+  "commonConnect": "Connect",
+  "commonActive": "Active",
+  "commonNotNow": "Not now",
+  "commonSkip": "Skip",
+  "commonTryLater": "Try again later.",
+  "commonConnectionError": "Connection error",
+  "commonLoadingLabel": "{label}, loading",
+  "@commonLoadingLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSelectedLabel": "{label}, selected",
+  "@commonSelectedLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "commonNotSelectedLabel": "{label}, not selected",
+  "@commonNotSelectedLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOnline": "Online",
+  "commonAvatar": "Avatar",
+  "commonPercentLabel": "{percentage} percent {label}",
+  "@commonPercentLabel": {
+    "placeholders": {
+      "percentage": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAvatarAffinity": "{name}, {percentage} percent affinity",
+  "@commonAvatarAffinity": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "percentage": {
+        "type": "int"
+      }
+    }
+  },
+  "commonRegistrationComplete": "Registration complete",
+  "profileEditTitle": "Edit profile",
+  "profileBack": "Back to profile",
+  "profilePersonalSpace": "PERSONAL SPACE",
+  "profileSpotifyConnected": "Spotify connected",
+  "profileFollowers": "Followers",
+  "profileFollowing": "Following",
+  "profileOpenMusicStats": "Open music statistics",
+  "profileYourVibra": "YOUR VIBRA",
+  "profileInRotation": "In rotation",
+  "profileSyncMusicBody": "Sync Spotify to see your music profile.",
+  "profileShapeTitle": "Shape your Vibra",
+  "profileShapeBody": "Connect Spotify to show your musical identity.",
+  "profileUsernameEmpty": "Username cannot be empty",
+  "profileUsernameShort": "At least 3 characters",
+  "profileUsernameCharacters": "Use only letters, numbers, _ or .",
+  "profileUsernameCharactersOnboarding": "Use only letters, numbers and underscores",
+  "profileUsernameTaken": "Username already taken",
+  "profileUsernameTakenRetry": "This username is taken. Choose another one.",
+  "profilePhotoPermission": "Allow access to photos in your device settings and try again.",
+  "profilePhotoPickError": "Could not select the photo. Try again.",
+  "profilePhotoTitle": "Profile photo",
+  "profilePhotoGallery": "Choose from gallery",
+  "profilePhotoGalleryBody": "Select a photo from your device",
+  "profilePhotoCamera": "Take a photo",
+  "profilePhotoCameraBody": "Use the camera to take a new photo",
+  "profilePhotoRemove": "Remove photo",
+  "profilePhotoRestore": "Restore the default avatar",
+  "profileSaved": "Profile updated!",
+  "profileSaveError": "Could not save your profile. Try again shortly.",
+  "profilePhotoChange": "Change profile photo",
+  "profileUsernameExample": "e.g. music_fan",
+  "profileName": "Name",
+  "profileNameHint": "Your name or nickname",
+  "profileNameEmpty": "Name cannot be empty",
+  "profileDescription": "Bio",
+  "profileDescriptionHint": "Tell us about yourself…",
+  "profileMusicStreaming": "Music and streaming",
+  "profileAccountConnected": "Account connected",
+  "profileConnectSuggestions": "Connect your account for better suggestions",
+  "profileSaveChanges": "Save changes",
+  "homeYourSoundToday": "YOUR SOUND, TODAY",
+  "homeSpotifySynced": "Spotify synced · suggestions learn from you",
+  "homeSpotifyPersonalize": "Connect Spotify to personalize your suggestions",
+  "homeCompleteProfile": "Complete your profile",
+  "homeShapeVibra": "Make your Vibra your own",
+  "homeNextEvent": "UP NEXT",
+  "homeNearbyEyebrow": "NEARBY",
+  "homeTrendingEyebrow": "HAPPENING NOW",
+  "settingsPrivateMessages": "Private messages and requests",
+  "settingsPersonalizedUpdates": "Personalized updates and reminders",
+  "settingsMusicWeek": "Your music week",
+  "settingsMusicWeekBody": "Events and affinities selected for you",
+  "settingsWeekly": "Weekly",
+  "settingsMonthly": "Monthly",
+  "settingsNever": "Never",
+  "settingsPrivacyData": "Privacy and personal data",
+  "settingsPrivacyDataBody": "Consent, data export and deletion",
+  "settingsHelpCenter": "Help center",
+  "settingsHelpCenterBody": "Help with accounts, events, chat and Spotify",
+  "settingsReportProblem": "Report a problem",
+  "settingsReportProblemBody": "Send sanitized diagnostics and an optional screenshot",
+  "privacySaveError": "Could not save your preference. Try again.",
+  "privacyExportTitle": "Your data export",
+  "privacySaveJSON": "Save JSON",
+  "privacyCopyJSON": "Copy JSON",
+  "privacyCopiedJSON": "JSON copied to clipboard.",
+  "privacyExportError": "Data export unavailable. Try again later.",
+  "privacyExportSaved": "Export saved to {path}",
+  "@privacyExportSaved": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyIntro": "Choose each optional use of your data separately. You can change your mind at any time.",
+  "privacyPreciseLocation": "Precise location",
+  "privacyPreciseLocationBody": "For nearby events and Live features. Stored for up to 30 days.",
+  "privacySpotifyMatching": "Spotify for music affinity",
+  "privacySpotifyMatchingBody": "Use synced artists, genres and listening for suggestions and affinity.",
+  "privacyServiceNotifications": "Service notifications",
+  "privacyServiceNotificationsBody": "Matches, messages and saved events.",
+  "privacyMarketing": "Marketing messages",
+  "privacyMarketingBody": "Always optional; you can use the app without them.",
+  "privacyExportAction": "Export my data",
+  "privacyExportBody": "Generate a readable JSON copy of your profile, chats, events and interactions, including previous Spotify data if present.",
+  "privacyDeletionBody": "Deleting your account removes its data. Sent messages become anonymous and their content and media are removed. Backups follow the retention period stated in the privacy policy.",
+  "appearanceTitle": "Appearance",
+  "appearanceBody": "Choose the app theme or follow your device.",
+  "appearanceDark": "Dark",
+  "appearanceDarkBody": "Reduces brightness in low light",
+  "appearanceLight": "Light",
+  "appearanceLightBody": "Bright surfaces and soft shadows",
+  "appearanceSystem": "Automatic (system)",
+  "appearanceSystemBody": "Updates when your device setting changes",
+  "onboardingBack": "Back to the previous step",
+  "onboardingStart": "Let’s start",
+  "onboardingProfileTitle": "Your profile",
+  "onboardingProfileBody": "How other people will see you",
+  "onboardingSkipToHome": "Skip the rest and go to Home",
+  "onboardingPhotoUploading": "Uploading profile photo",
+  "onboardingPhotoSelect": "Choose or change your profile photo",
+  "onboardingUsernameExample": "e.g. vibra_user",
+  "onboardingRequired": "REQUIRED",
+  "onboardingSpotifyBody": "Find events based on your listening and discover musical affinity with other people.",
+  "onboardingSpotifyCancelled": "Connection cancelled. Try again or skip for now.",
+  "onboardingSpotifyError": "Could not connect. Try again later.",
+  "onboardingLocationTitle": "Events near you",
+  "onboardingLocationBody": "Enable location to discover concerts and venues in your area.",
+  "onboardingLocationDenied": "Permission permanently denied. You can enable it later in your device settings.",
+  "onboardingAllowLocation": "Allow location",
+  "onboardingNotificationsTitle": "Stay up to date",
+  "onboardingNotificationsBody": "Get notifications for saved events, friend requests and messages.",
+  "onboardingNotificationsDenied": "Notifications denied. You can enable them in your device settings.",
+  "onboardingAllowNotifications": "Enable notifications",
+  "liveAttendanceError": "Could not confirm attendance. Try again.",
+  "liveEventsLoadError": "Could not load Live events.",
+  "liveLocationHelp": "Live chat is available within 500 m of an event, during the 24 hours before and after the concert. Enable location in privacy settings.",
+  "liveUnavailableHere": "This event’s chat is unavailable at your location or at this time.",
+  "liveRefreshLocation": "Refresh location",
+  "liveEventTitle": "Live event",
+  "liveConnectionInterrupted": "Live chat connection interrupted.",
+  "liveEmpty": "No messages. Start the conversation!",
+  "liveRetryAttendance": "Check attendance again",
+  "liveConfirmingAttendance": "Confirming attendance…",
+  "liveJoinToChat": "Join the event to write in chat",
+  "liveInputHint": "Write in Live chat…",
+  "liveSendMessage": "Send Live message",
+  "musicReconnect": "Reconnect",
+  "musicReconnectBody": "Reconnect Spotify to update music statistics.",
+  "musicStatsUpdated": "Music statistics updated.",
+  "musicStatsRefreshing": "Updating music statistics",
+  "musicStatsNoArtists": "No artists available after the last sync.",
+  "musicStatsEmptyTitle": "Give your profile a sound.",
+  "musicStatsEmptyBody": "Connect Spotify to see the artists and rhythms that define you.",
+  "musicStatsYourSound": "YOUR SOUND",
+  "musicStatsHeroTitle": "Listening that makes a mark.",
+  "musicStatsArtists": "Artists",
+  "musicStatsRhythm": "Rhythm",
+  "spotifyBackToLogin": "Back to login",
+  "spotifyConsentBody": "Connecting Spotify allows Vibra to read your profile and top artists, tracks and genres. We use them for event suggestions and musical affinity; you can disconnect Spotify and delete this data in settings.",
+  "eventBackToEvents": "Back to events",
+  "eventPrice": "Price",
+  "eventVenueTBA": "Venue to be announced",
+  "eventOpenSemantics": "Open event {name}, {date}, {place}",
+  "@eventOpenSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "eventAffinitySemantics": "{percentage} percent affinity",
+  "@eventAffinitySemantics": {
+    "placeholders": {
+      "percentage": {
+        "type": "int"
+      }
+    }
+  },
+  "eventForYouScore": "{percentage}% FOR YOU",
+  "@eventForYouScore": {
+    "placeholders": {
+      "percentage": {
+        "type": "int"
+      }
+    }
+  },
+  "eventCommonSavedCount": "{count, plural, one{{count} shared or saved event} other{{count} shared or saved events}}",
+  "@eventCommonSavedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supportReportTitle": "Report a problem",
+  "supportReportIntro": "Describe what is not working. We’ll include the app version, operating system and a few diagnostics with sensitive information removed.",
+  "supportDescriptionLabel": "Problem description",
+  "supportDescriptionHint": "Include the screen, steps and what you expected.",
+  "supportAddScreenshot": "Add screenshot",
+  "supportScreenshotAttached": "Screenshot attached",
+  "supportRemoveScreenshot": "Remove screenshot",
+  "supportScreenshotPrivacy": "Make sure the screenshot does not show passwords, private messages or other sensitive data.",
+  "supportSending": "Sending…",
+  "supportSendReport": "Send report",
+  "supportDescriptionTooShort": "Describe the problem in at least 8 characters.",
+  "supportDescriptionTooLong": "The description can contain up to 4000 characters.",
+  "supportReportSentTitle": "Report sent",
+  "supportReportSentBody": "We’ve received your report. Support replies within 48 business hours.",
+  "supportReportSendFailed": "Could not send the report. Try again or contact {email}.",
+  "@supportReportSendFailed": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "supportReportAuthRequired": "Sign in again to send the report.",
+  "supportReportRateLimited": "You’ve sent too many reports. Wait a minute and try again.",
+  "supportScreenshotTooLarge": "The screenshot must be smaller than 5 MB.",
+  "supportScreenshotUnsupported": "Choose a JPG or PNG screenshot.",
+  "supportScreenshotPickFailed": "Could not select the screenshot. Try again.",
+  "supportScreenshotPermissionDenied": "Allow photo access in device settings to attach a screenshot.",
+  "supportAlternativeContact": "You can also contact {email}. We reply within 48 business hours.",
+  "@supportAlternativeContact": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "supportFeedbackTitle": "How is Vibra going?",
+  "supportFeedbackBody": "Your feedback helps us improve.",
+  "supportFeedbackNegative": "Not well",
+  "supportFeedbackNeutral": "So-so",
+  "supportFeedbackPositive": "Great!",
+  "supportFeedbackDescriptionPrefix": "Feedback:",
+  "chatSendFriendshipRequired": "To message this person, send a friend request and wait for it to be accepted.",
+  "chatSendFirstContactLimit": "You’ve already sent 3 messages. Wait for a reply before sending more.",
+  "chatSendUnavailable": "This conversation is unavailable.",
+  "chatSendRateLimited": "You’re sending too many messages. Wait a minute and try again.",
+  "chatSendSignInRequired": "Sign in again to send your message.",
+  "chatRequestFriendship": "Send friend request",
+  "chatFriendshipRequestSent": "Friend request sent",
+  "chatFriendshipRequestFailed": "Could not send the friend request. Try again.",
+  "chatMessageTooLong": "The message can contain up to 2000 characters.",
+  "chatPermissionChecking": "Checking conversation…",
+  "chatFriendshipRequestPending": "Friend request awaiting acceptance",
+  "chatAcceptFriendship": "Accept friend request",
+  "chatFriendshipAccepted": "Friend request accepted. You can now send messages.",
+  "socialReportUser": "Report user",
+  "socialReportSpam": "Spam",
+  "socialReportHarassment": "Harassment",
+  "socialReportInappropriate": "Inappropriate content",
+  "socialReportDetailsHint": "Additional details (optional)",
+  "socialReportSent": "User reported",
+  "socialReportFailed": "Could not submit the report. Try again.",
+  "socialReportAction": "Report",
+  "socialBlockUser": "Block user",
+  "socialBlockConfirm": "Block this person? You will no longer be able to exchange messages.",
+  "socialBlockSuccess": "User blocked",
+  "socialBlockFailed": "Could not block this person. Try again.",
+  "socialBlockAction": "Block",
+  "chatRequestTitle": "Message request",
+  "chatRequestBody": "{name} would like to message you. Reply to accept the conversation.",
+  "@chatRequestBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRequestRejected": "Request declined and deleted",
+  "chatRequestRejectFailed": "Could not delete the request. Try again.",
+  "commonReject": "Decline",
+  "commonReply": "Reply",
+  "userProfileView": "View profile",
+  "chatConnectionInterrupted": "Chat connection interrupted.",
+  "chatMeetupTitle": "Meetup proposal",
+  "chatMeetupAccept": "I’m in",
+  "chatMeetupDecline": "I can’t",
+  "chatMeetupAcceptMessage": "I’m in! {message}",
+  "@chatMeetupAcceptMessage": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "chatMeetupDeclineMessage": "I can’t attend. {message}",
+  "@chatMeetupDeclineMessage": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "helpIntro": "Quick answers and support. We reply within 48 business hours.",
+  "helpSearchHint": "Search frequently asked questions",
+  "helpSearchEmpty": "No answers found. Try another search.",
+  "helpNeedMore": "Still need help?",
+  "helpCategoryAll": "All",
+  "helpCategoryAccount": "Account",
+  "helpCategoryChatMatch": "Chat and affinity",
+  "helpCategoryPrivacy": "Privacy",
+  "helpLoginQuestion": "I can’t sign in",
+  "helpLoginAnswer": "Check your email and password, then close and reopen Vibra. If it still fails, use “Report a problem” and include your sign-in method.",
+  "helpLogoutQuestion": "How do I sign out?",
+  "helpLogoutAnswer": "Go to Profile > Settings > Log out. To end all sessions, choose “Log out from all devices”.",
+  "helpDeleteQuestion": "How do I delete my account?",
+  "helpDeleteAnswer": "Go to Profile > Settings > Delete account. Confirming removes your account data as described in the privacy policy.",
+  "helpEventsQuestion": "Why are there no events near me?",
+  "helpEventsAnswer": "Check location access and widen the search radius. Availability depends on event sources in the area; you can also search a city.",
+  "helpTicketsQuestion": "An event or ticket link won’t open",
+  "helpTicketsAnswer": "Events and tickets come from external partners. Try again later; if the issue persists, report it and include the event.",
+  "helpAffinityQuestion": "How is affinity calculated?",
+  "helpAffinityAnswer": "The score compares shared artists and genres, with a small bonus for less common tastes. It indicates affinity and is not a guarantee.",
+  "helpBlockQuestion": "How do I block or report someone?",
+  "helpBlockAnswer": "Open the conversation and use its menu to block or report the person. Blocking prevents future interactions; reports are sent to the team.",
+  "helpSpotifyConnectQuestion": "How do I connect Spotify?",
+  "helpSpotifyConnectAnswer": "Go to Profile > Settings > Spotify account and complete authorization in Spotify. You’ll return to Vibra automatically.",
+  "helpSpotifyDisconnectQuestion": "How do I disconnect Spotify?",
+  "helpSpotifyDisconnectAnswer": "Go to Profile > Settings > Spotify account and choose “Disconnect”.",
+  "helpSpotifyErrorQuestion": "Spotify connection fails",
+  "helpSpotifyErrorAnswer": "Check your connection and complete authorization. Never share passwords or tokens with support: reports include only sanitized diagnostics.",
+  "helpReportDataQuestion": "What data does a problem report send?",
+  "helpReportDataAnswer": "App version, operating system, the last failing endpoint and a few technical logs with sensitive data removed. A screenshot is optional: check that it contains no private information.",
+  "helpPrivacyQuestion": "How do I exercise my data rights?",
+  "helpPrivacyAnswer": "Go to Profile > Settings > Privacy and personal data to manage consent and export your data. For other requests, contact {email}.",
+  "@helpPrivacyAnswer": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreEyebrow": "EVENTS AROUND YOU",
+  "exploreClearSearch": "Clear search",
+  "@exploreSearchRadius": {
+    "placeholders": {
+      "radius": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreEventsVisible": "{count, plural, one{{count} EVENT IN VIEW} other{{count} EVENTS IN VIEW}}",
+  "@exploreEventsVisible": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonReset": "Reset",
+  "exploreLoadErrorTitle": "Events could not be loaded.",
+  "exploreLoadErrorBody": "Check your connection and search this area again.",
+  "exploreEmptyTitle": "No events found in this area.",
+  "exploreEmptyBody": "Widen the radius or change the filters.",
+  "exploreZoomIn": "Zoom in",
+  "exploreZoomOut": "Zoom out",
+  "exploreOpenEvents": "{count, plural, one{Open list of {count} event} other{Open list of {count} events}}",
+  "@exploreOpenEvents": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreMoveMapHint": "Move the map to search for events",
+  "exploreEventsInArea": "{count, plural, one{{count} event in this area} other{{count} events in this area}}",
+  "@exploreEventsInArea": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreCloseEvents": "Close event list",
+  "exploreGenreElectronic": "Electronic",
+  "exploreGenreAlternative": "Alternative",
+  "commonLinkOpenError": "Could not open the link.",
+  "authConfirmEmail": "We’ve sent you a confirmation email. Check your inbox before signing in.",
+  "authEmailNotConfirmed": "Confirm your email address first. Check your inbox.",
+  "authInvalidCredentials": "Email or password is incorrect. Check them and try again.",
+  "authProviderUnavailable": "This sign-in method is unavailable. Use email or try again later.",
+  "authEmailAlreadyRegistered": "This email is already registered. Try signing in.",
+  "authWeakPassword": "Choose a stronger password and try again.",
+  "errorNetwork": "Connection unavailable. Check your network and try again.",
+  "errorSessionChanged": "Your session has changed. Sign in again and retry.",
+  "errorRateLimited": "Too many requests. Wait a minute and try again.",
+  "errorActionFailed": "The action failed. Try again shortly.",
+  "socialAffinity": "Affinity",
+  "socialFollow": "Follow",
+  "socialFollowing": "Following",
+  "socialFollowUpdateError": "Could not update following. Try again.",
+  "socialMessageAction": "Message",
+  "socialFriendRequestSentShort": "Sent",
+  "socialFriendRequestError": "Could not send the request. Try again.",
+  "socialAddFriend": "Add friend",
+  "socialCommonArtists": "Shared artists",
+  "socialUsersLoadError": "Could not load people.",
+  "socialFollowersCount": "Followers ({count})",
+  "@socialFollowersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialFollowingCount": "Following ({count})",
+  "@socialFollowingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialNoFollowers": "No followers",
+  "socialNoFollowersBody": "People who follow this profile will appear here.",
+  "socialNoFollowing": "Not following anyone",
+  "socialNoFollowingBody": "Followed profiles will appear here.",
+  "friendsRequestUpdateError": "Could not update the request. Try again.",
+  "friendsRemoveTitle": "Remove friend",
+  "friendsRemoveBody": "Remove {name} from your friends?",
+  "@friendsRemoveBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "friendsRemoved": "{name} removed from friends",
+  "@friendsRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "friendsRemoveError": "Could not remove this friend. Try again.",
+  "commonRemove": "Remove",
+  "friendsConnectionsTitle": "Friends and connections",
+  "friendsCount": "Friends ({count})",
+  "@friendsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "friendsReceived": "Received",
+  "friendsSentCount": "Sent ({count})",
+  "@friendsSentCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "friendsSearchHint": "Search your friends…",
+  "friendsNoneFound": "No friends found",
+  "friendsFindBody": "Explore profiles, send friend requests and share events.",
+  "friendsFindPeople": "Find people",
+  "friendsNoReceived": "No requests received",
+  "friendsNoReceivedBody": "Friend requests from other people will appear here.",
+  "friendsVibraUser": "Vibra user",
+  "friendsNoSent": "No sent requests",
+  "friendsNoSentBody": "Sent friend requests awaiting a reply will appear here.",
+  "inboxOpenConversation": "Open conversation with {name}",
+  "@inboxOpenConversation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inboxUnreadCount": "{count, plural, one{{count} unread message} other{{count} unread messages}}",
+  "@inboxUnreadCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inboxEyebrow": "IN TOUCH",
+  "inboxMessages": "Messages",
+  "inboxDirect": "Direct",
+  "inboxRequests": "Requests",
+  "inboxSearchHint": "Search conversations",
+  "inboxClearSearch": "Clear conversation search",
+  "inboxRefreshError": "Could not refresh conversations.",
+  "inboxEmptyTitle": "No conversations yet.",
+  "inboxEmptyBody": "Find someone to share a concert with and start talking.",
+  "inboxNoRequests": "No pending requests.",
+  "inboxNoRequestsBody": "New message requests will appear here.",
+  "socialMatchSend": "SEND",
+  "socialMatchPass": "PASS",
+  "socialMatchSharedListening": "Your listening has found common ground.",
+  "socialYou": "You",
+  "socialMatchFrequencyNow": "same frequency, right now",
+  "socialMatchSharedSound": "SHARED LISTENING",
+  "socialMatchSameArea": "SAME AREA",
+  "friendsLoadError": "Could not load friends. Try again."
 }

@@ -59,6 +59,7 @@ class SupabaseDatasource {
       VibraLogger.api('SELECT', table);
       return List<Map<String, dynamic>>.from(data as List);
     } catch (e) {
+      VibraLogger.endpointFailure(table);
       VibraLogger.error('Errore SELECT su $table', error: e);
       throw ServerException(
         message: 'Errore nel caricamento dati da $table',
@@ -77,10 +78,12 @@ class SupabaseDatasource {
       VibraLogger.api('INSERT', table);
       return result;
     } catch (e) {
+      VibraLogger.endpointFailure(table);
       VibraLogger.error('Errore INSERT su $table', error: e);
       throw ServerException(
         message: 'Errore nel salvataggio dati in $table',
         endpoint: table,
+        errorCode: e is PostgrestException ? e.code : null,
       );
     }
   }
@@ -102,6 +105,7 @@ class SupabaseDatasource {
       VibraLogger.api('UPDATE', table);
       return result;
     } catch (e) {
+      VibraLogger.endpointFailure(table);
       VibraLogger.error('Errore UPDATE su $table', error: e);
       throw ServerException(
         message: 'Errore nell\'aggiornamento dati in $table',
@@ -120,6 +124,7 @@ class SupabaseDatasource {
       await client.from(table).delete().eq(matchColumn, matchValue);
       VibraLogger.api('DELETE', table);
     } catch (e) {
+      VibraLogger.endpointFailure(table);
       VibraLogger.error('Errore DELETE su $table', error: e);
       throw ServerException(
         message: 'Errore nell\'eliminazione dati da $table',
@@ -143,6 +148,7 @@ class SupabaseDatasource {
       VibraLogger.api('UPSERT', table);
       return result;
     } catch (e) {
+      VibraLogger.endpointFailure(table);
       VibraLogger.error('Errore UPSERT su $table', error: e);
       throw ServerException(
         message: 'Errore nel salvataggio dati in $table',
@@ -196,22 +202,39 @@ class SupabaseDatasource {
     String path,
     Uint8List fileBytes, {
     String? contentType,
+    bool upsert = true,
   }) async {
     try {
-      await client.storage
-          .from(bucket)
-          .uploadBinary(
-            path,
-            fileBytes,
-            fileOptions: FileOptions(contentType: contentType),
-          );
-      final url = client.storage.from(bucket).getPublicUrl(path);
-      VibraLogger.info('File caricato: $path in $bucket');
-      return url;
+      final response = await client.functions.invoke(
+        'upload-image',
+        queryParameters: {'bucket': bucket},
+        body: fileBytes,
+        headers: {'Content-Type': 'application/octet-stream'},
+      );
+      final uploadedPath =
+          (response.data as Map<String, dynamic>)['path'] as String?;
+      if (uploadedPath == null) {
+        throw const ServerException(message: 'URL immagine non disponibile');
+      }
+      return client.storage.from(bucket).getPublicUrl(uploadedPath);
     } catch (e) {
+      VibraLogger.endpointFailure('$bucket/$path');
       VibraLogger.error('Errore upload file', error: e);
       throw ServerException(
-        message: 'Errore nel caricamento del file',
+        message: e is FunctionException && e.status == 415
+            ? 'La foto deve essere in formato JPG o PNG. Scegli un’altra immagine.'
+            : e is FunctionException && e.status == 413
+            ? 'La foto è troppo grande. Scegli un’immagine fino a ${bucket == 'chat-media' ? 10 : 5} MB.'
+            : e is FunctionException && e.status == 401
+            ? 'Sessione scaduta. Accedi di nuovo per caricare la foto.'
+            : e is StorageException
+            ? e.message
+            : 'Impossibile caricare il file. Controlla la connessione e riprova.',
+        statusCode: e is StorageException
+            ? int.tryParse(e.statusCode ?? '')
+            : e is FunctionException
+            ? e.status
+            : null,
         endpoint: '$bucket/$path',
       );
     }
@@ -229,6 +252,7 @@ class SupabaseDatasource {
       VibraLogger.api('EDGE_FN', functionName);
       return response.data as Map<String, dynamic>;
     } catch (e) {
+      VibraLogger.endpointFailure(functionName);
       VibraLogger.error('Errore Edge Function: $functionName', error: e);
       throw ServerException(
         message: 'Errore nell\'esecuzione della funzione $functionName: $e',

@@ -1,7 +1,7 @@
 name: vibra
 description: "Non ascoltare la musica. Vivila. — Collega streaming musicale ed eventi dal vivo."
 publish_to: 'none'
-version: 0.1.0+1
+version: 1.0.0+3
 
 environment:
   sdk: ^3.12.2
@@ -15,7 +15,6 @@ dependencies:
 
   # State Management
   flutter_riverpod: ^2.6.1
-  riverpod_annotation: ^2.6.1
 
   # Navigazione
   go_router: ^14.8.1
@@ -24,19 +23,16 @@ dependencies:
   supabase_flutter: ^2.9.0
 
   # Autenticazione OAuth
-  flutter_appauth: ^12.0.2
   flutter_secure_storage: ^10.3.1
   flutter_web_auth_2: ^6.0.0-alpha.5
   crypto: ^3.0.7
 
   # HTTP Client
   dio: ^5.7.0
-  pretty_dio_logger: ^1.4.0
 
   # UI & Design
-  google_fonts: ^6.2.1
-  flutter_svg: ^2.0.17
   cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
   shimmer: ^3.0.0
   flutter_animate: ^4.5.2
 
@@ -51,16 +47,16 @@ dependencies:
   firebase_messaging: ^15.2.4
 
   # Utilità
-  collection: ^1.19.1
   intl: ^0.20.2
   shared_preferences: ^2.5.3
   connectivity_plus: ^6.1.4
   url_launcher: ^6.3.1
   image_picker: ^1.1.2
+  path_provider: ^2.1.5
+  package_info_plus: ^8.1.3
+  device_info_plus: ^11.2.0
+  in_app_review: ^2.0.10
   flutter_dotenv: ^5.2.1
-  uuid: ^4.5.1
-  timeago: ^3.7.0
-
   # Data classes
   freezed_annotation: ^3.0.0
   json_annotation: ^4.9.0
@@ -78,25 +74,40 @@ dev_dependencies:
   build_runner: ^2.4.15
   freezed: ^3.0.6
   json_serializable: ^6.9.5
-  riverpod_generator: ^2.6.5
-  riverpod_lint: ^2.6.5
 
   # Testing
+  http: ^1.6.0
   mocktail: ^1.0.4
-  integration_test:
-    sdk: flutter
   flutter_native_splash: ^2.4.8
 
-  supabase: any
 flutter:
   uses-material-design: true
   generate: true
 
   assets:
-    - .env
-    - .env.example
-    - assets/images/
-    - assets/icons/
+    - .env.public
+    - assets/fonts/inter-OFL.txt
+    - assets/fonts/syne-OFL.txt
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Inter-ExtraBold.ttf
+          weight: 800
+    - family: Syne
+      fonts:
+        - asset: assets/fonts/Syne-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Syne-Bold.ttf
+          weight: 700
 
 dependency_overrides:
   flutter_map_marker_cluster:

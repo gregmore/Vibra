@@ -1,7 +1,10 @@
+import { rejectRevokedSession } from "../_shared/session-guard.ts";
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { optionalEnv, requireEnv } from "../_shared/env.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { decryptToken, encryptToken } from "../_shared/token-crypto.ts";
+import { rejectDisabledSpotify, spotifyUnavailableResponse } from "../_shared/spotify-feature.ts";
 
 type ExchangeBody = {
   action: "exchange" | "refresh";
@@ -42,6 +45,8 @@ async function fetchSpotifyProfile(accessToken: string) {
 }
 
 Deno.serve(async (req) => {
+  const rejected = await rejectRevokedSession(req, "spotify-token-exchange");
+  if (rejected) return rejected;
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 
@@ -53,7 +58,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const body = (await req.json()) as ExchangeBody;
     const userClient = createUserClient(req);
     const { data: authData, error: userError } = await userClient.auth.getUser();
     if (userError || !authData.user) {
@@ -63,12 +67,29 @@ Deno.serve(async (req) => {
       });
     }
 
+    const unavailable = rejectDisabledSpotify();
+    if (unavailable) return unavailable;
+
+    const body = (await req.json()) as ExchangeBody;
+    if (body.action !== "exchange" && body.action !== "refresh") {
+      return new Response(JSON.stringify({ error: "invalid_action" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const appClient = createSupabaseServiceClient();
     const spotifyClientId = requireEnv("SPOTIFY_CLIENT_ID");
     const spotifyClientSecret = requireEnv("SPOTIFY_CLIENT_SECRET");
-    const redirectUri = body.redirect_uri ?? optionalEnv("SPOTIFY_REDIRECT_URI") ?? "com.vibra.app://callback";
+    const redirectUri = optionalEnv("SPOTIFY_REDIRECT_URI") ?? "com.vibra.app://callback";
+    if (body.redirect_uri !== undefined && body.redirect_uri !== redirectUri) {
+      return new Response(JSON.stringify({ error: "invalid_redirect_uri" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     let spotifyResponse: Response;
+    let refreshedConnection: { spotify_user_id: string; connected_at: string } | null = null;
     if (body.action === "exchange") {
       if (!body.code || !body.code_verifier) {
         return new Response(JSON.stringify({ error: "code and code_verifier are required" }), {
@@ -93,18 +114,23 @@ Deno.serve(async (req) => {
         body: form,
       });
     } else {
-      const refreshToken = (body as any).refresh_token;
-
-      if (!refreshToken) {
+      const { data: connection, error: connectionError } = await appClient
+        .from("spotify_connections")
+        .select("spotify_user_id, connected_at, refresh_token_ciphertext")
+        .eq("user_id", authData.user.id)
+        .maybeSingle();
+      if (connectionError) throw new Error("Failed to load Spotify connection");
+      if (!connection?.refresh_token_ciphertext) {
         return new Response(JSON.stringify({ error: "refresh_token_missing" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      refreshedConnection = connection;
 
       const form = new URLSearchParams({
         grant_type: "refresh_token",
-        refresh_token: refreshToken,
+        refresh_token: await decryptToken(connection.refresh_token_ciphertext),
       });
 
       const basic = btoa(`${spotifyClientId}:${spotifyClientSecret}`);
@@ -137,6 +163,45 @@ Deno.serve(async (req) => {
     const spotifyMe = await fetchSpotifyProfile(accessToken);
 
     const spotifyId = spotifyMe["id"];
+    if (typeof spotifyId !== "string" || !spotifyId) throw new Error("Invalid Spotify account response");
+
+    if (body.action === "refresh") {
+      if (!refreshedConnection || refreshedConnection.spotify_user_id !== spotifyId) {
+        return new Response(JSON.stringify({ error: "spotify_refresh_account_mismatch" }), {
+          status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: saved, error: saveError } = await appClient.rpc("refresh_spotify_connection", {
+        p_user_id: authData.user.id,
+        p_spotify_user_id: spotifyId,
+        p_connected_at: refreshedConnection.connected_at,
+        p_access_token_ciphertext: await encryptToken(accessToken),
+        p_refresh_token_ciphertext: refreshToken ? await encryptToken(refreshToken) : null,
+        p_token_expires_at: new Date(Date.now() + expiresIn * 1000).toISOString(),
+      });
+      if (saveError?.code === "PT503") return spotifyUnavailableResponse();
+      if (saveError) throw new Error("Failed to refresh Spotify connection");
+      if (saved !== true) {
+        return new Response(JSON.stringify({ error: "spotify_refresh_account_mismatch" }), {
+          status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      // Refreshing tokens does not mutate the profile or restore matching
+      // consent. Disconnect can win the race while Spotify is responding.
+      return new Response(JSON.stringify({
+        access_token: accessToken, refresh_token: refreshToken, expires_in: expiresIn, scope,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    const { data: currentProfile, error: currentProfileError } = await appClient
+      .from("users")
+      .select("id, username, display_name, avatar_url, spotify_id")
+      .eq("id", authData.user.id)
+      .maybeSingle();
+
+    if (currentProfileError) {
+      throw new Error(`Failed to load current profile: ${currentProfileError.message}`);
+    }
 
     if (spotifyId) {
       const { data: existingUsers, error: checkError } = await appClient
@@ -160,20 +225,49 @@ Deno.serve(async (req) => {
       }
     }
 
-    await appClient.from("users").upsert({
+    // Keep the profile choices made in Vibra (username, name and avatar) on
+    // subsequent Spotify connections. Tokens are persisted server-side too:
+    // sync-music-profile runs on the backend and must never depend only on a
+    // token stored on the device.
+    const profilePayload = {
       id: authData.user.id,
       email: authData.user.email ?? "",
-      username: (authData.user.user_metadata["username"] as string | undefined) ??
+      username: currentProfile?.username ??
+          (authData.user.user_metadata["username"] as string | undefined) ??
           (authData.user.email?.split("@")[0] ?? `user_${authData.user.id.substring(0, 8)}`),
-      display_name: (authData.user.user_metadata["display_name"] as string | undefined) ??
+      display_name: currentProfile?.display_name ??
+          (authData.user.user_metadata["display_name"] as string | undefined) ??
           spotifyMe["display_name"] ??
           authData.user.email?.split("@")[0],
-      avatar_url: Array.isArray(spotifyMe["images"]) && spotifyMe["images"].length > 0
+      avatar_url: currentProfile?.avatar_url ??
+          (Array.isArray(spotifyMe["images"]) && spotifyMe["images"].length > 0
         ? (spotifyMe["images"][0]["url"] as string | undefined)
-        : null,
+        : null),
       spotify_id: spotifyId,
-    }, { onConflict: "id" });
+    };
 
+    const { error: upsertError } = await appClient.rpc("connect_spotify_account", {
+      p_user_id: authData.user.id,
+      p_spotify_user_id: spotifyId,
+      p_profile: profilePayload,
+      p_access_token_ciphertext: await encryptToken(accessToken),
+      p_refresh_token_ciphertext: refreshToken ? await encryptToken(refreshToken) : null,
+      p_token_expires_at: new Date(Date.now() + expiresIn * 1000).toISOString(),
+    });
+
+    if (upsertError) {
+      if (upsertError.code === "PT503") return spotifyUnavailableResponse();
+      if (upsertError.code === "23505") {
+        return new Response(JSON.stringify({
+          error: "spotify_account_already_linked",
+          message: "Questo account Spotify è già collegato a un altro profilo Vibra.",
+        }), {
+          status: 409,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      throw new Error(`Failed to persist Spotify connection: ${upsertError.message}`);
+    }
 
     return new Response(JSON.stringify({
       access_token: accessToken,
@@ -186,7 +280,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     return new Response(JSON.stringify({
       error: "internal_error",
-      message: String(e?.message ?? e),
+      message: String(e instanceof Error ? e.message : e),
     }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

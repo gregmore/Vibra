@@ -1,7 +1,10 @@
+import '../../../core/constants/app_constants.dart';
+import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,30 +13,245 @@ import 'package:shimmer/shimmer.dart';
 import 'package:translator/translator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/theme/vibra_colors.dart';
 import '../../../core/theme/vibra_spacing.dart';
-import '../../../core/theme/vibra_shadows.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../../domain/entities/event.dart';
 import '../../../domain/usecases/events_usecases.dart';
 import '../../providers/app_state_providers.dart';
+import '../../providers/app_synchronization_provider.dart';
 import '../../providers/usecase_providers.dart';
 import '../../providers/core_providers.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
+import '../../widgets/common/vibra_openstreetmap_layer.dart';
 import '../../widgets/common/vibra_section_header.dart';
 import '../../widgets/common/vibra_state_views.dart';
 import '../../widgets/common/vibra_user_match_card.dart';
+import 'event_action_helpers.dart';
 
-class EventDetailScreen extends ConsumerWidget {
+class EventDetailScreen extends ConsumerStatefulWidget {
   final Event? event;
   const EventDetailScreen({super.key, this.event});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<EventDetailScreen> createState() => _EventDetailScreenState();
+}
+
+class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
+  String? _attendanceStatus;
+  String? _savingAttendanceStatus;
+  String? _loadedAttendanceEventKey;
+  bool _loadingAttendance = false;
+  bool _openingTickets = false;
+
+  void _showFeedback(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _trackTicketClick(Event event) async {
+    try {
+      await ref
+          .read(supabaseDatasourceProvider)
+          .client
+          .functions
+          .invoke('track-ticket-click', body: {'event_id': event.id});
+    } catch (error) {
+      debugPrint('Tracking error: $error');
+    }
+  }
+
+  Future<void> _openTickets(Event event) async {
+    if (_openingTickets) return;
+    final l10n = AppLocalizations.of(context)!;
+    final uri = eventTicketUri(event);
+    if (uri == null) {
+      _showFeedback(l10n.eventDetailTicketsUnavailable);
+      return;
+    }
+    setState(() => _openingTickets = true);
+    try {
+      final opened = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+      if (!mounted) return;
+      if (opened) {
+        unawaited(_trackTicketClick(event));
+      } else {
+        _showFeedback(l10n.eventDetailTicketsError);
+      }
+    } catch (_) {
+      _showFeedback(l10n.eventDetailTicketsError);
+    } finally {
+      if (mounted) setState(() => _openingTickets = false);
+    }
+  }
+
+  Future<void> _openDirections(Event event) async {
+    final l10n = AppLocalizations.of(context)!;
+    final uri = eventDirectionsUri(event);
+    if (uri == null) return;
+    try {
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        _showFeedback(l10n.eventDirectionsError);
+      }
+    } catch (_) {
+      _showFeedback(l10n.eventDirectionsError);
+    }
+  }
+
+  Future<void> _copyDetails(Event event) async {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toString();
+    try {
+      await Clipboard.setData(
+        ClipboardData(text: eventDetailsText(event, locale)),
+      );
+      _showFeedback(l10n.eventDetailCopied);
+    } catch (_) {
+      _showFeedback(l10n.eventCopyError);
+    }
+  }
+
+  void _ensureAttendanceLoaded(Event event) {
+    final eventKey = '${event.source}:${event.externalId}';
+    if (_loadedAttendanceEventKey == eventKey) return;
+    _loadedAttendanceEventKey = eventKey;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted || _loadedAttendanceEventKey != eventKey) return;
+      setState(() {
+        _loadingAttendance = true;
+        _attendanceStatus = null;
+      });
+
+      try {
+        final status = await ref
+            .read(getMyEventAttendanceUseCaseProvider)
+            .call(event);
+        if (mounted && _loadedAttendanceEventKey == eventKey) {
+          setState(() => _attendanceStatus = status);
+        }
+      } catch (_) {
+        // La schermata resta utilizzabile anche se il recupero non riesce.
+      } finally {
+        if (mounted && _loadedAttendanceEventKey == eventKey) {
+          setState(() => _loadingAttendance = false);
+        }
+      }
+    });
+  }
+
+  Future<void> _setAttendance(Event event, String status) async {
+    if (_savingAttendanceStatus != null) return;
+
+    setState(() => _savingAttendanceStatus = status);
+    final l10n = AppLocalizations.of(context)!;
+
+    try {
+      await ref
+          .read(setEventAttendanceUseCaseProvider)
+          .call(SetEventAttendanceParams(event: event, status: status));
+      ref
+          .read(appSynchronizationProvider)
+          .eventAttendanceChanged(event, status);
+      if (!mounted) return;
+
+      setState(() => _attendanceStatus = status);
+      final message = switch (status) {
+        'going' => l10n.eventDetailAttendanceConfirmed,
+        'maybe' => l10n.eventDetailAttendanceMaybe,
+        _ => l10n.eventDetailAttendanceNotGoing,
+      };
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(message)));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text('${l10n.authGenericError}. ${l10n.commonRetry}.'),
+          ),
+        );
+    } finally {
+      if (mounted) setState(() => _savingAttendanceStatus = null);
+    }
+  }
+
+  ButtonStyle _attendanceButtonStyle(String status) {
+    final t = context.vibraTokens;
+    final selected = _attendanceStatus == status;
+    return OutlinedButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      minimumSize: const Size(0, 48),
+      backgroundColor: selected ? t.accentSoft : Colors.transparent,
+      foregroundColor: t.textPrimary,
+      side: BorderSide(
+        color: selected ? t.accentPrimary : t.borderStrong,
+        width: selected ? 2 : 1,
+      ),
+    );
+  }
+
+  Widget _attendanceButtonChild(String label, String status) {
+    final t = context.vibraTokens;
+    if (_savingAttendanceStatus == status) {
+      return SizedBox(
+        width: 16,
+        height: 16,
+        child: CircularProgressIndicator(strokeWidth: 2, color: t.textPrimary),
+      );
+    }
+    final selected = _attendanceStatus == status;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (selected) ...[
+          Icon(Icons.check_rounded, size: 16, color: t.textPrimary),
+          const SizedBox(width: 3),
+        ],
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 2,
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _attendanceButton(Event event, String label, String status) {
+    final selected = _attendanceStatus == status;
+    return Expanded(
+      flex: 3,
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: label,
+        child: OutlinedButton(
+          style: _attendanceButtonStyle(status),
+          onPressed: !_loadingAttendance && _savingAttendanceStatus == null
+              ? () => _setAttendance(event, status)
+              : null,
+          child: _attendanceButtonChild(label, status),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final featured = ref.watch(featuredEventsProvider);
-    final displayEvent = event ?? (featured.isNotEmpty ? featured.first : null);
+    final displayEvent =
+        widget.event ?? (featured.isNotEmpty ? featured.first : null);
     final users = ref.watch(matchedUsersProvider);
     final theme = Theme.of(context);
+    final t = context.vibraTokens;
     final l10n = AppLocalizations.of(context)!;
 
     if (displayEvent == null) {
@@ -42,9 +260,14 @@ class EventDetailScreen extends ConsumerWidget {
           title: l10n.eventDetailNotAvailableTitle,
           message: l10n.eventDetailNotAvailableMsg,
           icon: Icons.event_busy_rounded,
+          actionLabel: l10n.navEvents,
+          onActionTap: () => context.go('/explore'),
         ),
       );
     }
+
+    _ensureAttendanceLoaded(displayEvent);
+    final coordinates = eventCoordinates(displayEvent);
 
     return VibraPageScaffold(
       child: ListView(
@@ -55,18 +278,28 @@ class EventDetailScreen extends ConsumerWidget {
               SizedBox(
                 height: 320,
                 width: double.infinity,
-                child: CachedNetworkImage(
-                  imageUrl: displayEvent.imageUrl ?? '',
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Shimmer.fromColors(
-                    baseColor: VibraColors.shimmerBase,
-                    highlightColor: VibraColors.shimmerHighlight,
-                    child: Container(color: Colors.white),
-                  ),
-                  errorWidget: (context, url, error) =>
-                      Container(color: VibraColors.surface),
-                ),
+                child: displayEvent.imageUrl?.trim().isNotEmpty == true
+                    ? CachedNetworkImage(
+                        imageUrl: displayEvent.imageUrl!,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Shimmer.fromColors(
+                          baseColor: t.shimmerBase,
+                          highlightColor: t.shimmerHighlight,
+                          child: Container(color: t.surfaceElevated),
+                        ),
+                        errorWidget: (context, url, error) =>
+                            Container(color: t.surfaceMuted),
+                      )
+                    : ColoredBox(
+                        color: t.surfaceMuted,
+                        child: Icon(
+                          Icons.music_note_rounded,
+                          size: 64,
+                          color: t.textSecondary,
+                        ),
+                      ),
               ),
+              Positioned.fill(child: ColoredBox(color: t.imageScrim)),
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -78,17 +311,7 @@ class EventDetailScreen extends ConsumerWidget {
                     VibraSpacing.pagePadding,
                     20,
                   ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        VibraColors.background.withValues(alpha: 0.8),
-                        VibraColors.background,
-                      ],
-                    ),
-                  ),
+                  decoration: BoxDecoration(color: t.imageOverlay),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -97,7 +320,7 @@ class EventDetailScreen extends ConsumerWidget {
                         style: Theme.of(context).textTheme.headlineMedium
                             ?.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: t.onImage,
                             ),
                       ),
                       if (displayEvent.priceMin != null) ...[
@@ -108,20 +331,21 @@ class EventDetailScreen extends ConsumerWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: VibraColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: VibraColors.primary.withValues(alpha: 0.3),
-                            ),
+                            color: t.accentPrimary,
+                            borderRadius: VibraSpacing.borderSmall,
+                            border: Border.all(color: t.onAccent),
                           ),
                           child: Text(
                             displayEvent.priceMax != null &&
                                     displayEvent.priceMax !=
                                         displayEvent.priceMin
-                                ? '€${displayEvent.priceMin!.toStringAsFixed(2)} - €${displayEvent.priceMax!.toStringAsFixed(2)}'
-                                : '€${displayEvent.priceMin!.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              color: VibraColors.primary,
+                                ? '${_formattedPrice(context, displayEvent.priceMin!)} – ${_formattedPrice(context, displayEvent.priceMax!)}'
+                                : _formattedPrice(
+                                    context,
+                                    displayEvent.priceMin!,
+                                  ),
+                            style: TextStyle(
+                              color: t.onAccent,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -129,9 +353,16 @@ class EventDetailScreen extends ConsumerWidget {
                       ],
                       const SizedBox(height: 8),
                       Text(
-                        '${displayEvent.venueName} · ${displayEvent.city} · ${displayEvent.eventDate.day}/${displayEvent.eventDate.month}/${displayEvent.eventDate.year}',
+                        [
+                          if (eventPlaceLabel(displayEvent).isNotEmpty)
+                            eventPlaceLabel(displayEvent),
+                          DateFormat.yMMMd(
+                            Localizations.localeOf(context).toString(),
+                          ).format(displayEvent.eventDate.toLocal()),
+                        ].join(' · '),
                         style: theme.textTheme.bodyLarge?.copyWith(
-                          color: Colors.white70,
+                          color: t.onImageMuted,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -142,7 +373,14 @@ class EventDetailScreen extends ConsumerWidget {
                 top: 10,
                 left: 12,
                 child: IconButton.filledTonal(
-                  onPressed: () => context.pop(),
+                  tooltip: AppLocalizations.of(context)!.eventBackToEvents,
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/explore');
+                    }
+                  },
                   icon: const Icon(Icons.arrow_back_rounded),
                 ),
               ),
@@ -156,14 +394,21 @@ class EventDetailScreen extends ConsumerWidget {
                     runSpacing: 10,
                     children: [
                       _InfoPill(
-                        label: 'Prezzo',
+                        label: AppLocalizations.of(context)!.eventPrice,
                         value:
                             (displayEvent.priceMin != null &&
                                 displayEvent.priceMax != null)
                             ? (displayEvent.priceMin == displayEvent.priceMax
-                                  ? '${displayEvent.priceMin!.toStringAsFixed(0)}€'
-                                  : '${displayEvent.priceMin!.toStringAsFixed(0)}€ - ${displayEvent.priceMax!.toStringAsFixed(0)}€')
-                            : '${(displayEvent.priceMin ?? displayEvent.priceMax)!.toStringAsFixed(0)}€',
+                                  ? _formattedPrice(
+                                      context,
+                                      displayEvent.priceMin!,
+                                    )
+                                  : '${_formattedPrice(context, displayEvent.priceMin!)} – ${_formattedPrice(context, displayEvent.priceMax!)}')
+                            : _formattedPrice(
+                                context,
+                                (displayEvent.priceMin ??
+                                    displayEvent.priceMax)!,
+                              ),
                       ),
                     ],
                   ),
@@ -188,84 +433,109 @@ class EventDetailScreen extends ConsumerWidget {
             title: AppLocalizations.of(context)!.eventDetailMapTitle,
             subtitle: AppLocalizations.of(context)!.eventDetailMapSub,
           ),
-          Container(
-                height: 180,
-                margin: EdgeInsets.fromLTRB(
-                  VibraSpacing.pagePadding,
-                  8,
-                  VibraSpacing.pagePadding,
-                  12,
-                ),
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(VibraSpacing.radiusLarge),
-                  border: Border.all(
-                    color: VibraColors.glassBorder,
-                    width: 1.5,
+          if (coordinates != null)
+            Container(
+                  height: 180,
+                  margin: EdgeInsets.fromLTRB(
+                    VibraSpacing.pagePadding,
+                    8,
+                    VibraSpacing.pagePadding,
+                    12,
                   ),
-                ),
-                child: FlutterMap(
-                  options: MapOptions(
-                    initialCenter: LatLng(
-                      displayEvent.latitude ?? 45.4642,
-                      displayEvent.longitude ?? 9.1900,
-                    ),
-                    initialZoom: 14.0,
-                    interactionOptions: const InteractionOptions(
-                      flags: InteractiveFlag.none,
-                    ),
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    borderRadius: VibraSpacing.borderMedium,
+                    border: Border.all(color: t.borderStrong),
                   ),
-                  children: [
-                    TileLayer(
-                      urlTemplate:
-                          'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'app.vibra.mobile',
+                  child: FlutterMap(
+                    options: MapOptions(
+                      onTap: (_, _) => _openDirections(displayEvent),
+                      initialCenter: LatLng(
+                        coordinates.latitude,
+                        coordinates.longitude,
+                      ),
+                      initialZoom: 14.0,
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.none,
+                      ),
                     ),
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          point: LatLng(
-                            displayEvent.latitude ?? 45.4642,
-                            displayEvent.longitude ?? 9.1900,
-                          ),
-                          width: 40,
-                          height: 40,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: VibraColors.accent,
-                              shape: BoxShape.circle,
-                              boxShadow: [VibraShadows.magentaGlow],
+                    children: [
+                      const VibraOpenStreetMapTileLayer(),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: LatLng(
+                              coordinates.latitude,
+                              coordinates.longitude,
                             ),
-                            child: const Icon(
-                              Icons.location_on_rounded,
-                              color: Colors.white,
-                              size: 20,
+                            width: 40,
+                            height: 40,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: t.accentPrimary,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: t.onAccent),
+                                boxShadow: [t.cardShadow],
+                              ),
+                              child: Icon(
+                                Icons.location_on_rounded,
+                                color: t.onAccent,
+                                size: 20,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              )
-              .animate()
-              .fadeIn(delay: 300.ms, duration: 450.ms)
-              .scaleXY(begin: 0.98, end: 1.0),
-          VibraSectionHeader(
-            title: AppLocalizations.of(context)!.eventDetailAttendeesTitle,
-            subtitle: AppLocalizations.of(context)!.eventDetailAttendeesSub,
-          ),
+                        ],
+                      ),
+                      const VibraOpenStreetMapAttribution(),
+                    ],
+                  ),
+                )
+                .animate()
+                .fadeIn(delay: 300.ms, duration: 450.ms)
+                .scaleXY(begin: 0.98, end: 1.0),
+          if (coordinates == null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Text(
+                l10n.eventLocationUnknown,
+                style: TextStyle(color: t.textSecondary),
+              ),
+            ),
+          if (eventDirectionsUri(displayEvent) != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: OutlinedButton.icon(
+                onPressed: () => _openDirections(displayEvent),
+                icon: const Icon(Icons.directions_rounded),
+                label: Text(l10n.eventDirections),
+              ),
+            ),
+          if (users.isNotEmpty)
+            VibraSectionHeader(
+              title: l10n.socialDiscoverUsers,
+              subtitle: AppConstants.spotifyEnabled
+                  ? l10n.socialHighCompatibility
+                  : l10n.launchCommunitySubtitle,
+            ),
           ...users.asMap().entries.map((entry) {
             final index = entry.key;
             final user = entry.value;
             return VibraUserMatchCard(
                   user: user,
-                  onTap: () => context.push('/user-profile', extra: user),
+                  onTap: () =>
+                      context.push('/user-profile', extra: user.user.id),
                   trailing: FilledButton.tonal(
-                    onPressed: () => context.push('/chat'),
+                    onPressed: () => context.push(
+                      '/chat',
+                      extra: {
+                        'otherUserId': user.user.id,
+                        'otherDisplayName':
+                            user.user.displayName ?? user.user.username,
+                      },
+                    ),
                     style: FilledButton.styleFrom(
-                      backgroundColor: VibraColors.accent,
-                      foregroundColor: VibraColors.textPrimary,
+                      backgroundColor: t.accentPrimary,
+                      foregroundColor: t.onAccent,
                     ),
                     child: Text(l10n.eventDetailChat),
                   ),
@@ -281,55 +551,29 @@ class EventDetailScreen extends ConsumerWidget {
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: VibraColors.primary,
-                      foregroundColor: VibraColors.textPrimary,
+                      backgroundColor: t.accentPrimary,
+                      foregroundColor: t.onAccent,
                       elevation: 0,
                     ),
-                    onPressed: () async {
-                      final urlStr = displayEvent.ticketUrl;
-                      if (urlStr == null ||
-                          urlStr.trim().isEmpty ||
-                          displayEvent.status == 'canceled' ||
-                          displayEvent.status == 'offsale') {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(l10n.eventDetailTicketsUnavailable),
+                    onPressed: _openingTickets
+                        ? null
+                        : () => _openTickets(displayEvent),
+                    child: _openingTickets
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(
+                            const {
+                                  'canceled',
+                                  'cancelled',
+                                }.contains(displayEvent.status)
+                                ? l10n.eventCancelled
+                                : displayEvent.status == 'offsale'
+                                ? l10n.eventTicketsOffsale
+                                : l10n.eventDetailBuyTickets,
                           ),
-                        );
-                        return;
-                      }
-                      final uri = Uri.tryParse(urlStr);
-                      if (uri != null && await canLaunchUrl(uri)) {
-                        try {
-                          await ref
-                              .read(supabaseDatasourceProvider)
-                              .client
-                              .functions
-                              .invoke(
-                                'track-ticket-click',
-                                body: {'event_id': displayEvent.id},
-                              );
-                        } catch (e) {
-                          debugPrint('Tracking error: $e');
-                        }
-                        await launchUrl(uri, mode: LaunchMode.inAppWebView);
-                      } else {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.eventDetailTicketsError),
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    child: Text(
-                      displayEvent.status == 'canceled'
-                          ? 'Cancellato'
-                          : displayEvent.status == 'offsale'
-                          ? 'Sold Out'
-                          : l10n.eventDetailBuyTickets,
-                    ),
                   ),
                 ),
               ],
@@ -339,154 +583,23 @@ class EventDetailScreen extends ConsumerWidget {
             padding: EdgeInsets.symmetric(horizontal: VibraSpacing.pagePadding),
             child: Row(
               children: [
-                Expanded(
-                  flex: 3,
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                    ),
-                    onPressed: () async {
-                      try {
-                        await ref
-                            .read(setEventAttendanceUseCaseProvider)
-                            .call(
-                              SetEventAttendanceParams(
-                                event: displayEvent,
-                                status: 'going',
-                              ),
-                            );
-                        ref.read(myEventsProvider.notifier).refresh();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                l10n.eventDetailAttendanceConfirmed,
-                              ),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.settingsError(e.toString())),
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    child: Text(
-                      l10n.eventDetailAttend,
-                      maxLines: 1,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                _attendanceButton(
+                  displayEvent,
+                  l10n.eventDetailAttend,
+                  'going',
                 ),
                 const SizedBox(width: 6),
-                Expanded(
-                  flex: 3,
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                    ),
-                    onPressed: () async {
-                      try {
-                        await ref
-                            .read(setEventAttendanceUseCaseProvider)
-                            .call(
-                              SetEventAttendanceParams(
-                                event: displayEvent,
-                                status: 'maybe',
-                              ),
-                            );
-                        ref.read(myEventsProvider.notifier).refresh();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.eventDetailAttendanceMaybe),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.settingsError(e.toString())),
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    child: Text(
-                      l10n.eventDetailMaybe,
-                      maxLines: 1,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ),
+                _attendanceButton(displayEvent, l10n.eventDetailMaybe, 'maybe'),
                 const SizedBox(width: 6),
-                Expanded(
-                  flex: 3,
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                    ),
-                    onPressed: () async {
-                      try {
-                        await ref
-                            .read(setEventAttendanceUseCaseProvider)
-                            .call(
-                              SetEventAttendanceParams(
-                                event: displayEvent,
-                                status: 'not_going',
-                              ),
-                            );
-                        ref.read(myEventsProvider.notifier).refresh();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.eventDetailAttendanceNotGoing),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.settingsError(e.toString())),
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    child: Text(
-                      l10n.eventDetailNotGoing,
-                      maxLines: 1,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
+                _attendanceButton(
+                  displayEvent,
+                  l10n.eventDetailNotGoing,
+                  'not_going',
                 ),
                 const SizedBox(width: 4),
                 IconButton(
-                  onPressed: () async {
-                    await Clipboard.setData(
-                      ClipboardData(
-                        text:
-                            '${displayEvent.name}\n'
-                            '${displayEvent.venueName} · ${displayEvent.city}\n'
-                            '${displayEvent.eventDate.day}/${displayEvent.eventDate.month}/${displayEvent.eventDate.year}\n'
-                            'Ticket: ${displayEvent.ticketUrl ?? ''}',
-                      ),
-                    );
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.eventDetailCopied)),
-                      );
-                    }
-                  },
+                  tooltip: l10n.eventCopyDetails,
+                  onPressed: () => _copyDetails(displayEvent),
                   icon: const Icon(Icons.share_rounded, size: 20),
                 ),
               ],
@@ -514,15 +627,17 @@ class _InfoPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final t = context.vibraTokens;
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: VibraSpacing.pagePadding,
         vertical: 12,
       ),
       decoration: BoxDecoration(
-        color: VibraColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-        border: Border.all(color: VibraColors.glassBorder),
+        color: t.surfaceElevated,
+        borderRadius: VibraSpacing.borderMedium,
+        border: Border.all(color: t.borderDefault),
+        boxShadow: [t.cardShadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -530,15 +645,13 @@ class _InfoPill extends StatelessWidget {
           Text(
             label,
             style: theme.textTheme.labelMedium?.copyWith(
-              color: VibraColors.accent,
+              color: t.accentPrimary,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: theme.textTheme.titleSmall?.copyWith(
-              color: VibraColors.textPrimary,
-            ),
+            style: theme.textTheme.titleSmall?.copyWith(color: t.textPrimary),
           ),
         ],
       ),
@@ -561,6 +674,7 @@ class _TranslatedDescriptionState
   bool _isLoading = true;
 
   String? _targetLang;
+  int _translationGeneration = 0;
 
   @override
   void didChangeDependencies() {
@@ -584,20 +698,23 @@ class _TranslatedDescriptionState
     if (_targetLang == null) return;
     setState(() => _isLoading = true);
 
+    final generation = ++_translationGeneration;
+    final sourceText = widget.text;
+    final targetLanguage = _targetLang!;
     try {
       final translator = GoogleTranslator();
       final translation = await translator.translate(
-        widget.text,
-        to: _targetLang!,
+        sourceText,
+        to: targetLanguage,
       );
-      if (mounted) {
+      if (mounted && generation == _translationGeneration) {
         setState(() {
           _translatedText = translation.text;
           _isLoading = false;
         });
       }
     } catch (e) {
-      if (mounted) {
+      if (mounted && generation == _translationGeneration) {
         setState(() {
           _translatedText = widget.text;
           _isLoading = false;
@@ -609,14 +726,15 @@ class _TranslatedDescriptionState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final t = context.vibraTokens;
 
     if (_isLoading) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 20),
         child: Center(
           child: CircularProgressIndicator(
             strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(VibraColors.accent),
+            valueColor: AlwaysStoppedAnimation<Color>(t.accentPrimary),
           ),
         ),
       );
@@ -624,9 +742,13 @@ class _TranslatedDescriptionState
 
     return Text(
       _translatedText ?? widget.text,
-      style: theme.textTheme.bodyLarge?.copyWith(
-        color: VibraColors.textPrimary,
-      ),
+      style: theme.textTheme.bodyLarge?.copyWith(color: t.textPrimary),
     );
   }
 }
+
+String _formattedPrice(BuildContext context, double value) =>
+    NumberFormat.simpleCurrency(
+      locale: Localizations.localeOf(context).toString(),
+      name: 'EUR',
+    ).format(value);

@@ -1,287 +1,238 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'vibra_colors.dart';
+
 import 'vibra_spacing.dart';
 import 'vibra_text_styles.dart';
+import 'vibra_theme_tokens.dart';
 
-/// Tema completo dell'app Vibra.
-/// Dark theme premium con palette viola, glassmorphism, e Material 3.
+/// Both Material themes are built from the same semantic token contract.
 class VibraTheme {
   VibraTheme._();
 
-  /// Il tema dark principale dell'app.
-  static ThemeData get darkTheme {
+  static ThemeData get lightTheme =>
+      _build(VibraThemeTokens.light, Brightness.light);
+  static ThemeData get darkTheme =>
+      _build(VibraThemeTokens.dark, Brightness.dark);
+
+  /// Compatibility name for older call sites while they are migrated.
+  static ThemeData get signalPaperTheme => lightTheme;
+
+  static ThemeData _build(VibraThemeTokens t, Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    final textTheme = VibraTextStyles.textTheme.apply(
+      bodyColor: t.textPrimary,
+      displayColor: t.textPrimary,
+    );
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
-
-      // ── Color Scheme ───────────────────────────────────────
-      colorScheme: const ColorScheme.dark(
-        primary: VibraColors.primary,
-        onPrimary: VibraColors.textPrimary,
-        primaryContainer: VibraColors.primaryDark,
-        secondary: VibraColors.accent,
-        onSecondary: VibraColors.textPrimary,
-        surface: VibraColors.surface,
-        onSurface: VibraColors.textPrimary,
-        surfaceContainerHighest: VibraColors.surfaceElevated,
-        error: VibraColors.error,
-        onError: VibraColors.textPrimary,
-        surfaceTint: Colors.transparent,
+      brightness: brightness,
+      extensions: [t],
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: t.accentPrimary,
+        brightness: brightness,
+        primary: t.accentPrimary,
+        onPrimary: t.onAccent,
+        secondary: t.accentSecondary,
+        onSecondary: t.onAccent,
+        surface: t.surface,
+        onSurface: t.textPrimary,
+        error: t.error,
+        onError: t.onAccent,
       ),
-
-      // ── Sfondo ─────────────────────────────────────────────
-      scaffoldBackgroundColor: VibraColors.background,
-
-      // ── Tipografia ─────────────────────────────────────────
-      textTheme: VibraTextStyles.textTheme,
-
-      // ── AppBar ─────────────────────────────────────────────
+      scaffoldBackgroundColor: t.backgroundPrimary,
+      canvasColor: t.backgroundPrimary,
+      disabledColor: t.textDisabled,
+      hoverColor: t.accentPrimary.withValues(alpha: isDark ? 0.12 : 0.08),
+      focusColor: t.accentPrimary.withValues(alpha: 0.16),
+      highlightColor: t.accentPrimary.withValues(alpha: 0.10),
+      splashColor: t.accentPrimary.withValues(alpha: 0.14),
+      textTheme: textTheme,
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
+        foregroundColor: t.textPrimary,
         elevation: 0,
         scrolledUnderElevation: 0,
-        centerTitle: true,
-        titleTextStyle: VibraTextStyles.headlineMedium,
-        iconTheme: const IconThemeData(color: VibraColors.textPrimary),
-        systemOverlayStyle: const SystemUiOverlayStyle(
+        titleTextStyle: textTheme.headlineMedium,
+        iconTheme: IconThemeData(color: t.textPrimary),
+        systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-          statusBarBrightness: Brightness.dark,
+          statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+          statusBarBrightness: brightness,
         ),
       ),
-
-      // ── Card ───────────────────────────────────────────────
       cardTheme: CardThemeData(
-        color: VibraColors.surface,
-        elevation: 0,
+        color: t.surfaceElevated,
+        elevation: isDark ? 0 : 1,
+        shadowColor: t.cardShadow.color,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(VibraSpacing.radiusLarge),
-          side: const BorderSide(color: VibraColors.glassBorder, width: 0.5),
+          borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
+          side: BorderSide(color: t.borderDefault),
         ),
         margin: VibraSpacing.cardMargin,
       ),
-
-      // ── ElevatedButton ─────────────────────────────────────
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: VibraColors.primary,
-          foregroundColor: VibraColors.textPrimary,
+          backgroundColor: t.accentPrimary,
+          foregroundColor: t.onAccent,
+          minimumSize: const Size(0, 48),
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderFull),
-          textStyle: VibraTextStyles.labelLarge.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          disabledBackgroundColor: t.surfaceMuted,
+          disabledForegroundColor: t.textDisabled,
+          overlayColor: t.onAccent.withValues(alpha: 0.12),
+          shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderSmall),
+          textStyle: textTheme.labelLarge,
         ),
       ),
-
-      // ── OutlinedButton ─────────────────────────────────────
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: t.accentPrimary,
+          foregroundColor: t.onAccent,
+          minimumSize: const Size(0, 48),
+          disabledBackgroundColor: t.surfaceMuted,
+          disabledForegroundColor: t.textDisabled,
+          overlayColor: t.onAccent.withValues(alpha: 0.12),
+          shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderSmall),
+          textStyle: textTheme.labelLarge,
+        ),
+      ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: VibraColors.primary,
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderFull),
-          side: const BorderSide(color: VibraColors.primary, width: 1.5),
-          textStyle: VibraTextStyles.labelLarge,
+          foregroundColor: t.textPrimary,
+          side: BorderSide(color: t.borderStrong),
+          minimumSize: const Size(0, 48),
+          disabledForegroundColor: t.textDisabled,
+          overlayColor: t.accentPrimary.withValues(alpha: 0.10),
+          shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderSmall),
+          textStyle: textTheme.labelLarge,
         ),
       ),
-
-      // ── TextButton ─────────────────────────────────────────
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: VibraColors.accent,
-          textStyle: VibraTextStyles.labelLarge,
+          foregroundColor: t.accentPrimary,
+          disabledForegroundColor: t.textDisabled,
+          minimumSize: const Size(48, 48),
+          overlayColor: t.accentPrimary.withValues(alpha: 0.10),
+          shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderSmall),
+          textStyle: textTheme.labelLarge,
         ),
       ),
-
-      // ── FloatingActionButton ───────────────────────────────
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: VibraColors.accent,
-        foregroundColor: VibraColors.textPrimary,
-        elevation: 4,
-        shape: const CircleBorder(),
-      ),
-
-      // ── IconButton ─────────────────────────────────────────
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
-          foregroundColor: VibraColors.textPrimary,
-          hoverColor: VibraColors.primary.withValues(alpha: 0.1),
-          focusColor: VibraColors.primary.withValues(alpha: 0.15),
-          highlightColor: VibraColors.primary.withValues(alpha: 0.1),
+          foregroundColor: t.textPrimary,
+          disabledForegroundColor: t.textDisabled,
+          minimumSize: const Size(48, 48),
+          hoverColor: t.accentPrimary.withValues(alpha: 0.10),
+          focusColor: t.accentPrimary.withValues(alpha: 0.14),
+          highlightColor: t.accentPrimary.withValues(alpha: 0.14),
         ),
       ),
-
-      // ── Input / TextField ──────────────────────────────────
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: VibraColors.surfaceVariant,
-        border: OutlineInputBorder(
-          borderRadius: VibraSpacing.borderSmall,
-          borderSide: BorderSide.none,
+        fillColor: t.surface,
+        hintStyle: textTheme.bodyMedium?.copyWith(color: t.textSecondary),
+        labelStyle: textTheme.bodyMedium?.copyWith(color: t.textSecondary),
+        floatingLabelStyle: textTheme.bodyMedium?.copyWith(
+          color: t.accentPrimary,
+          fontWeight: FontWeight.w600,
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: VibraSpacing.borderSmall,
-          borderSide: const BorderSide(
-            color: VibraColors.glassBorder,
-            width: 0.5,
-          ),
+        errorStyle: textTheme.bodySmall?.copyWith(
+          color: t.error,
+          fontWeight: FontWeight.w600,
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: VibraSpacing.borderSmall,
-          borderSide: const BorderSide(color: VibraColors.primary, width: 1.5),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: t.borderDefault),
         ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: VibraSpacing.borderSmall,
-          borderSide: const BorderSide(color: VibraColors.error, width: 1.0),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: t.accentPrimary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 16,
+        errorBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: t.error, width: 1.5),
         ),
-        hintStyle: VibraTextStyles.bodyMedium.copyWith(
-          color: VibraColors.textDisabled,
+        focusedErrorBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: t.error, width: 2),
         ),
-        labelStyle: VibraTextStyles.labelMedium,
+        disabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: t.borderDefault),
+        ),
       ),
-
-      // ── Chip ───────────────────────────────────────────────
       chipTheme: ChipThemeData(
-        backgroundColor: VibraColors.surfaceVariant,
-        selectedColor: VibraColors.primary.withValues(alpha: 0.25),
-        labelStyle: VibraTextStyles.labelMedium,
-        side: const BorderSide(color: VibraColors.glassBorder, width: 0.5),
-        shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderSmall),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        backgroundColor: t.surfaceElevated,
+        selectedColor: t.accentSoft,
+        disabledColor: t.surfaceMuted,
+        labelStyle: textTheme.labelMedium?.copyWith(color: t.textPrimary),
+        secondaryLabelStyle: textTheme.labelMedium?.copyWith(
+          color: t.textPrimary,
+          fontWeight: FontWeight.w700,
+        ),
+        side: BorderSide(color: t.borderStrong),
+        shape: const StadiumBorder(),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       ),
-
-      // ── BottomSheet ────────────────────────────────────────
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: VibraColors.surfaceElevated,
+        backgroundColor: t.surfaceElevated,
+        modalBackgroundColor: t.surfaceElevated,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(VibraSpacing.radiusXL),
           ),
         ),
-        showDragHandle: true,
-        dragHandleColor: VibraColors.textDisabled,
+        dragHandleColor: t.borderStrong,
       ),
-
-      // ── Dialog ─────────────────────────────────────────────
       dialogTheme: DialogThemeData(
-        backgroundColor: VibraColors.surfaceElevated,
-        elevation: 8,
-        shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderXL),
-        titleTextStyle: VibraTextStyles.headlineSmall,
-        contentTextStyle: VibraTextStyles.bodyMedium,
-      ),
-
-      // ── SnackBar ───────────────────────────────────────────
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: VibraColors.surfaceElevated,
-        contentTextStyle: VibraTextStyles.bodyMedium,
-        behavior: SnackBarBehavior.floating,
+        backgroundColor: t.surfaceElevated,
+        elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: VibraSpacing.borderSmall,
-          side: BorderSide(
-            color: VibraColors.accent.withValues(alpha: 0.3),
-            width: 0.5,
+          borderRadius: BorderRadius.circular(VibraSpacing.radiusLarge),
+          side: BorderSide(color: t.borderDefault),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: Colors.transparent,
+        indicatorColor: t.accentSoft,
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => IconThemeData(
+            color: states.contains(WidgetState.selected)
+                ? t.accentPrimary
+                : t.textSecondary,
+            size: 22,
           ),
         ),
-      ),
-
-      // ── BottomNavigationBar ────────────────────────────────
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: VibraColors.surface,
-        selectedItemColor: VibraColors.accent,
-        unselectedItemColor: VibraColors.textDisabled,
-        selectedLabelStyle: VibraTextStyles.labelSmall,
-        unselectedLabelStyle: VibraTextStyles.labelSmall,
-        type: BottomNavigationBarType.fixed,
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => textTheme.labelSmall?.copyWith(
+            color: states.contains(WidgetState.selected)
+                ? t.textPrimary
+                : t.textSecondary,
+          ),
+        ),
         elevation: 0,
+        height: 68,
       ),
-
-      // ── NavigationBar (Material 3) ─────────────────────────
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: VibraColors.navBarBackground,
-        indicatorColor: VibraColors.primary.withValues(alpha: 0.2),
-        iconTheme: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: VibraColors.accent, size: 24);
-          }
-          return const IconThemeData(color: VibraColors.textDisabled, size: 22);
-        }),
-        labelTextStyle: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return VibraTextStyles.labelSmall.copyWith(
-              color: VibraColors.accent,
-              fontWeight: FontWeight.w600,
-            );
-          }
-          return VibraTextStyles.labelSmall;
-        }),
-        elevation: 0,
-        height: 72,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-      ),
-
-      // ── TabBar ─────────────────────────────────────────────
-      tabBarTheme: TabBarThemeData(
-        labelColor: VibraColors.accent,
-        unselectedLabelColor: VibraColors.textSecondary,
-        labelStyle: VibraTextStyles.labelLarge,
-        unselectedLabelStyle: VibraTextStyles.labelMedium,
-        indicatorColor: VibraColors.accent,
-        indicatorSize: TabBarIndicatorSize.label,
-        dividerColor: Colors.transparent,
-      ),
-
-      // ── Divider ────────────────────────────────────────────
-      dividerTheme: const DividerThemeData(
-        color: VibraColors.glassBorder,
-        thickness: 0.5,
+      dividerTheme: DividerThemeData(
+        color: t.borderDefault,
+        thickness: 1,
         space: 1,
       ),
-
-      // ── ProgressIndicator ──────────────────────────────────
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: VibraColors.accent,
-        linearTrackColor: VibraColors.surfaceVariant,
-        circularTrackColor: VibraColors.surfaceVariant,
-      ),
-
-      // ── Switch ─────────────────────────────────────────────
-      switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return VibraColors.accent;
-          }
-          return VibraColors.textDisabled;
-        }),
-        trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return VibraColors.accent.withValues(alpha: 0.3);
-          }
-          return VibraColors.surfaceVariant;
-        }),
-      ),
-
-      // ── ListTile ───────────────────────────────────────────
-      listTileTheme: ListTileThemeData(
-        iconColor: VibraColors.textSecondary,
-        textColor: VibraColors.textPrimary,
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: t.surfaceElevated,
+        contentTextStyle: textTheme.bodyMedium?.copyWith(color: t.textPrimary),
+        behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderMedium),
       ),
-
-      // ── Tooltip ────────────────────────────────────────────
+      listTileTheme: ListTileThemeData(
+        iconColor: t.textSecondary,
+        textColor: t.textPrimary,
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: t.accentPrimary,
+        linearTrackColor: t.surfaceMuted,
+        circularTrackColor: t.surfaceMuted,
+      ),
       tooltipTheme: TooltipThemeData(
         decoration: BoxDecoration(
-          color: VibraColors.surfaceElevated,
+          color: t.textPrimary,
           borderRadius: VibraSpacing.borderSmall,
-          border: Border.all(color: VibraColors.glassBorder, width: 0.5),
         ),
-        textStyle: VibraTextStyles.bodySmall,
+        textStyle: textTheme.bodySmall?.copyWith(color: t.backgroundPrimary),
       ),
     );
   }

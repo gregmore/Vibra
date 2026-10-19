@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "status": "not_executed",
+  "release_version": "1.0.0+3",
+  "environment": {
+    "kind": "isolated_staging",
+    "project_ref": null
+  },
+  "accounts": [
+    {
+      "alias": "QA_A",
+      "purpose": "Disposable test identity; delete only after the other cases",
+      "user_id": null,
+      "test_segment_verified_at": null
+    },
+    {
+      "alias": "QA_B",
+      "purpose": "Disposable peer for chat, report, block and survival checks",
+      "user_id": null,
+      "test_segment_verified_at": null
+    }
+  ],
+  "builds": [],
+  "devices": [],
+  "runs": [],
+  "record_format": {
+    "build": [
+      "platform",
+      "version",
+      "build_number",
+      "artifact_path",
+      "artifact_sha256",
+      "source_commit_or_worktree_manifest_sha256",
+      "installation_method"
+    ],
+    "device": [
+      "id",
+      "manufacturer_model",
+      "os_name",
+      "os_version",
+      "physical"
+    ],
+    "run": [
+      "id",
+      "build_sha256",
+      "device_id",
+      "case_id",
+      "account_aliases",
+      "started_at",
+      "completed_at",
+      "result",
+      "evidence",
+      "notes"
+    ],
+    "result_values": [
+      "passed",
+      "failed",
+      "blocked",
+      "not_executed"
+    ],
+    "evidence": [
+      "path",
+      "sha256",
+      "description"
+    ]
+  }
+}

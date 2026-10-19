@@ -1,0 +1,9 @@
+Connecting to remote database...
+psql:/path/to/user/.supabase/vibra-staging/workspace/supabase/tests/01_live_messages_rls_test.sql:4: NOTICE:  extension "pgtap" already exists, skipping
+/path/to/user/.supabase/vibra-staging/workspace/supabase/tests/01_live_messages_rls_test.sql ................ ok
+/path/to/user/.supabase/vibra-staging/workspace/supabase/tests/database/01_auth_rls_test.sql ................ ok
+/path/to/user/.supabase/vibra-staging/workspace/supabase/tests/database/02_backend_security_rls_test.sql .... ok
+/path/to/user/.supabase/vibra-staging/workspace/supabase/tests/database/03_test_data_segmentation_test.sql .. ok
+All tests successful.
+Files=4, Tests=21,  6 wallclock secs ( 0.02 usr  0.02 sys +  0.04 cusr  0.02 csys =  0.10 CPU)
+Result: PASS

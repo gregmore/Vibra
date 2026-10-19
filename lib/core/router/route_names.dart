@@ -22,6 +22,11 @@ class RouteNames {
   static const String privacyPolicy = 'privacy-policy';
   static const String termsOfService = 'terms-of-service';
   static const String support = 'support';
+  static const String helpCenter = 'help-center';
+  static const String reportProblem = 'report-problem';
   static const String about = 'about';
   static const String editProfile = 'edit-profile';
+  static const String messages = 'messages';
+  static const String conversations = 'conversations';
+  static const String followList = 'follow-list';
 }

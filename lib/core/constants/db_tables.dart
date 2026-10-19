@@ -5,6 +5,7 @@ class DbTables {
   static const String users = 'users';
   static const String usersPublic = 'users_public';
   static const String musicProfiles = 'music_profiles';
+  static const String musicProfilesPublic = 'music_profiles_public';
   static const String events = 'events';
   static const String eventAttendees = 'event_attendees';
   static const String friendships = 'friendships';
@@ -12,4 +13,5 @@ class DbTables {
   static const String liveMessages = 'live_messages';
   static const String notifications = 'notifications';
   static const String userMatches = 'user_matches';
+  static const String follows = 'follows';
 }

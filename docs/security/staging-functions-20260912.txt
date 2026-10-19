@@ -1,0 +1,25 @@
+Uploading asset (delete-account): supabase/functions/delete-account/index.ts
+Uploading asset (delete-account): supabase/functions/_shared/supabase.ts
+Uploading asset (delete-account): supabase/functions/_shared/env.ts
+Uploading asset (delete-account): supabase/functions/_shared/cors.ts
+Uploading asset (delete-account): supabase/functions/_shared/session-guard.ts
+{"project_ref":"ppecqwnctxygbofdmxkf","functions":["delete-account"],"dashboard_url":"https://supabase.com/dashboard/project/ppecqwnctxygbofdmxkf/functions","message":"Deployed Functions."}
+Uploading asset (upload-image): supabase/functions/upload-image/index.ts
+Uploading asset (upload-image): supabase/functions/_shared/cors.ts
+Uploading asset (upload-image): supabase/functions/_shared/supabase.ts
+Uploading asset (upload-image): supabase/functions/_shared/env.ts
+Uploading asset (upload-image): supabase/functions/_shared/session-guard.ts
+{"project_ref":"ppecqwnctxygbofdmxkf","functions":["upload-image"],"dashboard_url":"https://supabase.com/dashboard/project/ppecqwnctxygbofdmxkf/functions","message":"Deployed Functions."}
+Uploading asset (resolve-event): supabase/functions/resolve-event/index.ts
+Uploading asset (resolve-event): supabase/functions/_shared/cors.ts
+Uploading asset (resolve-event): supabase/functions/_shared/supabase.ts
+Uploading asset (resolve-event): supabase/functions/_shared/env.ts
+Uploading asset (resolve-event): supabase/functions/_shared/session-guard.ts
+{"project_ref":"ppecqwnctxygbofdmxkf","functions":["resolve-event"],"dashboard_url":"https://supabase.com/dashboard/project/ppecqwnctxygbofdmxkf/functions","message":"Deployed Functions."}
+Uploading asset (spotify-token-exchange): supabase/functions/spotify-token-exchange/index.ts
+Uploading asset (spotify-token-exchange): supabase/functions/_shared/token-crypto.ts
+Uploading asset (spotify-token-exchange): supabase/functions/_shared/supabase.ts
+Uploading asset (spotify-token-exchange): supabase/functions/_shared/env.ts
+Uploading asset (spotify-token-exchange): supabase/functions/_shared/cors.ts
+Uploading asset (spotify-token-exchange): supabase/functions/_shared/session-guard.ts
+{"project_ref":"ppecqwnctxygbofdmxkf","functions":["spotify-token-exchange"],"dashboard_url":"https://supabase.com/dashboard/project/ppecqwnctxygbofdmxkf/functions","message":"Deployed Functions."}

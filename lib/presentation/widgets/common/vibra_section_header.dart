@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/vibra_colors.dart';
 import '../../../core/theme/vibra_spacing.dart';
+import '../../../core/theme/vibra_theme_tokens.dart';
 
 class VibraSectionHeader extends StatelessWidget {
   const VibraSectionHeader({
@@ -19,6 +19,7 @@ class VibraSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final t = context.vibraTokens;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: VibraSpacing.pagePadding),
@@ -29,7 +30,7 @@ class VibraSectionHeader extends StatelessWidget {
             width: 3,
             height: 24,
             decoration: BoxDecoration(
-              gradient: VibraColors.primaryGradient,
+              gradient: t.primaryGradient,
               borderRadius: BorderRadius.circular(VibraSpacing.radiusFull),
             ),
           ),
@@ -40,7 +41,7 @@ class VibraSectionHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: theme.textTheme.headlineSmall?.copyWith(
+                  style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -49,9 +50,7 @@ class VibraSectionHeader extends StatelessWidget {
                   Text(
                     subtitle!,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(
-                        alpha: 0.72,
-                      ),
+                      color: t.textSecondary,
                     ),
                   ),
                 ],
@@ -62,7 +61,7 @@ class VibraSectionHeader extends StatelessWidget {
             TextButton(
               onPressed: onActionTap,
               style: TextButton.styleFrom(
-                foregroundColor: VibraColors.primary,
+                foregroundColor: t.accentPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: VibraSpacing.sm,
                 ),

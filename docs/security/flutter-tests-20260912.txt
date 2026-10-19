@@ -1,0 +1,18 @@
+00:00 +0: loading /path/to/user/development/vibra/test/core/auth_boundary_test.dart
+00:00 +0: /path/to/user/development/vibra/test/core/security_hardening_test.dart: support diagnostics redact bearer, query and JSON secrets
+00:00 +1: /path/to/user/development/vibra/test/core/security_hardening_test.dart: private cache migrates away from preferences and clears on logout
+00:00 +2: /path/to/user/development/vibra/test/data/avatar_upload_test.dart: Avatar uses validated gateway and its server-generated path
+00:00 +3: /path/to/user/development/vibra/test/data/avatar_upload_test.dart: Gateway denial preserves the HTTP status
+00:00 +4: /path/to/user/development/vibra/test/core/auth_boundary_test.dart: failed login B cannot leave the previous Supabase account A active
+00:00 +5: /path/to/user/development/vibra/test/core/auth_boundary_test.dart: Spotify token namespaces isolate users and environments
+00:00 +6: /path/to/user/development/vibra/test/core/auth_boundary_test.dart: OAuth callback validates exact redirect, one state, and one code
+00:00 +7: /path/to/user/development/vibra/test/core/auth_boundary_test.dart: Spotify retry is bounded and confined to third-party.example
+00:00 +8: /path/to/user/development/vibra/test/core/auth_boundary_test.dart: Spotify retry is bounded and confined to api.spotify.com
+00:00 +9: /path/to/user/development/vibra/test/data/event_loading_test.dart: Home publishes database events before external enrichment and deduplicates refresh
+00:00 +10: /path/to/user/development/vibra/test/data/event_loading_test.dart: Map publishes database events while external search is pending
+00:00 +11: /path/to/user/development/vibra/test/data/event_loading_test.dart: Map keeps database events when external search fails
+00:00 +12: /path/to/user/development/vibra/test/unit/spotify_account_link_verification_test.dart: (setUpAll)
+00:00 +12: /path/to/user/development/vibra/test/unit/spotify_account_link_verification_test.dart: Spotify Account Single-User Link Verification exchangeCode succeeds when Spotify account is not linked to any other user
+00:00 +13: /path/to/user/development/vibra/test/unit/spotify_account_link_verification_test.dart: Spotify Account Single-User Link Verification exchangeCode throws ServerException with Italian message when Spotify account is already linked to another user
+00:00 +14: /path/to/user/development/vibra/test/unit/spotify_account_link_verification_test.dart: (tearDownAll)
+00:00 +14: All tests passed!

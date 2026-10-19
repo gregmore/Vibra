@@ -1,0 +1,7 @@
+/tmp/vibra-pentest-20260911/supabase/tests/01_live_messages_rls_test.sql ................ ok
+/tmp/vibra-pentest-20260911/supabase/tests/database/01_auth_rls_test.sql ................ ok
+/tmp/vibra-pentest-20260911/supabase/tests/database/02_backend_security_rls_test.sql .... ok
+/tmp/vibra-pentest-20260911/supabase/tests/database/03_test_data_segmentation_test.sql .. ok
+All tests successful.
+Files=4, Tests=21,  0 wallclock secs ( 0.01 usr  0.00 sys +  0.01 cusr  0.00 csys =  0.02 CPU)
+Result: PASS
