@@ -1,3 +1,4 @@
+import 'package:vibra/core/constants/app_constants.dart';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -39,6 +40,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
 
     // Welcome contiene il titolo della prima slide
-    expect(find.text('Connetti i tuoi gusti'), findsOneWidget);
+    expect(
+      find.text(
+        AppConstants.spotifyEnabled
+            ? 'Connetti i tuoi gusti'
+            : 'La tua agenda live',
+      ),
+      findsOneWidget,
+    );
   });
 }

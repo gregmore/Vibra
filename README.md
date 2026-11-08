@@ -2,8 +2,9 @@
 
 Non ascoltare la musica. Vivila.
 
-App Flutter per iOS e Android: concerti, profilo Spotify, affinità musicali,
-chat e modalità Live. Versione di lancio: **1.0.0+2**. Identificatore mobile:
+App Flutter per iOS e Android: concerti, mappa, community,
+chat e modalità Live. Candidata di lancio: **1.0.0+3**. Spotify e affinità musicali
+restano temporaneamente disattivati nella prima release pubblica. Identificatore mobile:
 `com.vibra.app`.
 
 ## Avvio locale
@@ -21,6 +22,20 @@ rimosse, le verifiche e la riduzione del download Android stimato del 31,23%.
 
 I modelli Freezed/JSON si rigenerano con
 `dart run build_runner build --delete-conflicting-outputs`.
+
+Su iPhone, la configurazione iOS Debug usa `RunnerDebug.entitlements` e
+l'identificatore `com.gregoriomorelli.vibra.dev` per consentire la firma con un
+Personal Team gratuito. In questa build non sono
+disponibili Sign in with Apple e notifiche push. Avviare con
+`flutter run -d <id-iPhone>`. Release e Profile mantengono le capability complete
+e richiedono un team iscritto all'Apple Developer Program. Per provare queste
+capability anche in Debug con un team abilitato, impostare in Xcode il valore
+Debug di `CODE_SIGN_ENTITLEMENTS` a `Runner/Runner.entitlements`.
+I servizi che verificano l'identificatore iOS (ad esempio Firebase/Google login)
+richiedono una configurazione dedicata per l'app di sviluppo.
+Il passaggio `sign_debug_framework.sh` firma il framework App completo con
+l'identificatore del suo plist, evitando il mismatch prodotto dallo SDK Flutter
+locale che conserva l'identificatore del binario stub durante la firma.
 
 ## Verifiche
 
@@ -54,3 +69,8 @@ alla verifica tecnica e non può essere caricata negli store.
 
 Backend e migrazioni: [supabase/PRODUCTION_SETUP.md](supabase/PRODUCTION_SETUP.md).
 Stato verificato della preparazione: [docs/store-readiness-20261007.md](docs/store-readiness-20261007.md).
+
+Correzioni e verifiche correnti: [chiusura del 18 ottobre](docs/launch-closure-20261018.md).
+Il [report del 15 ottobre](docs/bugfixes-20261015.md) conserva le prove della candidata precedente.
+La [candidata del 13 ottobre](docs/launch-readiness-20261013.md) rimane documentata
+come riferimento storico.

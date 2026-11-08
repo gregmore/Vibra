@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +12,9 @@ import 'package:vibra/l10n/app_localizations.dart';
 import 'package:vibra/presentation/providers/app_state_providers.dart';
 import 'package:vibra/presentation/providers/usecase_providers.dart';
 import 'package:vibra/presentation/screens/event_detail/event_detail_screen.dart';
+import 'package:vibra/presentation/widgets/common/vibra_openstreetmap_layer.dart';
+
+import '../../helpers/test_http_overrides.dart';
 
 class _Attendance implements GetMyEventAttendanceUseCase {
   @override
@@ -24,6 +29,9 @@ class _Matches extends StateNotifier<List<MatchedUserPreview>>
 }
 
 void main() {
+  setUpAll(() => HttpOverrides.global = TestHttpOverrides());
+  tearDownAll(() => HttpOverrides.global = null);
+
   const launcher = MethodChannel('plugins.flutter.io/url_launcher');
   final event = Event(
     id: 'test',
@@ -34,19 +42,22 @@ void main() {
     ticketUrl: 'https://tickets.example/show',
   );
 
-  Future<void> mount(WidgetTester tester) async {
+  Future<void> mount(WidgetTester tester, {Event? selectedEvent}) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           featuredEventsProvider.overrideWithValue([]),
           matchedUsersProvider.overrideWith((ref) => _Matches()),
           getMyEventAttendanceUseCaseProvider.overrideWithValue(_Attendance()),
+          openStreetMapTileProvider.overrideWith(
+            (ref) => NetworkTileProvider(),
+          ),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           locale: const Locale('it'),
-          home: EventDetailScreen(event: event),
+          home: EventDetailScreen(event: selectedEvent ?? event),
         ),
       ),
     );
@@ -104,6 +115,49 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
+
+  testWidgets('The event map opens directions and the visible attribution', (
+    tester,
+  ) async {
+    final urls = <Uri>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(launcher, (
+      call,
+    ) async {
+      if (call.method == 'launch') {
+        urls.add(Uri.parse((call.arguments as Map)['url'] as String));
+        return true;
+      }
+      return false;
+    });
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        launcher,
+        null,
+      ),
+    );
+    await mount(
+      tester,
+      selectedEvent: Event(
+        id: 'mapped',
+        externalId: 'mapped',
+        source: 'test',
+        name: 'Concerto sulla mappa',
+        eventDate: DateTime(2026, 10, 20),
+        latitude: 41.9,
+        longitude: 12.5,
+      ),
+    );
+    await tester.scrollUntilVisible(find.byType(FlutterMap), 200);
+    await tester.tap(find.byType(FlutterMap));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(urls.single.queryParameters['destination'], '41.9,12.5');
+    expect(urls.single.host, 'www.google.com');
+    await tester.tap(find.text('© OpenStreetMap'));
+    await tester.pumpAndSettle();
+    expect(urls.last, Uri.https('www.openstreetmap.org', '/copyright'));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 
   testWidgets('Copy sends clean details to the clipboard', (tester) async {
     String? copied;

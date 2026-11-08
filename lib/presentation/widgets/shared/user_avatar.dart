@@ -1,3 +1,4 @@
+import 'package:vibra/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../../../domain/entities/app_user.dart';
@@ -10,7 +11,7 @@ class UserAvatar extends StatelessWidget {
   factory UserAvatar.fromUser(AppUser? user, {double radius = 24}) {
     return UserAvatar(
       avatarUrl: user?.avatarUrl,
-      name: user?.displayName ?? user?.username ?? 'User',
+      name: user?.displayName ?? user?.username,
       radius: radius,
     );
   }
@@ -20,6 +21,9 @@ class UserAvatar extends StatelessWidget {
   final double radius;
 
   @override
-  Widget build(BuildContext context) =>
-      VibraAvatar(imageUrl: avatarUrl, name: name, radius: radius);
+  Widget build(BuildContext context) => VibraAvatar(
+    imageUrl: avatarUrl,
+    name: name ?? AppLocalizations.of(context)!.userGeneric,
+    radius: radius,
+  );
 }

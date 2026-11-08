@@ -155,7 +155,12 @@ void main() {
       await tester.tap(find.byTooltip('Amici'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
-      expect(find.text('Amici & Connessioni'), findsOneWidget);
+      expect(
+        find.text(
+          lookupAppLocalizations(const Locale('it')).friendsConnectionsTitle,
+        ),
+        findsOneWidget,
+      );
       await tester.tap(find.byTooltip('Messaggi'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
@@ -169,7 +174,12 @@ void main() {
       await tester.tap(find.byType(BackButton));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
-      expect(find.text('Amici & Connessioni'), findsOneWidget);
+      expect(
+        find.text(
+          lookupAppLocalizations(const Locale('it')).friendsConnectionsTitle,
+        ),
+        findsOneWidget,
+      );
       router.pop();
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
@@ -221,9 +231,8 @@ void main() {
     expect(find.text('Apri Social'), findsOneWidget);
     router.go('/social');
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(BackButton));
-    await tester.pumpAndSettle();
-    expect(find.text('Apri Social'), findsOneWidget);
+    expect(find.byType(BackButton), findsNothing);
+    expect(find.text('Social'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });

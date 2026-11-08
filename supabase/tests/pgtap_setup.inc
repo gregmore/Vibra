@@ -17,3 +17,6 @@ BEGIN
   END LOOP;
 END;
 $test_setup$;
+-- Existing positive-path security fixtures exercise the opt-in integration.
+-- Pause-specific tests switch it off within their own rolled-back transaction.
+UPDATE public.launch_features SET enabled = true WHERE feature = 'spotify';

@@ -4,6 +4,8 @@ import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../l10n/app_localizations.dart';
+
 /// Chiede un parere solo dopo che la persona ha avuto tempo di usare l'app.
 class SupportFeedbackPrompt extends StatefulWidget {
   const SupportFeedbackPrompt({required this.child, super.key});
@@ -25,7 +27,8 @@ class _SupportFeedbackPromptState extends State<SupportFeedbackPrompt> {
   }
 
   Future<void> _maybePrompt() async {
-    if (Supabase.instance.client.auth.currentUser == null) {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
       return;
     }
     final prefs = await SharedPreferences.getInstance();
@@ -42,36 +45,48 @@ class _SupportFeedbackPromptState extends State<SupportFeedbackPrompt> {
       return;
     }
     await prefs.setString(_lastPromptAt, now.toIso8601String());
-    if (!mounted) {
+    if (!mounted || Supabase.instance.client.auth.currentUser?.id != userId) {
       return;
     }
+    final l10n = AppLocalizations.of(context)!;
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Come sta andando con Vibra?'),
-        content: const Text('Il tuo parere ci aiuta a migliorare.'),
+        title: Text(l10n.supportFeedbackTitle),
+        content: Text(l10n.supportFeedbackBody),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
-              context.push('/report-problem', extra: 'Feedback: ');
+              if (!mounted ||
+                  Supabase.instance.client.auth.currentUser?.id != userId) {
+                return;
+              }
+              context.push(
+                '/report-problem',
+                extra: l10n.supportFeedbackDescriptionPrefix,
+              );
             },
-            child: const Text('Non bene'),
+            child: Text(l10n.supportFeedbackNegative),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
             },
-            child: const Text('Così così'),
+            child: Text(l10n.supportFeedbackNeutral),
           ),
           FilledButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
               await prefs.setBool(_prompted, true);
+              if (!mounted ||
+                  Supabase.instance.client.auth.currentUser?.id != userId) {
+                return;
+              }
               final review = InAppReview.instance;
               if (await review.isAvailable()) await review.requestReview();
             },
-            child: const Text('Bene!'),
+            child: Text(l10n.supportFeedbackPositive),
           ),
         ],
       ),

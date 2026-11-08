@@ -69,4 +69,37 @@ void main() {
       ),
     );
   });
+  for (final (status, feedback) in [
+    (415, 'JPG o PNG'),
+    (413, '5 MB'),
+    (401, 'Sessione scaduta'),
+  ]) {
+    test('Avatar upload $status gives actionable feedback', () async {
+      final client = SupabaseClient(
+        'https://example.supabase.co',
+        'test-key',
+        httpClient: MockClient(
+          (request) async => http.Response(
+            '{"error":"upload_denied"}',
+            status,
+            headers: {'content-type': 'application/json'},
+            request: request,
+          ),
+        ),
+      );
+      addTearDown(client.dispose);
+      await expectLater(
+        TestDatasource(
+          client,
+        ).uploadFile('avatars', 'user/photo.jpg', Uint8List(1)),
+        throwsA(
+          isA<ServerException>().having(
+            (error) => error.message,
+            'feedback',
+            contains(feedback),
+          ),
+        ),
+      );
+    });
+  }
 }

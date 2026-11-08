@@ -10,6 +10,9 @@ import '../../domain/entities/event.dart';
 import 'app_state_providers.dart';
 import 'core_providers.dart';
 import 'map_events_provider.dart';
+import 'public_users_provider.dart';
+import 'public_friends_provider.dart';
+import 'direct_message_permission_provider.dart';
 
 /// Ponte unico tra la cache Riverpod e i cambiamenti esterni all'albero widget.
 /// Le schermate leggono i provider di dominio; Realtime, reconnect e foreground
@@ -150,6 +153,10 @@ class AppSynchronizationController {
   }
 
   Future<void> refreshSocial() async {
+    ref.invalidate(publicUsersProvider);
+    ref.invalidate(publicConnectionProfilesProvider);
+    ref.invalidate(publicFriendsProvider);
+    ref.invalidate(directMessagePermissionProvider);
     await Future.wait([
       ref.read(matchedUsersProvider.notifier).refresh(),
       ref.read(pendingFriendshipsProvider.notifier).refresh(),

@@ -2,6 +2,7 @@ BEGIN;
 \ir ../pgtap_setup.inc
 SELECT plan(6);
 INSERT INTO auth.users (id, email) VALUES ('b2000000-0000-0000-0000-000000000001', 'push-test@example.invalid');
+INSERT INTO public.users (id, username) VALUES ('b2000000-0000-0000-0000-000000000001', 'push-consent-fixture');
 UPDATE public.users SET push_enabled = false, fcm_token = 'fixture-token'
 WHERE id = 'b2000000-0000-0000-0000-000000000001';
 SELECT is((SELECT fcm_token FROM public.users WHERE id = 'b2000000-0000-0000-0000-000000000001'), NULL::text, 'Opt-out clears the token atomically');

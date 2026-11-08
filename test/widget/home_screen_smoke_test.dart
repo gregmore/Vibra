@@ -1,3 +1,4 @@
+import 'package:vibra/core/constants/app_constants.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -51,7 +52,10 @@ void main() {
     // to settle; a bounded frame advance lets the editorial entrance finish.
     await tester.pump(const Duration(milliseconds: 500));
 
-    expect(find.text('Per Te'), findsOneWidget);
+    expect(
+      find.text(AppConstants.spotifyEnabled ? 'Per Te' : 'Eventi'),
+      findsOneWidget,
+    );
     // Gli altri header ('Vicino a Te', 'Trend') vengono mostrati solo se ci sono eventi.
     // Il TextField della ricerca è stato rimosso dalla home.
   });

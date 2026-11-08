@@ -4,16 +4,19 @@ import 'bandsintown_datasource.dart';
 
 /// Normalizza gli eventi Bandsintown; gli altri cataloghi arrivano dal backend.
 class EventsAggregatorDatasource {
-  EventsAggregatorDatasource({this.bandsintown});
+  EventsAggregatorDatasource({this.bandsintown, this.nearbySearch});
 
   final BandsintownDatasource? bandsintown;
+  final Future<List<EventModel>> Function(double, double, int)? nearbySearch;
 
   // La ricerca geografica usa il catalogo Supabase e le Edge Functions.
   Future<List<EventModel>> searchNearby({
     required double latitude,
     required double longitude,
     required int radiusKm,
-  }) async => const [];
+  }) async => nearbySearch == null
+      ? const []
+      : nearbySearch!(latitude, longitude, radiusKm);
 
   Future<List<EventModel>> searchByArtist({
     required String artistName,

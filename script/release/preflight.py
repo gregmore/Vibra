@@ -12,6 +12,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+from ios_signing import signing_report
+
 ROOT = Path(__file__).resolve().parents[2]
 APP_ID = "com.vibra.app"
 PUBLIC_KEYS = {"SUPABASE_URL", "SUPABASE_ANON_KEY", "SPOTIFY_CLIENT_ID",
@@ -54,6 +56,8 @@ def backend_checks(project_ref):
                 errors.append(f"Missing production backend secret: {name}")
         if not secrets.intersection({"FCM_SERVICE_ACCOUNT_JSON", "FIREBASE_SERVICE_ACCOUNT_JSON"}):
             errors.append("Missing production backend secret: FCM_SERVICE_ACCOUNT_JSON")
+        if "VIBRA_NOTIFICATION_WORKER_KEY" not in secrets:
+            errors.append("Missing production backend secret: VIBRA_NOTIFICATION_WORKER_KEY (must match the notification credential in Vault)")
     except (OSError, subprocess.TimeoutExpired, RuntimeError, ValueError, KeyError, TypeError):
         errors.append("Unable to verify the hosted Supabase deployment")
     return errors
@@ -157,8 +161,14 @@ def check(platform, config_path, technical_only=False, online=False):
                         require(response.status == 200 and response.url.startswith("https://"), f"{name} is not publicly accessible via HTTPS")
                 except (urllib.error.URLError, TimeoutError):
                     errors.append(f"Unable to verify {name}")
-        for name in ("backend_release_deployed", "spotify_public_access_verified", "push_delivery_verified", "moderation_operations_verified", "privacy_controls_verified", "physical_device_qa_verified"):
+        for name in ("backend_release_deployed", "push_delivery_verified", "moderation_operations_verified", "privacy_controls_verified", "physical_device_qa_verified"):
             require(config.get(name) is True, f"Complete and confirm {name}")
+        require(isinstance(config.get("spotify_enabled"), bool), "Confirm spotify_enabled for this release")
+        if config.get("spotify_enabled") is True:
+            require(config.get("spotify_public_access_verified") is True, "Complete and confirm spotify_public_access_verified")
+        else:
+            require(config.get("spotify_disabled_verified") is True, "Verify disabled Spotify in client, backend and store materials")
+        require(config.get("developer_accounts_registered") is True, "Register the developer accounts needed for store publication")
         if online and re.fullmatch(r"[a-z]{20}", config.get("supabase_project_ref", "")):
             errors.extend(backend_checks(config["supabase_project_ref"]))
         elif online:
@@ -177,10 +187,9 @@ def check(platform, config_path, technical_only=False, online=False):
             team = config.get("apple_team_id", "")
             project = (ROOT / "ios/Runner.xcodeproj/project.pbxproj").read_text()
             require(bool(team) and set(re.findall(r"DEVELOPMENT_TEAM = (\w+);", project)) == {team}, "Align the Apple distribution team with the Xcode project")
-            identities = subprocess.run(["security", "find-identity", "-v", "-p", "codesigning"], capture_output=True, text=True)
-            require("Apple Distribution:" in identities.stdout or "iPhone Distribution:" in identities.stdout,
-                    "No Apple distribution certificate found; configure distribution signing in Xcode")
-            notes.append("Xcode must also obtain an App Store provisioning profile with Sign in with Apple and Push Notifications")
+            signing = signing_report(team)
+            errors.extend(signing["blockers"])
+            notes.append("Apple signing checks include profile expiry, team, bundle, production push, Sign in with Apple and a matching private key")
     else:
         notes.append("Technical checks only. Signing, public legal pages and operational approvals were not evaluated")
     return {"platform": platform, "version": version, "scope": "technical" if technical_only else "store",

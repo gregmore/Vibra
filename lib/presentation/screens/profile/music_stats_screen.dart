@@ -1,3 +1,6 @@
+import 'package:intl/intl.dart';
+import 'package:vibra/presentation/localization/user_facing_error.dart';
+import '../../../core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +15,7 @@ import '../../providers/spotify_auth_provider.dart';
 import '../../widgets/common/vibra_button.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
 import '../../widgets/common/vibra_surface.dart';
+import '../../widgets/common/vibra_state_views.dart';
 import '../../widgets/vibra_signal_wave.dart';
 
 class MusicStatsScreen extends ConsumerStatefulWidget {
@@ -28,11 +32,11 @@ class _MusicStatsScreenState extends ConsumerState<MusicStatsScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(_loadAndSync);
+    if (AppConstants.spotifyEnabled) Future.microtask(_loadAndSync);
   }
 
   Future<void> _loadAndSync() async {
-    if (!mounted) return;
+    if (!AppConstants.spotifyEnabled || !mounted) return;
     await ref.read(myMusicProfileProvider.notifier).refresh();
     if (!mounted || ref.read(myMusicProfileProvider).lastSyncedAt == null) {
       return;
@@ -41,12 +45,14 @@ class _MusicStatsScreenState extends ConsumerState<MusicStatsScreen> {
   }
 
   Future<void> _reconnectSpotify() async {
+    if (!AppConstants.spotifyEnabled) return;
     await context.push('/spotify-connect');
     if (mounted) await _loadAndSync();
   }
 
   Future<void> _syncSpotify({bool showSuccess = true}) async {
-    if (_refreshing ||
+    if (!AppConstants.spotifyEnabled ||
+        _refreshing ||
         ref.read(spotifyAuthProvider).status ==
             SpotifyAuthStatus.syncingProfile) {
       return;
@@ -64,14 +70,14 @@ class _MusicStatsScreenState extends ConsumerState<MusicStatsScreen> {
           SnackBar(
             content: Text(
               _requiresReconnect
-                  ? 'Ricollega Spotify per aggiornare le statistiche musicali.'
+                  ? AppLocalizations.of(context)!.musicReconnectBody
                   : l10n.musicStatsSyncError(
-                      result.errorMessage ?? 'Riprova più tardi.',
+                      userFacingError(l10n, result.errorMessage),
                     ),
             ),
             action: _requiresReconnect
                 ? SnackBarAction(
-                    label: 'Ricollega',
+                    label: AppLocalizations.of(context)!.musicReconnect,
                     onPressed: _reconnectSpotify,
                   )
                 : null,
@@ -81,14 +87,16 @@ class _MusicStatsScreenState extends ConsumerState<MusicStatsScreen> {
         _requiresReconnect = false;
         if (!showSuccess) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Statistiche musicali aggiornate.')),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.musicStatsUpdated),
+          ),
         );
       }
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.musicStatsSyncError(error.toString()))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(userFacingError(l10n, error))));
     } finally {
       if (mounted) setState(() => _refreshing = false);
     }
@@ -96,6 +104,19 @@ class _MusicStatsScreenState extends ConsumerState<MusicStatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    if (!AppConstants.spotifyEnabled) {
+      return VibraPageScaffold(
+        appBar: AppBar(title: Text(l10n.spotifyUnavailableTitle)),
+        child: VibraEmptyView(
+          title: l10n.spotifyUnavailableTitle,
+          message: l10n.spotifyUnavailableBody,
+          icon: Icons.event_available_rounded,
+          actionLabel: l10n.navEvents,
+          onActionTap: () => context.go('/explore'),
+        ),
+      );
+    }
     final musicProfile = ref.watch(myMusicProfileProvider);
     final hasSpotify = musicProfile.lastSyncedAt != null;
     final isSyncing =
@@ -104,8 +125,6 @@ class _MusicStatsScreenState extends ConsumerState<MusicStatsScreen> {
             SpotifyAuthStatus.syncingProfile;
     final artists = ref.watch(topArtistsStatsProvider);
     final heatmap = ref.watch(listeningHeatmapProvider);
-    final l10n = AppLocalizations.of(context)!;
-
     return VibraPageScaffold(
       appBar: AppBar(
         title: Text(l10n.musicStatsTitle),
@@ -118,7 +137,9 @@ class _MusicStatsScreenState extends ConsumerState<MusicStatsScreen> {
                       height: 24,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        semanticsLabel: 'Aggiornamento statistiche musicali',
+                        semanticsLabel: AppLocalizations.of(
+                          context,
+                        )!.musicStatsRefreshing,
                         color: context.vibraTokens.accentPrimary,
                       ),
                     )
@@ -148,7 +169,7 @@ class _MusicStatsScreenState extends ConsumerState<MusicStatsScreen> {
                 Padding(
                   padding: VibraSpacing.pageHorizontal,
                   child: _SectionLead(
-                    eyebrow: 'ARTISTI',
+                    eyebrow: AppLocalizations.of(context)!.musicStatsArtists,
                     title: l10n.musicStatsTopArtists,
                     subtitle: l10n.musicStatsTopArtistsSub,
                   ),
@@ -157,9 +178,10 @@ class _MusicStatsScreenState extends ConsumerState<MusicStatsScreen> {
                 Padding(
                   padding: VibraSpacing.pageHorizontal,
                   child: artists.isEmpty
-                      ? const _NoMusicData(
-                          label:
-                              'Nessun artista disponibile dopo l’ultima sincronizzazione.',
+                      ? _NoMusicData(
+                          label: AppLocalizations.of(
+                            context,
+                          )!.musicStatsNoArtists,
                         )
                       : _ArtistList(artists: artists),
                 ).animate().fadeIn(delay: 80.ms, duration: 360.ms),
@@ -167,7 +189,7 @@ class _MusicStatsScreenState extends ConsumerState<MusicStatsScreen> {
                 Padding(
                   padding: VibraSpacing.pageHorizontal,
                   child: _SectionLead(
-                    eyebrow: 'RITMO',
+                    eyebrow: AppLocalizations.of(context)!.musicStatsRhythm,
                     title: l10n.musicStatsHeatmap,
                     subtitle: l10n.musicStatsHeatmapSub,
                   ),
@@ -218,19 +240,19 @@ class _SpotifyEmptyState extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                'Dai un suono al tuo profilo.',
+                AppLocalizations.of(context)!.musicStatsEmptyTitle,
                 style: theme.textTheme.headlineLarge,
               ),
               const SizedBox(height: 8),
               Text(
-                'Collega Spotify per vedere gli artisti e il ritmo che ti definiscono.',
+                AppLocalizations.of(context)!.musicStatsEmptyBody,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: t.textSecondary,
                 ),
               ),
               const SizedBox(height: 24),
               VibraButton(
-                label: 'Connetti Spotify',
+                label: AppLocalizations.of(context)!.spotifyConnectTitle,
                 leadingIcon: Icons.link_rounded,
                 onPressed: onConnect,
                 expanded: true,
@@ -286,7 +308,7 @@ class _ListeningHero extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'IL TUO SUONO',
+                      AppLocalizations.of(context)!.musicStatsYourSound,
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: t.onImageMuted,
                         letterSpacing: 1.2,
@@ -294,7 +316,7 @@ class _ListeningHero extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Ascolti che\nfanno segnale.',
+                      AppLocalizations.of(context)!.musicStatsHeroTitle,
                       style: theme.textTheme.headlineLarge?.copyWith(
                         color: t.onImage,
                         height: 1.02,
@@ -305,7 +327,9 @@ class _ListeningHero extends StatelessWidget {
                       children: [
                         _HeroMetric(
                           value: artistsCount.toString(),
-                          label: 'artisti',
+                          label: AppLocalizations.of(
+                            context,
+                          )!.musicStatsArtists,
                         ),
                       ],
                     ),
@@ -534,7 +558,9 @@ class _ListeningHeatmap extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      point.label,
+                      DateFormat.E(
+                        Localizations.localeOf(context).toString(),
+                      ).format(DateTime(2026, 1, 5 + index)),
                       maxLines: 1,
                       overflow: TextOverflow.fade,
                       style: theme.textTheme.labelSmall?.copyWith(

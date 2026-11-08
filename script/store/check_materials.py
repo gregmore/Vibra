@@ -69,7 +69,16 @@ for path in sorted(site.glob('*.html')):
         except Exception as error:
             check(f'public {path.name}',False,type(error).__name__)
 
+from html import escape
+for slug in ('privacy', 'termini'):
+    source = (site / f'{slug}.html').read_text()
+    address = owner.get('legal_address', '').strip()
+    check(f'{slug}.html owner address', bool(address) and escape(address) in source)
+
 manifest=json.loads((OUT/'screenshots.json').read_text())
+version_match=re.search(r'^version:\s*([^\r\n#]+)', (ROOT/'pubspec.yaml').read_text(), re.M)
+expected_version=version_match.group(1).strip().strip("'\"") if version_match else ''
+check('screenshot app version',bool(expected_version) and manifest.get('version') == expected_version, manifest.get('version','missing'))
 sizes={'ios-medium':(1206,2622),'android-phone':(1080,1920),'ipad-13':(2064,2752)}
 check('screenshot count',len(manifest['screenshots'])==18)
 for item in manifest['screenshots']:
@@ -90,11 +99,19 @@ constants=(ROOT/'lib/core/constants/app_constants.dart').read_text()
 for key in ['supportEmail','privacyEmail','legalEmail']:
     check(key,f"{key} = '{owner['support_email']}'" in constants)
 release=json.loads((ROOT/'release/store-config.json').read_text())
+for key in ('legal_name', 'legal_address'):
+    check(key, bool(owner.get(key, '').strip()) and release.get(key) == owner[key])
 for key in ['privacy_url','terms_url','support_url','account_deletion_url']:
     check(key,release[key].startswith(owner['public_site_url']+'/'))
+pending_owner_fields = [key for key in ('country', 'legal_address')
+                        if not owner.get(key, '').strip()]
+if owner.get('trader_status') not in ('trader', 'non_trader'):
+    pending_owner_fields.append('trader_status')
+if owner.get('mailbox_monitoring_status') != 'owner_confirmed':
+    pending_owner_fields.append('mailbox_monitoring')
 report={'scope':'store materials, not complete launch readiness','online':options.online,
         'checks':checks,'passed':all(item['passed'] for item in checks),
-        'pending_owner_fields':['country','legal_address','trader_status','mailbox_monitoring'],
+        'pending_owner_fields':pending_owner_fields,
         'questionnaires_submitted':False,'device_qa':False}
 (OUT/'verification.json').write_text(json.dumps(report,indent=2)+'\n')
 for item in checks:

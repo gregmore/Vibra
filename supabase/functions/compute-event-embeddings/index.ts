@@ -1,6 +1,7 @@
-import { corsHeaders } from "../_shared/cors.ts";
+import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
 import { requireEnv } from "../_shared/env.ts";
+import { skipDisabledSpotifyJob } from "../_shared/spotify-feature.ts";
 
 async function getSpotifyAppToken() {
   const clientId = requireEnv("SPOTIFY_CLIENT_ID");
@@ -25,6 +26,8 @@ async function getSpotifyAppToken() {
 }
 
 Deno.serve(async (req) => {
+  const preflight = handleOptions(req);
+  if (preflight) return preflight;
   try {
     const authHeader = req.headers.get("Authorization");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -36,13 +39,18 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabase = createSupabaseServiceClient();
-
     if (!serviceRoleKey || authHeader !== `Bearer ${serviceRoleKey}`) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    if (req.method.toUpperCase() !== "POST") return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+    const paused = skipDisabledSpotifyJob();
+    if (paused) return paused;
+    const supabase = createSupabaseServiceClient();
 
     // Find up to 50 events that don't have an embedding yet and have a spotify artist ID
     const { data: events, error } = await supabase

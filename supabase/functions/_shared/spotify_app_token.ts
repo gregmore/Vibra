@@ -1,4 +1,5 @@
-import { optionalEnv, requireEnv } from "./env.ts";
+import { optionalEnv } from "./env.ts";
+import { isSpotifyEnabled } from "./spotify-feature.ts";
 
 type SpotifyAppToken = {
   access_token: string;
@@ -9,6 +10,10 @@ type SpotifyAppToken = {
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
 export async function getSpotifyAppAccessToken(): Promise<string | null> {
+  if (!isSpotifyEnabled()) {
+    cachedToken = null;
+    return null;
+  }
   const clientId = optionalEnv("SPOTIFY_CLIENT_ID");
   const clientSecret = optionalEnv("SPOTIFY_CLIENT_SECRET");
   if (!clientId || !clientSecret) return null;

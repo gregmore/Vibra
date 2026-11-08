@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 
+import '../../../core/utils/geography.dart';
 import '../../../domain/entities/event.dart';
 
 Uri? eventTicketUri(Event event) {
@@ -18,17 +19,10 @@ Uri? eventTicketUri(Event event) {
 ({double latitude, double longitude})? eventCoordinates(Event event) {
   final latitude = event.latitude;
   final longitude = event.longitude;
-  if (latitude == null ||
-      longitude == null ||
-      !latitude.isFinite ||
-      !longitude.isFinite ||
-      latitude < -90 ||
-      latitude > 90 ||
-      longitude < -180 ||
-      longitude > 180) {
+  if (!areValidCoordinates(latitude, longitude)) {
     return null;
   }
-  return (latitude: latitude, longitude: longitude);
+  return (latitude: latitude!, longitude: longitude!);
 }
 
 Uri? eventDirectionsUri(Event event) {

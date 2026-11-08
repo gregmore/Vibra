@@ -35,10 +35,18 @@ class SupabaseLiveDatasource {
       );
     }
 
+    final text = content.trim();
+    if (eventId.isEmpty || text.isEmpty || text.length > 2000) {
+      throw const app_exceptions.ServerException(
+        message:
+            'Scegli un evento e scrivi un messaggio da 1 a 2000 caratteri.',
+      );
+    }
+
     final row = await _supabase.insert(DbTables.liveMessages, {
       'event_id': eventId,
       'user_id': user.id,
-      'content': content,
+      'content': text,
     });
     return LiveMessageModel.fromJson(row);
   }

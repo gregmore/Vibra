@@ -1,5 +1,10 @@
 # Materiali store — verifica del 10 ottobre 2026
 
+> Rapporto storico dei materiali `1.0.0+2`. La candidata corrente è `1.0.0+3`;
+> catture aggiornate e verifiche correnti sono nel
+> [report del 15 ottobre](bugfixes-20261015.md). I conteggi seguenti descrivono
+> la verifica originale del 10 ottobre.
+
 Vibra 1.0.0+2, progetto personale di Gregorio Morelli. Contatto fornito dal
 titolare: **vibra7341@gmail.com**, impostato in app, pagine e configurazione store.
 Materiali e campi da copiare: [store/README.md](../store/README.md).
@@ -58,8 +63,9 @@ tipo di User-Agent per evitare questo falso negativo.
 
 ## Completamento prima dell'invio
 
-Paese e indirizzo non sono stati forniti; telefono review/trader e stato DSA
-restano da confermare. Il progetto personale non implica automaticamente
+Alla verifica del 10 ottobre paese e indirizzo non erano stati forniti;
+sono stati confermati dal titolare il 13 ottobre e inseriti nei materiali.
+Telefono review/trader e stato DSA restano da confermare. Il progetto personale non implica automaticamente
 non-trader. Nessun valore è stato inventato per questi campi.
 
 Le tabelle privacy sono preparate dal codice: resta da attestare il trattamento
@@ -73,3 +79,43 @@ configurazione APNs/firma e prove su dispositivi fisici documentate nella
 I flag operativi non verificati in `release/store-config.json` restano falsi.
 Le catture dei widget non certificano queste prove, la conformità legale
 complessiva o la readiness del bundle firmato.
+
+## Aggiornamento materiali del 13 ottobre 2026
+
+Il titolare ha confermato l'indirizzo ufficiale **Via Pasquale Modestino 29,
+44123, Ferrara, Italia**. `store/owner.json`, le pagine privacy e termini e
+le relative copie Markdown riportano questi dati; i documenti sono datati
+13 ottobre 2026. Stato trader e presidio email restano da confermare.
+
+Le 18 immagini store sono state sostituite con le schermate `01`–`06` delle
+catture QA più recenti, in tema chiaro, per i tre formati originali. Mantengono
+fixture fittizie locali, dimensioni previste e PNG RGB senza alpha. La nuova
+icona e la feature graphic Google Play sono incluse nel pacchetto: condividono
+la geometria V dell'app e il viola del marchio. La feature graphic usa il testo
+“La tua musica. Le tue persone.” nei font Syne e Inter locali. Gli altri visual
+promozionali precedenti restano da allineare prima di una nuova campagna.
+
+Il pacchetto ZIP è rigenerato con manifest e verifiche aggiornati. Il rapporto
+`release/store-materials/verification.json` indica l'esito corrente:
+**116/116 controlli materiali passati**, incluse le sei pagine pubbliche
+verificate senza cookie o autenticazione e con contenuto aggiornato corrispondente
+alle sorgenti. La verifica dei materiali non certifica l'operatività di Spotify,
+push, moderazione o le prove su dispositivi.
+La situazione complessiva del lancio è nel
+[report del 13 ottobre](launch-readiness-20261013.md).
+
+## Prima versione pubblica senza Spotify
+
+Il titolare ha scelto di lanciare con collegamento Spotify e affinità musicali
+temporaneamente disattivati e ha confermato di non avere ancora account
+sviluppatore Apple o Google. Le schede italiano/inglese, le sei pagine pubbliche
+e i questionari ora descrivono eventi, mappa, salvataggi, amicizie, messaggi e
+chat Live. I testi conservano revoca, esportazione e cancellazione dei dati
+eventualmente già presenti da collegamenti Spotify precedenti.
+
+Le catture e lo ZIP precedenti alla sospensione non rappresentano la release
+senza Spotify: vanno rigenerati dalla versione aggiornata. I 116 controlli
+sopra si riferiscono al pacchetto prima di questa scelta. La pubblicazione
+delle nuove pagine e la verifica online vanno ripetute sul contenuto aggiornato.
+Non viene attestata l'assenza di nuovi flussi musicali dei collegamenti
+preesistenti finché non sono verificate anche le sincronizzazioni backend.

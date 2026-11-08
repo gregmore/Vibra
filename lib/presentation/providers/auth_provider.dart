@@ -12,6 +12,11 @@ import 'package:crypto/crypto.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'app_state_providers.dart';
 import 'spotify_auth_provider.dart';
+import 'location_provider.dart';
+import 'live_events_provider.dart';
+import 'public_users_provider.dart';
+import 'public_friends_provider.dart';
+import 'direct_message_permission_provider.dart';
 
 enum GeneralAuthStatus { idle, loading, authenticated, error }
 
@@ -81,11 +86,24 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
     _ref.invalidate(myEventsProvider);
     _ref.invalidate(allEventsProvider);
     _ref.invalidate(matchedUsersProvider);
+    _ref.invalidate(publicUsersProvider);
+    _ref.invalidate(publicFriendsProvider);
+    _ref.invalidate(publicConnectionProfilesProvider);
+    _ref.invalidate(directMessagePermissionProvider);
     _ref.invalidate(pendingFriendshipsProvider);
     _ref.invalidate(directMessagesProvider);
+    _ref.invalidate(conversationsProvider);
+    _ref.invalidate(notificationsProvider);
+    _ref.invalidate(userFollowStatsProvider);
+    _ref.invalidate(userProfileDetailProvider);
+    _ref.invalidate(userLocationProvider);
+    _ref.invalidate(liveMessagesProvider);
+    _ref.invalidate(liveEventsProvider);
+    _ref.invalidate(liveAttendanceProvider);
     _ref.invalidate(myProfileProvider);
     _ref.invalidate(myMusicProfileProvider);
     _ref.invalidate(settingsStateProvider);
+    _ref.invalidate(digestFrequencyProvider);
     _ref.invalidate(pushEnabledProvider);
     _ref.invalidate(presenceProvider);
     _ref.invalidate(spotifyAuthProvider);
@@ -314,15 +332,44 @@ class GeneralAuthNotifier extends StateNotifier<GeneralAuthState> {
     try {
       state = const GeneralAuthState.loading();
       final supabase = _ref.read(supabaseDatasourceProvider);
+      final userId = supabase.currentUser?.id;
+      if (userId == null) {
+        throw const AuthException('Authentication required');
+      }
 
-      // The Edge Function deletes auth.users with admin privileges: this
-      // revokes every session and cascades all user-owned data atomically.
-      await supabase.client.functions.invoke('delete-account');
+      // Storage cleanup precedes Auth deletion on the server. Only its explicit
+      // completion acknowledgement means the account was actually erased.
+      final response = await supabase.client.functions.invoke('delete-account');
+      if (response.status != 200 ||
+          response.data is! Map ||
+          response.data['deleted'] != true) {
+        throw const AuthException('Account deletion was not confirmed');
+      }
 
-      await clearLocalState();
+      // A response for the previous account must not sign out a new one.
+      if (supabase.currentUser?.id == userId) {
+        try {
+          await clearLocalState();
+        } catch (error) {
+          // The server has already erased the account. A cache/plugin failure
+          // must not leave its session active or suggest retrying the deletion.
+          VibraLogger.warning('Pulizia locale dopo eliminazione: $error');
+        }
 
-      await supabase.client.auth.signOut();
-      state = const GeneralAuthState.idle();
+        if (supabase.currentUser?.id == userId) {
+          try {
+            // Supabase removes the local session before contacting the server,
+            // where this account's sessions have already been revoked.
+            await supabase.client.auth.signOut(scope: SignOutScope.local);
+          } catch (error) {
+            VibraLogger.warning('Logout dopo eliminazione: $error');
+          }
+        }
+      }
+      final currentUser = supabase.currentUser;
+      state = currentUser == null
+          ? const GeneralAuthState.idle()
+          : GeneralAuthState.authenticated(currentUser);
     } catch (e) {
       VibraLogger.error(
         'Errore durante l\'eliminazione dell\'account',

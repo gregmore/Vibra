@@ -1,0 +1,23 @@
+Connecting to local database...
+psql:/tmp/vibra-launch-security/supabase/tests/pgtap_setup.inc:2: NOTICE:  extension "pgtap" already exists, skipping
+psql:/tmp/vibra-launch-security/supabase/tests/01_live_messages_rls_test.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/tmp/vibra-launch-security/supabase/tests/01_live_messages_rls_test.sql .................... ok
+psql:/tmp/vibra-launch-security/supabase/tests/pgtap_setup.inc:2: NOTICE:  extension "pgtap" already exists, skipping
+/tmp/vibra-launch-security/supabase/tests/database/01_auth_rls_test.sql .................... ok
+psql:/tmp/vibra-launch-security/supabase/tests/pgtap_setup.inc:2: NOTICE:  extension "pgtap" already exists, skipping
+/tmp/vibra-launch-security/supabase/tests/database/02_backend_security_rls_test.sql ........ ok
+psql:/tmp/vibra-launch-security/supabase/tests/pgtap_setup.inc:2: NOTICE:  extension "pgtap" already exists, skipping
+/tmp/vibra-launch-security/supabase/tests/database/03_test_data_segmentation_test.sql ...... ok
+psql:/tmp/vibra-launch-security/supabase/tests/pgtap_setup.inc:2: NOTICE:  extension "pgtap" already exists, skipping
+/tmp/vibra-launch-security/supabase/tests/database/04_notification_worker_access_test.sql .. ok
+psql:/tmp/vibra-launch-security/supabase/tests/pgtap_setup.inc:2: NOTICE:  extension "pgtap" already exists, skipping
+/tmp/vibra-launch-security/supabase/tests/database/05_push_consent_test.sql ................ ok
+psql:/tmp/vibra-launch-security/supabase/tests/pgtap_setup.inc:2: NOTICE:  extension "pgtap" already exists, skipping
+/tmp/vibra-launch-security/supabase/tests/database/06_launch_message_privacy_test.sql ...... ok
+psql:/tmp/vibra-launch-security/supabase/tests/pgtap_setup.inc:2: NOTICE:  extension "pgtap" already exists, skipping
+/tmp/vibra-launch-security/supabase/tests/database/07_launch_consent_test.sql .............. ok
+psql:/tmp/vibra-launch-security/supabase/tests/pgtap_setup.inc:2: NOTICE:  extension "pgtap" already exists, skipping
+/tmp/vibra-launch-security/supabase/tests/database/08_launch_match_consent_test.sql ........ ok
+All tests successful.
+Files=9, Tests=95,  1 wallclock secs ( 0.02 usr  0.01 sys +  0.03 cusr  0.00 csys =  0.06 CPU)
+Result: PASS

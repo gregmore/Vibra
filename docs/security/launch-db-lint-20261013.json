@@ -1,0 +1,436 @@
+{
+  "results": [
+    {
+      "function": "public.st_findextent",
+      "issues": [
+        {
+          "level": "warning",
+          "message": "cannot determinate a result of dynamic SQL",
+          "statement": {
+            "lineNumber": "8",
+            "text": "FOR over EXECUTE statement"
+          },
+          "hint": "Don't use dynamic SQL and record type together, when you would check function.",
+          "detail": "There is a risk of related false alarms.",
+          "sqlState": "00000"
+        },
+        {
+          "level": "error",
+          "message": "record \"myrec\" is not assigned yet",
+          "statement": {
+            "lineNumber": "9",
+            "text": "RETURN"
+          },
+          "detail": "The tuple structure of a not-yet-assigned record is indeterminate.",
+          "context": "SQL expression \"myrec.extent\"",
+          "sqlState": "55000"
+        }
+      ]
+    },
+    {
+      "function": "public.st_findextent",
+      "issues": [
+        {
+          "level": "warning",
+          "message": "cannot determinate a result of dynamic SQL",
+          "statement": {
+            "lineNumber": "8",
+            "text": "FOR over EXECUTE statement"
+          },
+          "hint": "Don't use dynamic SQL and record type together, when you would check function.",
+          "detail": "There is a risk of related false alarms.",
+          "sqlState": "00000"
+        },
+        {
+          "level": "error",
+          "message": "record \"myrec\" is not assigned yet",
+          "statement": {
+            "lineNumber": "9",
+            "text": "RETURN"
+          },
+          "detail": "The tuple structure of a not-yet-assigned record is indeterminate.",
+          "context": "SQL expression \"myrec.extent\"",
+          "sqlState": "55000"
+        }
+      ]
+    },
+    {
+      "function": "public.populate_geometry_columns",
+      "issues": [
+        {
+          "level": "warning",
+          "message": "unused variable \"gc\"",
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning",
+          "message": "unused variable \"gsrid\"",
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning",
+          "message": "unused variable \"gndims\"",
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning",
+          "message": "unused variable \"gtype\"",
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning",
+          "message": "unused variable \"query\"",
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning",
+          "message": "unused variable \"gc_is_valid\"",
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning extra",
+          "message": "never read variable \"stale\"",
+          "sqlState": "00000"
+        }
+      ]
+    },
+    {
+      "function": "public.populate_geometry_columns",
+      "issues": [
+        {
+          "level": "warning",
+          "message": "cannot determinate a result of dynamic SQL",
+          "statement": {
+            "lineNumber": "47",
+            "text": "EXECUTE"
+          },
+          "hint": "Don't use dynamic SQL and record type together, when you would check function.",
+          "detail": "There is a risk of related false alarms.",
+          "sqlState": "00000"
+        },
+        {
+          "level": "error",
+          "message": "record \"gc\" is not assigned yet",
+          "statement": {
+            "lineNumber": "55",
+            "text": "assignment"
+          },
+          "detail": "The tuple structure of a not-yet-assigned record is indeterminate.",
+          "context": "PL/pgSQL assignment \"gsrid := gc.srid\"",
+          "sqlState": "55000"
+        }
+      ]
+    },
+    {
+      "function": "public.addgeometrycolumn",
+      "issues": [
+        {
+          "level": "warning extra",
+          "message": "unreachable code",
+          "statement": {
+            "lineNumber": "28",
+            "text": "RETURN"
+          },
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning extra",
+          "message": "unreachable code",
+          "statement": {
+            "lineNumber": "34",
+            "text": "RETURN"
+          },
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning extra",
+          "message": "unreachable code",
+          "statement": {
+            "lineNumber": "39",
+            "text": "RETURN"
+          },
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning extra",
+          "message": "unreachable code",
+          "statement": {
+            "lineNumber": "51",
+            "text": "RETURN"
+          },
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning extra",
+          "message": "unreachable code",
+          "statement": {
+            "lineNumber": "70",
+            "text": "RETURN"
+          },
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning extra",
+          "message": "unreachable code",
+          "statement": {
+            "lineNumber": "88",
+            "text": "RETURN"
+          },
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning",
+          "message": "unused variable \"rec\"",
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning extra",
+          "message": "never read variable \"sr\"",
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning extra",
+          "message": "unused parameter \"catalog_name\"",
+          "sqlState": "00000"
+        }
+      ]
+    },
+    {
+      "function": "public.addgeometrycolumn",
+      "issues": [
+        {
+          "level": "warning",
+          "message": "routine is marked as STABLE, but expression is VOLATILE",
+          "statement": {
+            "lineNumber": "5",
+            "text": "SQL statement"
+          },
+          "hint": "When you fix this issue, please, recheck other functions that uses this function.",
+          "detail": "there is a risk of unwanted behave",
+          "sqlState": "00000"
+        }
+      ]
+    },
+    {
+      "function": "public.dropgeometrycolumn",
+      "issues": [
+        {
+          "level": "warning extra",
+          "message": "unreachable code",
+          "statement": {
+            "lineNumber": "34",
+            "text": "RETURN"
+          },
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning extra",
+          "message": "never read variable \"myrec\"",
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning extra",
+          "message": "unused parameter \"catalog_name\"",
+          "sqlState": "00000"
+        }
+      ]
+    },
+    {
+      "function": "public.dropgeometrytable",
+      "issues": [
+        {
+          "level": "warning extra",
+          "message": "unused parameter \"catalog_name\"",
+          "sqlState": "00000"
+        }
+      ]
+    },
+    {
+      "function": "public.updategeometrysrid",
+      "issues": [
+        {
+          "level": "warning extra",
+          "message": "unreachable code",
+          "statement": {
+            "lineNumber": "36",
+            "text": "RETURN"
+          },
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning extra",
+          "message": "unreachable code",
+          "statement": {
+            "lineNumber": "43",
+            "text": "RETURN"
+          },
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning extra",
+          "message": "unused parameter \"catalogn_name\"",
+          "sqlState": "00000"
+        }
+      ]
+    },
+    {
+      "function": "public.get_proj4_from_srid",
+      "issues": [
+        {
+          "level": "warning",
+          "message": "routine is marked as IMMUTABLE, but expression is STABLE",
+          "statement": {
+            "lineNumber": "3",
+            "text": "RETURN"
+          },
+          "hint": "When you fix this issue, please, recheck other functions that uses this function.",
+          "detail": "there is a risk of unwanted behave",
+          "sqlState": "00000"
+        },
+        {
+          "level": "warning extra",
+          "message": "expression is not pure expression",
+          "statement": {
+            "lineNumber": "3",
+            "text": "RETURN"
+          },
+          "query": {
+            "position": "1",
+            "text": "proj4text::text FROM public.spatial_ref_sys WHERE srid= $1"
+          },
+          "hint": "Maybe you forgot to use a semicolon.",
+          "detail": "there is a possibility of unwanted behave",
+          "sqlState": "42601"
+        }
+      ]
+    },
+    {
+      "function": "public.postgis_full_version",
+      "issues": [
+        {
+          "level": "warning",
+          "message": "routine is marked as IMMUTABLE, but expression is STABLE",
+          "statement": {
+            "lineNumber": "33",
+            "text": "SQL statement"
+          },
+          "hint": "When you fix this issue, please, recheck other functions that uses this function.",
+          "detail": "there is a risk of unwanted behave",
+          "sqlState": "00000"
+        },
+        {
+          "level": "error",
+          "message": "function public.postgis_gdal_version() does not exist",
+          "statement": {
+            "lineNumber": "35",
+            "text": "SQL statement"
+          },
+          "query": {
+            "position": "8",
+            "text": "SELECT public.postgis_gdal_version()"
+          },
+          "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+          "sqlState": "42883"
+        }
+      ]
+    },
+    {
+      "function": "public.lockrow",
+      "issues": [
+        {
+          "level": "error",
+          "message": "relation \"authorization_table\" does not exist",
+          "statement": {
+            "lineNumber": "18",
+            "text": "EXECUTE"
+          },
+          "query": {
+            "position": "13",
+            "text": "DELETE FROM authorization_table WHERE expires < now()"
+          },
+          "sqlState": "42P01"
+        }
+      ]
+    },
+    {
+      "function": "public.addauth",
+      "issues": [
+        {
+          "level": "error",
+          "message": "relation \"temp_lock_have_table\" does not exist",
+          "statement": {
+            "lineNumber": "24",
+            "text": "SQL statement"
+          },
+          "query": {
+            "position": "13",
+            "text": "INSERT INTO temp_lock_have_table VALUES (getTransactionID(), lockid)"
+          },
+          "sqlState": "42P01"
+        }
+      ]
+    },
+    {
+      "function": "public.enablelongtransactions",
+      "issues": [
+        {
+          "level": "warning extra",
+          "message": "never read variable \"rec\"",
+          "sqlState": "00000"
+        }
+      ]
+    },
+    {
+      "function": "public.longtransactionsenabled",
+      "issues": [
+        {
+          "level": "warning",
+          "message": "target type is different type than source type",
+          "statement": {
+            "lineNumber": "7",
+            "text": "RETURN"
+          },
+          "hint": "The input expression type does not have an assignment cast to the target type.",
+          "detail": "cast \"text\" value to \"boolean\" type",
+          "context": "at RETURN",
+          "sqlState": "42804"
+        },
+        {
+          "level": "warning",
+          "message": "target type is different type than source type",
+          "statement": {
+            "lineNumber": "9",
+            "text": "RETURN"
+          },
+          "hint": "The input expression type does not have an assignment cast to the target type.",
+          "detail": "cast \"text\" value to \"boolean\" type",
+          "context": "at RETURN",
+          "sqlState": "42804"
+        },
+        {
+          "level": "warning extra",
+          "message": "never read variable \"rec\"",
+          "sqlState": "00000"
+        }
+      ]
+    },
+    {
+      "function": "public.st_letters",
+      "issues": [
+        {
+          "level": "warning",
+          "message": "target type is different type than source type",
+          "statement": {
+            "lineNumber": "98",
+            "text": "statement block"
+          },
+          "hint": "The input expression type does not have an assignment cast to the target type.",
+          "detail": "cast \"text\" value to \"json\" type",
+          "context": "during statement block local variable \"font_default\" initialization on line 18",
+          "sqlState": "42804"
+        }
+      ]
+    }
+  ],
+  "message": "db lint"
+}

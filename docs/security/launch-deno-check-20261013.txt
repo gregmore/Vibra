@@ -1,0 +1,16 @@
+Check supabase/functions/calculate-match/index.ts
+Check supabase/functions/compute-event-embeddings/index.ts
+Check supabase/functions/delete-account/index.ts
+Check supabase/functions/event-reminders/index.ts
+Check supabase/functions/recommend-events/index.ts
+Check supabase/functions/resolve-event/index.ts
+Check supabase/functions/retention-notifications/index.ts
+Check supabase/functions/send-chat-notification/index.ts
+Check supabase/functions/send-notifications/index.ts
+Check supabase/functions/send-social-notification/index.ts
+Check supabase/functions/spotify-disconnect/index.ts
+Check supabase/functions/spotify-token-exchange/index.ts
+Check supabase/functions/sync-music-profile/index.ts
+Check supabase/functions/ticketmaster-sync/index.ts
+Check supabase/functions/track-ticket-click/index.ts
+Check supabase/functions/upload-image/index.ts
