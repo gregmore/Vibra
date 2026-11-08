@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/utils/logger.dart';
 import '../../core/services/cache_service.dart';
 import 'app_state_providers.dart';
@@ -8,12 +9,32 @@ import '../../core/errors/exceptions.dart';
 
 enum SpotifyAuthStatus {
   idle,
+
+  /// Spotify consent screen is open.
   authorizing,
+
+  /// Consent granted; the server is exchanging the PKCE code.
   exchangingToken,
+
+  /// Connected; the first (or a manual) data sync is running.
   syncingProfile,
+
+  /// Connected and data synced: statistics are populated.
   success,
+
+  /// Connected, but the data sync failed. Retry syncs, not reconnects.
+  syncFailed,
+
+  /// Spotify access was revoked or the connection is gone: show "Connect".
+  disconnected,
   error,
   userCancelled,
+}
+
+/// Backend error codes surfaced to the UI.
+abstract final class SpotifyErrorCodes {
+  static const notConnected = 'spotify_not_connected';
+  static const rateLimited = 'spotify_rate_limited';
 }
 
 class SpotifyAuthStatusState {
@@ -43,6 +64,17 @@ class SpotifyAuthStatusState {
   const SpotifyAuthStatusState.error(String message)
     : status = SpotifyAuthStatus.error,
       errorMessage = message;
+  const SpotifyAuthStatusState.syncFailed(String message)
+    : status = SpotifyAuthStatus.syncFailed,
+      errorMessage = message;
+  const SpotifyAuthStatusState.disconnected()
+    : status = SpotifyAuthStatus.disconnected,
+      errorMessage = SpotifyErrorCodes.notConnected;
+
+  bool get isBusy =>
+      status == SpotifyAuthStatus.authorizing ||
+      status == SpotifyAuthStatus.exchangingToken ||
+      status == SpotifyAuthStatus.syncingProfile;
 }
 
 class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
@@ -51,42 +83,41 @@ class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
   SpotifyAuthNotifier(this._ref) : super(const SpotifyAuthStatusState.idle());
 
   Future<void> connectSpotify() async {
+    if (!AppConstants.spotifyEnabled) {
+      state = const SpotifyAuthStatusState.error(
+        'spotify_temporarily_unavailable',
+      );
+      return;
+    }
+    if (state.isBusy) return;
+    var connected = false;
     try {
       state = const SpotifyAuthStatusState.authorizing();
-      VibraLogger.info('Stato: authorizing...');
-
       final repository = _ref.read(spotifyAuthRepositoryProvider);
-      final datasource = _ref.read(spotifyAuthDatasourceProvider);
-
-      await repository.connectAccount();
-
-      state = const SpotifyAuthStatusState.exchangingToken();
-      VibraLogger.info('Stato: exchangingToken...');
-
-      state = const SpotifyAuthStatusState.syncingProfile();
-      VibraLogger.info('Stato: syncingProfile...');
-
-      await datasource.syncMusicProfile();
-
-      await _ref.read(appSynchronizationProvider).refreshProfile();
-
-      state = const SpotifyAuthStatusState.success();
-      VibraLogger.info('Stato: success!');
+      await repository.connectAccount(
+        onAuthorized: () {
+          if (mounted) state = const SpotifyAuthStatusState.exchangingToken();
+        },
+      );
+      connected = true;
+      // "Connected" is only shown once the first sync has populated the
+      // statistics, so the profile never looks connected-but-empty.
+      await _refreshProfileState();
+      await _runSync();
     } catch (e) {
-      String errorMessage = e.toString();
-      if (e is ServerException) {
-        errorMessage = e.message;
-      } else if (e is AuthException) {
-        errorMessage = e.message;
-      }
-
+      final errorMessage = _messageOf(e);
       VibraLogger.error('Errore durante la connessione Spotify', error: e);
-
+      if (connected) {
+        state = _isNotConnected(errorMessage)
+            ? const SpotifyAuthStatusState.disconnected()
+            : SpotifyAuthStatusState.syncFailed(errorMessage);
+        return;
+      }
+      final lower = errorMessage.toLowerCase();
       final isCancellation =
-          errorMessage.toLowerCase().contains('cancel') ||
-          errorMessage.toLowerCase().contains('annull') ||
-          errorMessage.toLowerCase().contains('dismiss');
-
+          lower.contains('cancel') ||
+          lower.contains('annull') ||
+          lower.contains('dismiss');
       if (isCancellation) {
         state = const SpotifyAuthStatusState.userCancelled();
       } else {
@@ -96,33 +127,24 @@ class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
     }
   }
 
+  /// Manual or retry sync. Server-side, an hourly job keeps data fresh too.
   Future<void> syncSpotify() async {
-    if (state.status == SpotifyAuthStatus.syncingProfile ||
-        state.status == SpotifyAuthStatus.authorizing ||
-        state.status == SpotifyAuthStatus.exchangingToken) {
+    if (!AppConstants.spotifyEnabled) {
+      state = const SpotifyAuthStatusState.error(
+        'spotify_temporarily_unavailable',
+      );
       return;
     }
+    if (state.isBusy) return;
     try {
-      state = const SpotifyAuthStatusState.syncingProfile();
-      VibraLogger.info('Stato: syncingProfile...');
-
-      final supabase = _ref.read(supabaseDatasourceProvider);
-      final user = supabase.currentUser;
-      final datasource = _ref.read(spotifyAuthDatasourceProvider);
-      await datasource.syncMusicProfile();
-
-      // Clear cache to prevent falling back to stale data if parsing fails
-      if (user != null) {
-        await CacheService.remove(CacheService.musicProfileKey(user.id));
-      }
-
-      await _ref.read(myMusicProfileProvider.notifier).refresh();
-
-      state = const SpotifyAuthStatusState.success();
-      VibraLogger.info('Stato: sync success!');
+      await _runSync();
     } catch (e) {
-      final errorMessage = e.toString();
+      final errorMessage = _messageOf(e);
       VibraLogger.error('Errore durante la sincronizzazione Spotify', error: e);
+      if (_isNotConnected(errorMessage)) {
+        state = const SpotifyAuthStatusState.disconnected();
+        return;
+      }
       // Una sincronizzazione remota fallita non deve nascondere l'ultimo
       // profilo valido già persistito nel database.
       try {
@@ -133,6 +155,57 @@ class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
       state = SpotifyAuthStatusState.error(errorMessage);
     }
   }
+
+  Future<void> _runSync() async {
+    state = const SpotifyAuthStatusState.syncingProfile();
+    final user = _ref.read(supabaseDatasourceProvider).currentUser;
+    try {
+      await _ref.read(spotifyAuthDatasourceProvider).syncMusicProfile();
+    } catch (e) {
+      if (_isNotConnected(_messageOf(e))) {
+        // Revoked from Spotify (or disconnected elsewhere): the server has
+        // already removed the connection and its data. Reflect it locally.
+        await _clearLocalMusicData(user?.id);
+        await _refreshProfileState();
+      }
+      rethrow;
+    }
+    // Clear cache to prevent falling back to stale data if parsing fails
+    if (user != null) {
+      await CacheService.remove(CacheService.musicProfileKey(user.id));
+    }
+    await _ref.read(myMusicProfileProvider.notifier).refresh();
+    state = const SpotifyAuthStatusState.success();
+  }
+
+  Future<void> _refreshProfileState() async {
+    try {
+      await _ref.read(appSynchronizationProvider).refreshProfile();
+    } catch (e) {
+      VibraLogger.warning('Profilo non aggiornato: $e', tag: 'SpotifyAuth');
+    }
+  }
+
+  Future<void> _clearLocalMusicData(String? userId) async {
+    await _ref.read(spotifyTokenStorageProvider).clear();
+    if (userId != null) {
+      await CacheService.remove(CacheService.musicProfileKey(userId));
+    }
+    try {
+      await _ref.read(myMusicProfileProvider.notifier).refresh();
+    } catch (_) {
+      // A missing profile after disconnect is the expected state.
+    }
+  }
+
+  static String _messageOf(Object e) {
+    if (e is ServerException) return e.message;
+    if (e is AuthException) return e.message;
+    return e.toString();
+  }
+
+  static bool _isNotConnected(String message) =>
+      message.contains(SpotifyErrorCodes.notConnected);
 
   Future<void> _logErrorToDatabase(String message) async {
     try {
@@ -160,35 +233,24 @@ class SpotifyAuthNotifier extends StateNotifier<SpotifyAuthStatusState> {
     }
   }
 
+  /// Disconnects Spotify. The server deletes the encrypted tokens, music
+  /// profile, listening history and matches in one transaction; the app then
+  /// clears its local caches so no residual data stays on the device.
   Future<void> disconnectSpotify() async {
+    final supabase = _ref.read(supabaseDatasourceProvider);
+    final currentUser = supabase.currentUser;
+    if (currentUser == null) return;
     try {
-      state = const SpotifyAuthStatusState.authorizing();
-      VibraLogger.info('Scollegamento di Spotify in corso...');
-
-      final supabase = _ref.read(supabaseDatasourceProvider);
-      final currentUser = supabase.currentUser;
-      if (currentUser == null) return;
-
-      await supabase.client
-          .from('users')
-          .update({'spotify_id': null})
-          .eq('id', currentUser.id);
-      await supabase.client.functions.invoke('spotify-disconnect');
-
-      await supabase.client
-          .from('music_profiles')
-          .delete()
-          .eq('user_id', currentUser.id);
-
-      await _ref.read(spotifyTokenStorageProvider).clear();
-
-      await _ref.read(appSynchronizationProvider).refreshProfile();
-
+      state = const SpotifyAuthStatusState.syncingProfile();
+      await _ref.read(spotifyAuthDatasourceProvider).disconnect();
+      await _clearLocalMusicData(currentUser.id);
+      await _refreshProfileState();
       state = const SpotifyAuthStatusState.idle();
       VibraLogger.info('Spotify scollegato con successo');
     } catch (e) {
       VibraLogger.error('Errore durante lo scollegamento di Spotify', error: e);
-      state = SpotifyAuthStatusState.error(e.toString());
+      state = SpotifyAuthStatusState.error(_messageOf(e));
+      rethrow;
     }
   }
 

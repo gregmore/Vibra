@@ -5,6 +5,9 @@ import '../../core/services/spotify_token_storage.dart';
 
 class SpotifyAuthRepositoryImpl implements SpotifyAuthRepository {
   final SpotifyAuthDatasource datasource;
+
+  /// Only used to erase Spotify tokens that older app versions kept on the
+  /// device. New connections never store Spotify credentials locally.
   final SpotifyTokenStorage tokenStorage;
 
   SpotifyAuthRepositoryImpl({
@@ -13,7 +16,7 @@ class SpotifyAuthRepositoryImpl implements SpotifyAuthRepository {
   });
 
   @override
-  Future<SpotifySession> connectAccount() async {
+  Future<SpotifySession> connectAccount({void Function()? onAuthorized}) async {
     final originalSession = datasource.supabaseClient.auth.currentSession;
     if (originalSession == null) {
       throw StateError('Accedi prima di collegare Spotify.');
@@ -33,63 +36,18 @@ class SpotifyAuthRepositoryImpl implements SpotifyAuthRepository {
       codeChallenge: codeChallenge,
       state: state,
     );
-
     checkUser();
-    final tokenModel = await datasource.exchangeCode(
+    onAuthorized?.call();
+
+    final session = await datasource.exchangeCode(
       code: code,
       codeVerifier: codeVerifier,
       vibraAccessToken: originalSession.accessToken,
     );
-
     checkUser();
 
-    // Salva i token localmente in modo sicuro
-    await tokenStorage.saveAccessToken(tokenModel.accessToken);
-    await tokenStorage.saveRefreshToken(tokenModel.refreshToken);
-    if (datasource.supabaseClient.auth.currentUser?.id !=
-        originalSession.user.id) {
-      await tokenStorage.clear();
-      throw StateError('Account cambiato durante il collegamento. Riprova.');
-    }
-
-    return tokenModel;
-  }
-
-  @override
-  Future<SpotifySession> refreshSession() async {
-    final originalSession = datasource.supabaseClient.auth.currentSession;
-    if (originalSession == null) {
-      throw StateError('Accedi prima di rinnovare Spotify.');
-    }
-    void checkUser() {
-      if (datasource.supabaseClient.auth.currentUser?.id !=
-          originalSession.user.id) {
-        throw StateError('Account cambiato durante il rinnovo Spotify.');
-      }
-    }
-
-    final oldRefreshToken = await tokenStorage.readRefreshToken();
-    checkUser();
-    if (oldRefreshToken == null) {
-      throw Exception('Nessun refresh token disponibile per Spotify');
-    }
-
-    final tokenModel = await datasource.refreshSession(
-      refreshToken: oldRefreshToken,
-      vibraAccessToken: originalSession.accessToken,
-    );
-    checkUser();
-
-    await tokenStorage.saveAccessToken(tokenModel.accessToken);
-    if (tokenModel.refreshToken.isNotEmpty) {
-      await tokenStorage.saveRefreshToken(tokenModel.refreshToken);
-    }
-
-    if (datasource.supabaseClient.auth.currentUser?.id !=
-        originalSession.user.id) {
-      await tokenStorage.clear();
-      throw StateError('Account cambiato durante il rinnovo Spotify.');
-    }
-    return tokenModel;
+    // Remove credentials an earlier app version may have kept on the device.
+    await tokenStorage.clear();
+    return session;
   }
 }

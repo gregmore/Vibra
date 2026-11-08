@@ -37,3 +37,33 @@ Uri? privateChatMediaUri(String value, String supabaseUrl) {
     fragment: '',
   );
 }
+
+/// Authenticated Storage URL of a story or feed photo. The path comes from
+/// the story/post row and must be `<uuid>/<uuid>.png` (written by
+/// upload-image); only the private story and feed buckets are allowed.
+Uri? storyMediaUri(
+  String? path,
+  String supabaseUrl, {
+  String bucket = 'story-media',
+}) {
+  final base = Uri.tryParse(supabaseUrl);
+  if (path == null ||
+      !const {'story-media', 'feed-media'}.contains(bucket) ||
+      base == null ||
+      base.scheme != 'https' ||
+      !RegExp(r'^[0-9a-f-]{36}/[0-9a-f-]{36}\.png$').hasMatch(path)) {
+    return null;
+  }
+  return base.replace(
+    pathSegments: [
+      'storage',
+      'v1',
+      'object',
+      'authenticated',
+      bucket,
+      ...path.split('/'),
+    ],
+    query: '',
+    fragment: '',
+  );
+}

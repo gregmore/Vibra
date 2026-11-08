@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import '../../core/theme/vibra_motion.dart';
+
 import '../../core/theme/vibra_spacing.dart';
 import '../../core/theme/vibra_theme_tokens.dart';
-import '../../core/constants/app_constants.dart';
+import 'common/vibra_image.dart';
+import 'common/vibra_surface.dart';
 
-/// Card con effetto glassmorphism — vetro smerigliato su sfondo scuro.
-/// Utilizzata per card eventi, profili utente e pannelli informativi.
-class VibraGlassmorphicCard extends StatefulWidget {
+/// Legacy card API. Despite the name there is no blur: VIBRA avoids
+/// expensive backdrop filters and renders an opaque [VibraSurface].
+class VibraGlassmorphicCard extends StatelessWidget {
   final Widget child;
   final double? blur;
   final double? opacity;
@@ -38,64 +38,31 @@ class VibraGlassmorphicCard extends StatefulWidget {
   });
 
   @override
-  State<VibraGlassmorphicCard> createState() => _VibraGlassmorphicCardState();
-}
-
-class _VibraGlassmorphicCardState extends State<VibraGlassmorphicCard> {
-  bool _isPressed = false;
-
-  @override
   Widget build(BuildContext context) {
-    final t = context.vibraTokens;
-    final effectiveRadius =
-        widget.borderRadius ?? AppConstants.cardBorderRadius;
-
-    return AnimatedScale(
-      scale: _isPressed ? 0.98 : 1.0,
-      duration: VibraMotion.durationFor(context, VibraSpacing.animFast),
-      child: Container(
-        width: widget.width,
-        height: widget.height,
-        margin: widget.margin,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(effectiveRadius),
-          border: Border.all(color: widget.borderColor ?? t.borderDefault),
-          boxShadow: [widget.glow ?? t.cardShadow],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(effectiveRadius),
-          child: Container(
-            decoration: BoxDecoration(
-              color: t.surfaceElevated,
-              gradient: widget.gradient,
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: widget.onTap,
-                onHighlightChanged: (h) => setState(() => _isPressed = h),
-                splashColor: t.accentPrimary.withValues(alpha: 0.14),
-                hoverColor: t.accentPrimary.withValues(alpha: 0.08),
-                focusColor: t.accentPrimary.withValues(alpha: 0.12),
-                highlightColor: t.accentPrimary.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(effectiveRadius),
-                child: Padding(
-                  padding:
-                      widget.padding ?? const EdgeInsets.all(VibraSpacing.lg),
-                  child: widget.child,
-                ),
-              ),
-            ),
-          ),
-        ),
+    Widget inner = child;
+    if (gradient != null) {
+      inner = DecoratedBox(
+        decoration: BoxDecoration(gradient: gradient),
+        child: child,
+      );
+    }
+    return SizedBox(
+      width: width,
+      height: height,
+      child: VibraSurface(
+        onTap: onTap,
+        margin: margin,
+        padding: padding,
+        borderColor: borderColor,
+        radius: borderRadius ?? VibraSpacing.radiusLarge,
+        child: inner,
       ),
     );
   }
 }
 
-/// Variante del glassmorphic card con immagine di sfondo.
-/// Ideale per card eventi con poster dell'artista.
-class VibraGlassmorphicImageCard extends StatefulWidget {
+/// Media card: full-bleed image with a bottom gradient carrying the copy.
+class VibraGlassmorphicImageCard extends StatelessWidget {
   final Widget child;
   final String imageUrl;
   final double? height;
@@ -114,109 +81,36 @@ class VibraGlassmorphicImageCard extends StatefulWidget {
   });
 
   @override
-  State<VibraGlassmorphicImageCard> createState() =>
-      _VibraGlassmorphicImageCardState();
-}
-
-class _VibraGlassmorphicImageCardState
-    extends State<VibraGlassmorphicImageCard> {
-  bool _isPressed = false;
-
-  @override
   Widget build(BuildContext context) {
     final t = context.vibraTokens;
-    final effectiveRadius =
-        widget.borderRadius ?? AppConstants.cardBorderRadius;
-
-    return AnimatedScale(
-      scale: _isPressed ? 0.98 : 1.0,
-      duration: VibraMotion.durationFor(context, VibraSpacing.animFast),
-      child: Container(
-        height: widget.height,
-        margin:
-            widget.margin ??
-            const EdgeInsets.symmetric(
-              horizontal: VibraSpacing.lg,
-              vertical: VibraSpacing.sm,
-            ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(effectiveRadius),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Immagine di sfondo
-              CachedNetworkImage(
-                imageUrl: widget.imageUrl,
-                fit: BoxFit.cover,
-                memCacheWidth: 600,
-                placeholder: (context, url) {
-                  return Container(
-                    color: t.surfaceMuted,
-                    child: const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  );
-                },
-                errorWidget: (context, url, error) => Container(
-                  color: t.surfaceMuted,
-                  child: Icon(
-                    Icons.music_note_rounded,
-                    size: 48,
-                    color: t.textDisabled,
-                  ),
-                ),
-              ),
-              ColoredBox(color: t.imageScrim),
-              // Overlay gradiente per leggibilità del testo
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      t.imageOverlay.withValues(alpha: 0.35),
-                      t.imageOverlay,
-                    ],
-                  ),
-                ),
-              ),
-              // Material e InkWell per l'interazione
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: widget.onTap,
-                  onHighlightChanged: (h) => setState(() => _isPressed = h),
-                  splashColor: t.accentPrimary.withValues(alpha: 0.1),
-                  hoverColor: t.onImage.withValues(alpha: 0.08),
-                  focusColor: t.onImage.withValues(alpha: 0.12),
-                  highlightColor: t.onImage.withValues(alpha: 0.10),
-                  child: const SizedBox.expand(),
-                ),
-              ),
-              // Effetto glassmorphism sul contenuto
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: IgnorePointer(
-                  child: Container(
-                    padding: const EdgeInsets.all(VibraSpacing.lg),
-                    decoration: BoxDecoration(
-                      color: t.imageOverlay,
-                      border: Border(
-                        top: BorderSide(
-                          color: t.onImage.withValues(alpha: 0.18),
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    child: widget.child,
-                  ),
-                ),
-              ),
-            ],
+    return Container(
+      height: height,
+      margin:
+          margin ??
+          const EdgeInsets.symmetric(
+            horizontal: VibraSpacing.lg,
+            vertical: VibraSpacing.sm,
           ),
+      child: VibraSurface(
+        onTap: onTap,
+        padding: EdgeInsets.zero,
+        clip: true,
+        radius: borderRadius ?? VibraSpacing.radiusLarge,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            VibraNetworkImage(url: imageUrl, cacheWidth: 720),
+            VibraImageScrim(color: t.imageOverlay),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Padding(
+                padding: const EdgeInsets.all(VibraSpacing.lg),
+                child: child,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$NotificationModel {
 
- String get id;@JsonKey(name: 'user_id') String get userId; String get type;// event_alert|match|friend_request|ticket_low
+ String get id;@JsonKey(name: 'user_id') String get userId; String get type;// event_alert|match|friend_request|message_request|chat_message|live_chat|ticket_low
  String get title; String get body; Map<String, dynamic> get data; bool get read;@JsonKey(name: 'created_at') DateTime? get createdAt;
 /// Create a copy of NotificationModel
 /// with the given fields replaced by the non-null parameter values.
@@ -223,7 +223,7 @@ class _NotificationModel implements NotificationModel {
 @override final  String id;
 @override@JsonKey(name: 'user_id') final  String userId;
 @override final  String type;
-// event_alert|match|friend_request|ticket_low
+// event_alert|match|friend_request|message_request|chat_message|live_chat|ticket_low
 @override final  String title;
 @override final  String body;
  final  Map<String, dynamic> _data;

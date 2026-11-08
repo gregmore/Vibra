@@ -26,6 +26,8 @@ abstract class EventModel with _$EventModel {
     String? description,
     String? status,
     @JsonKey(name: 'created_at') DateTime? createdAt,
+    @Default(<String>[]) List<String> genres,
+    @JsonKey(name: 'price_currency') String? priceCurrency,
   }) = _EventModel;
 
   factory EventModel.fromJson(Map<String, dynamic> json) =>

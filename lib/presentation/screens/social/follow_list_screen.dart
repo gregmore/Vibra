@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'package:vibra/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -36,6 +36,8 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen>
   List<Map<String, dynamic>> _following = [];
   bool _isLoadingFollowers = true;
   bool _isLoadingFollowing = true;
+  bool _followersFailed = false;
+  bool _followingFailed = false;
 
   @override
   void initState() {
@@ -43,7 +45,7 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen>
     _tabController = TabController(
       length: 2,
       vsync: this,
-      initialIndex: widget.initialTabIndex,
+      initialIndex: widget.initialTabIndex.clamp(0, 1),
     );
     _loadData();
   }
@@ -60,7 +62,10 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen>
   }
 
   Future<void> _loadFollowers() async {
-    setState(() => _isLoadingFollowers = true);
+    setState(() {
+      _isLoadingFollowers = true;
+      _followersFailed = false;
+    });
     try {
       final list = await ref
           .read(getFollowersUseCaseProvider)
@@ -72,12 +77,20 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen>
         });
       }
     } catch (_) {
-      if (mounted) setState(() => _isLoadingFollowers = false);
+      if (mounted) {
+        setState(() {
+          _isLoadingFollowers = false;
+          _followersFailed = true;
+        });
+      }
     }
   }
 
   Future<void> _loadFollowing() async {
-    setState(() => _isLoadingFollowing = true);
+    setState(() {
+      _isLoadingFollowing = true;
+      _followingFailed = false;
+    });
     try {
       final list = await ref
           .read(getFollowingUseCaseProvider)
@@ -89,14 +102,40 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen>
         });
       }
     } catch (_) {
-      if (mounted) setState(() => _isLoadingFollowing = false);
+      if (mounted) {
+        setState(() {
+          _isLoadingFollowing = false;
+          _followingFailed = true;
+        });
+      }
     }
   }
 
+  Widget _loadError(Future<void> Function() retry) => ListView(
+    physics: const AlwaysScrollableScrollPhysics(),
+    padding: const EdgeInsets.all(24),
+    children: [
+      Text(
+        AppLocalizations.of(context)!.socialUsersLoadError,
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: 12),
+      TextButton(
+        onPressed: retry,
+        child: Text(AppLocalizations.of(context)!.commonRetry),
+      ),
+    ],
+  );
+
   Widget _buildUserTile(Map<String, dynamic> userRow) {
     final targetId = userRow['id']?.toString() ?? '';
-    final username = userRow['username']?.toString() ?? 'user';
-    final displayName = userRow['display_name']?.toString() ?? username;
+    final username = userRow['username']?.toString().trim() ?? '';
+    final name = userRow['display_name']?.toString().trim() ?? '';
+    final displayName = name.isNotEmpty
+        ? name
+        : username.isNotEmpty
+        ? username
+        : AppLocalizations.of(context)!.userGeneric;
     final avatarUrl = userRow['avatar_url']?.toString();
     final bio = userRow['bio']?.toString();
 
@@ -108,43 +147,39 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen>
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ClipRRect(
         borderRadius: VibraSpacing.borderMedium,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-          child: Container(
-            decoration: BoxDecoration(
-              color: context.vibraTokens.surfaceElevated.withValues(alpha: 0.7),
-              borderRadius: VibraSpacing.borderMedium,
-              border: Border.all(
-                color: context.vibraTokens.borderDefault,
-                width: 0.5,
-              ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: context.vibraTokens.surface,
+            borderRadius: VibraSpacing.borderMedium,
+            border: Border.all(
+              color: context.vibraTokens.borderDefault,
+              width: 0.5,
             ),
-            child: Material(
-              color: Colors.transparent,
-              borderRadius: VibraSpacing.borderMedium,
-              child: ListTile(
-                onTap: () => context.push('/user-profile', extra: targetId),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 6,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: VibraSpacing.borderMedium,
+            child: ListTile(
+              onTap: () => context.push('/user-profile', extra: targetId),
+              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              leading: VibraNeonAvatar(
+                imageUrl: avatarUrl ?? '',
+                radius: 24,
+                score: 0.8,
+                displayName: displayName,
+              ),
+              title: Text(
+                displayName,
+                style: TextStyle(
+                  color: context.vibraTokens.textPrimary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
                 ),
-                leading: VibraNeonAvatar(
-                  imageUrl: avatarUrl ?? '',
-                  radius: 24,
-                  score: 0.8,
-                  displayName: displayName,
-                ),
-                title: Text(
-                  displayName,
-                  style: TextStyle(
-                    color: context.vibraTokens.textPrimary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (username.isNotEmpty)
                     Text(
                       '@$username',
                       style: TextStyle(
@@ -152,72 +187,69 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen>
                         fontSize: 13,
                       ),
                     ),
-                    if (bio != null && bio.isNotEmpty) ...[
-                      SizedBox(height: 2),
-                      Text(
-                        bio,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: context.vibraTokens.textPrimary.withValues(
-                            alpha: 0.8,
-                          ),
-                          fontSize: 12,
+                  if (bio != null && bio.isNotEmpty) ...[
+                    SizedBox(height: 2),
+                    Text(
+                      bio,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: context.vibraTokens.textPrimary.withValues(
+                          alpha: 0.8,
                         ),
+                        fontSize: 12,
                       ),
-                    ],
+                    ),
                   ],
-                ),
-                trailing: isMe
-                    ? null
-                    : Container(
-                        decoration: followStats.isFollowing
-                            ? null
-                            : BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: context.vibraTokens.accentPrimary
-                                        .withValues(alpha: 0.35),
-                                    blurRadius: 10,
-                                    spreadRadius: 1,
-                                  ),
-                                ],
+                ],
+              ),
+              trailing: isMe
+                  ? null
+                  : FilledButton.tonal(
+                      onPressed: () async {
+                        try {
+                          await ref
+                              .read(userFollowStatsProvider(targetId).notifier)
+                              .toggleFollow();
+                        } catch (_) {
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                AppLocalizations.of(
+                                  context,
+                                )!.socialFollowUpdateError,
                               ),
-                        child: FilledButton.tonal(
-                          onPressed: () async {
-                            await ref
-                                .read(
-                                  userFollowStatsProvider(targetId).notifier,
-                                )
-                                .toggleFollow();
-                          },
-                          style: FilledButton.styleFrom(
-                            backgroundColor: followStats.isFollowing
-                                ? context.vibraTokens.surfaceMuted
-                                : context.vibraTokens.accentPrimary,
-                            foregroundColor: followStats.isFollowing
-                                ? context.vibraTokens.textPrimary
-                                : context.vibraTokens.onAccent,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 6,
                             ),
-                            minimumSize: Size(0, 32),
-                          ),
-                          child: Text(
-                            followStats.isFollowing ? 'Seguito' : 'Segui',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color: followStats.isFollowing
-                                  ? context.vibraTokens.textPrimary
-                                  : context.vibraTokens.onAccent,
-                            ),
-                          ),
+                          );
+                        }
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: followStats.isFollowing
+                            ? context.vibraTokens.surfaceMuted
+                            : context.vibraTokens.accentPrimary,
+                        foregroundColor: followStats.isFollowing
+                            ? context.vibraTokens.textPrimary
+                            : context.vibraTokens.onAccent,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
+                        minimumSize: Size(0, 32),
+                      ),
+                      child: Text(
+                        followStats.isFollowing
+                            ? AppLocalizations.of(context)!.socialFollowing
+                            : AppLocalizations.of(context)!.socialFollow,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: followStats.isFollowing
+                              ? context.vibraTokens.textPrimary
+                              : context.vibraTokens.onAccent,
                         ),
                       ),
-              ),
+                    ),
             ),
           ),
         ),
@@ -245,8 +277,16 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen>
           labelColor: context.vibraTokens.accentPrimary,
           unselectedLabelColor: context.vibraTokens.textSecondary,
           tabs: [
-            Tab(text: 'Follower (${followStats.followersCount})'),
-            Tab(text: 'Seguiti (${followStats.followingCount})'),
+            Tab(
+              text: AppLocalizations.of(
+                context,
+              )!.socialFollowersCount(followStats.followersCount),
+            ),
+            Tab(
+              text: AppLocalizations.of(
+                context,
+              )!.socialFollowingCount(followStats.followingCount),
+            ),
           ],
         ),
       ),
@@ -262,6 +302,8 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen>
                       color: context.vibraTokens.accentPrimary,
                     ),
                   )
+                : _followersFailed
+                ? _loadError(_loadFollowers)
                 : _followers.isEmpty
                 ? Center(
                     child: Padding(
@@ -274,26 +316,18 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen>
                             Container(
                               padding: EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: context.vibraTokens.accentPrimary
-                                    .withValues(alpha: 0.15),
+                                color: context.vibraTokens.surfaceElevated,
                                 shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: context.vibraTokens.accentPrimary
-                                        .withValues(alpha: 0.2),
-                                    blurRadius: 16,
-                                  ),
-                                ],
                               ),
                               child: Icon(
                                 Icons.people_outline_rounded,
                                 size: 32,
-                                color: context.vibraTokens.accentPrimary,
+                                color: context.vibraTokens.textSecondary,
                               ),
                             ),
                             SizedBox(height: 12),
                             Text(
-                              'Nessun Follower',
+                              AppLocalizations.of(context)!.socialNoFollowers,
                               style: TextStyle(
                                 color: context.vibraTokens.textPrimary,
                                 fontWeight: FontWeight.bold,
@@ -302,7 +336,9 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen>
                             ),
                             SizedBox(height: 4),
                             Text(
-                              'Gli utenti che inizieranno a seguire questo profilo appariranno qui.',
+                              AppLocalizations.of(
+                                context,
+                              )!.socialNoFollowersBody,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: context.vibraTokens.textSecondary,
@@ -331,6 +367,8 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen>
                       color: context.vibraTokens.accentPrimary,
                     ),
                   )
+                : _followingFailed
+                ? _loadError(_loadFollowing)
                 : _following.isEmpty
                 ? Center(
                     child: Padding(
@@ -343,26 +381,18 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen>
                             Container(
                               padding: EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: context.vibraTokens.accentPrimary
-                                    .withValues(alpha: 0.15),
+                                color: context.vibraTokens.surfaceElevated,
                                 shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: context.vibraTokens.accentPrimary
-                                        .withValues(alpha: 0.2),
-                                    blurRadius: 16,
-                                  ),
-                                ],
                               ),
                               child: Icon(
                                 Icons.person_add_outlined,
                                 size: 32,
-                                color: context.vibraTokens.accentPrimary,
+                                color: context.vibraTokens.textSecondary,
                               ),
                             ),
                             SizedBox(height: 12),
                             Text(
-                              'Nessun utente seguito',
+                              AppLocalizations.of(context)!.socialNoFollowing,
                               style: TextStyle(
                                 color: context.vibraTokens.textPrimary,
                                 fontWeight: FontWeight.bold,
@@ -371,7 +401,9 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen>
                             ),
                             SizedBox(height: 4),
                             Text(
-                              'I profili seguiti appariranno qui.',
+                              AppLocalizations.of(
+                                context,
+                              )!.socialNoFollowingBody,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: context.vibraTokens.textSecondary,

@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 
+import '../../../core/errors/offline.dart';
+import '../../../core/theme/vibra_spacing.dart';
 import '../../../core/theme/vibra_text_styles.dart';
 import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../providers/app_state_providers.dart';
 import '../../providers/usecase_providers.dart';
 import '../../widgets/common/vibra_avatar.dart';
+import '../../widgets/common/vibra_badge.dart';
 import '../../widgets/common/vibra_button.dart';
 import '../../widgets/common/vibra_input.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
-import '../../widgets/common/vibra_surface.dart';
-import '../../widgets/vibra_signal_wave.dart';
+import '../../widgets/common/vibra_state_views.dart';
 
 /// Inbox tipografica: il messaggio e la persona precedono i controlli.
 class ConversationsScreen extends ConsumerStatefulWidget {
@@ -162,8 +163,15 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
     final unread = conversation.unreadCount > 0;
     return Semantics(
       button: true,
-      label:
-          'Apri conversazione con ${conversation.effectiveDisplayName}${unread ? ', ${conversation.unreadCount} messaggi non letti' : ''}',
+      label: [
+        AppLocalizations.of(
+          context,
+        )!.inboxOpenConversation(conversation.effectiveDisplayName),
+        if (unread)
+          AppLocalizations.of(
+            context,
+          )!.inboxUnreadCount(conversation.unreadCount),
+      ].join(', '),
       liveRegion: unread,
       onLongPress: () => _showConversationActions(conversation),
       excludeSemantics: true,
@@ -181,20 +189,20 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
           splashColor: t.accentPrimary.withValues(alpha: 0.18),
           hoverColor: t.accentPrimary.withValues(alpha: 0.08),
           focusColor: t.accentPrimary.withValues(alpha: 0.12),
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: t.borderDefault)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: VibraSpacing.pagePadding,
+              vertical: VibraSpacing.md,
             ),
             child: Row(
               children: [
                 VibraAvatar(
                   imageUrl: conversation.otherAvatarUrl,
                   name: conversation.effectiveDisplayName,
-                  radius: 26,
+                  radius: 28,
                   signalRing: unread,
                 ),
-                const SizedBox(width: 13),
+                const SizedBox(width: VibraSpacing.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,26 +214,27 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
                               conversation.effectiveDisplayName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: VibraTextStyles.titleLarge.copyWith(
+                              style: VibraTextStyles.titleMedium.copyWith(
+                                color: t.textPrimary,
                                 fontWeight: unread
                                     ? FontWeight.w700
                                     : FontWeight.w600,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: VibraSpacing.sm),
                           Text(
                             _formatDate(conversation.lastMessageCreatedAt),
-                            style: VibraTextStyles.bodySmall.copyWith(
-                              color: unread ? t.textPrimary : t.textSecondary,
+                            style: VibraTextStyles.caption.copyWith(
+                              color: unread ? t.accentPrimary : t.textMuted,
                               fontWeight: unread
                                   ? FontWeight.w700
-                                  : FontWeight.w400,
+                                  : FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Row(
                         children: [
                           Expanded(
@@ -233,7 +242,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
                               conversation.lastMessageContent,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: VibraTextStyles.bodyMedium.copyWith(
+                              style: VibraTextStyles.bodySmall.copyWith(
                                 color: unread ? t.textPrimary : t.textSecondary,
                                 fontWeight: unread
                                     ? FontWeight.w600
@@ -242,8 +251,8 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
                             ),
                           ),
                           if (unread) ...[
-                            const SizedBox(width: 10),
-                            const _UnreadDot(),
+                            const SizedBox(width: VibraSpacing.sm),
+                            VibraCountBadge(count: conversation.unreadCount),
                           ],
                         ],
                       ),
@@ -251,7 +260,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
                   ),
                 ),
                 if (_deleting.contains(conversation.otherUserId)) ...[
-                  const SizedBox(width: 10),
+                  const SizedBox(width: VibraSpacing.sm),
                   const SizedBox(
                     width: 18,
                     height: 18,
@@ -280,6 +289,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final status = ref.watch(conversationsStatusProvider);
     final t = context.vibraTokens;
     final l10n = AppLocalizations.of(context)!;
     final allDirect = ref.watch(directConversationsProvider);
@@ -292,6 +302,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
     ].where((conversation) => conversation.unreadCount > 0).length;
     final filtering = _searchQuery.isNotEmpty || _unreadOnly;
     final noResults = _InboxEmpty(
+      icon: Icons.search_off_rounded,
       title: l10n.inboxNoResults,
       body: l10n.inboxNoResultsBody,
       action: l10n.inboxClearFilters,
@@ -302,7 +313,12 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 16, 0),
+            padding: const EdgeInsets.fromLTRB(
+              VibraSpacing.pagePadding,
+              VibraSpacing.xl,
+              VibraSpacing.md,
+              0,
+            ),
             child: Row(
               children: [
                 if (widget.showBackButton)
@@ -312,44 +328,58 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'IN CONTATTO',
+                        AppLocalizations.of(context)!.inboxEyebrow,
                         style: VibraTextStyles.labelSmall.copyWith(
-                          color: t.textSecondary,
+                          color: t.accentPrimary,
                         ),
                       ),
-                      const SizedBox(height: 5),
-                      Text('Messaggi', style: VibraTextStyles.displaySmall),
+                      const SizedBox(height: VibraSpacing.sm),
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          AppLocalizations.of(context)!.inboxMessages,
+                          style: VibraTextStyles.headlineLarge.copyWith(
+                            color: t.textPrimary,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.group_outlined),
-                  tooltip: 'Amici',
+                  tooltip: AppLocalizations.of(context)!.friendsTitle,
+                  style: IconButton.styleFrom(backgroundColor: t.surface),
                   onPressed: () => context.push('/friends'),
                 ),
               ],
             ),
-          ).animate().fadeIn(duration: 300.ms),
+          ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+            padding: const EdgeInsets.fromLTRB(
+              VibraSpacing.pagePadding,
+              VibraSpacing.lg,
+              VibraSpacing.pagePadding,
+              0,
+            ),
             child: SizedBox(
-              height: 36,
+              height: 40,
               child: TabBar(
                 controller: _tabController,
                 tabAlignment: TabAlignment.start,
                 isScrollable: true,
-                indicatorWeight: 4,
-                labelPadding: const EdgeInsets.only(right: 24),
+                dividerColor: Colors.transparent,
+                labelPadding: const EdgeInsets.only(right: VibraSpacing.xxl),
                 tabs: [
-                  const Tab(text: 'Diretti'),
+                  Tab(text: AppLocalizations.of(context)!.inboxDirect),
                   Tab(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('Richieste'),
+                        Text(AppLocalizations.of(context)!.inboxRequests),
                         if (allRequests.isNotEmpty) ...[
-                          const SizedBox(width: 7),
-                          const _UnreadDot(),
+                          const SizedBox(width: VibraSpacing.sm),
+                          VibraCountBadge(count: allRequests.length),
                         ],
                       ],
                     ),
@@ -359,10 +389,15 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            padding: const EdgeInsets.fromLTRB(
+              VibraSpacing.pagePadding,
+              VibraSpacing.md,
+              VibraSpacing.pagePadding,
+              0,
+            ),
             child: VibraInput(
               controller: _searchController,
-              hintText: 'Cerca una conversazione',
+              hintText: AppLocalizations.of(context)!.inboxSearchHint,
               prefixIcon: Icons.search_rounded,
               textInputAction: TextInputAction.search,
               onSubmitted: (_) => FocusScope.of(context).unfocus(),
@@ -371,7 +406,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
               suffix: _searchQuery.isEmpty
                   ? null
                   : IconButton(
-                      tooltip: 'Cancella ricerca conversazioni',
+                      tooltip: AppLocalizations.of(context)!.inboxClearSearch,
                       icon: const Icon(Icons.close_rounded),
                       onPressed: () {
                         _searchController.clear();
@@ -381,10 +416,22 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+            padding: const EdgeInsets.fromLTRB(
+              VibraSpacing.pagePadding,
+              VibraSpacing.md,
+              VibraSpacing.pagePadding,
+              VibraSpacing.xs,
+            ),
             child: Align(
               alignment: AlignmentDirectional.centerStart,
               child: FilterChip(
+                avatar: Icon(
+                  _unreadOnly
+                      ? Icons.mark_chat_unread_rounded
+                      : Icons.mark_chat_unread_outlined,
+                  size: VibraSpacing.iconSm,
+                  color: _unreadOnly ? t.accentPrimary : t.textSecondary,
+                ),
                 label: Text('${l10n.inboxUnread} ($unreadCount)'),
                 selected: _unreadOnly,
                 onSelected: (selected) =>
@@ -392,6 +439,28 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
               ),
             ),
           ),
+          if (status.isLoading) const LinearProgressIndicator(),
+          if (status.hasError)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      isOfflineError(status.error)
+                          ? AppLocalizations.of(context)!.errorNetwork
+                          : AppLocalizations.of(context)!.inboxRefreshError,
+                      style: TextStyle(color: t.error),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () =>
+                        ref.read(conversationsProvider.notifier).refresh(),
+                    child: Text(l10n.commonRetry),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -401,10 +470,11 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
                   empty: filtering
                       ? noResults
                       : _InboxEmpty(
-                          title: 'Nessuna conversazione, ancora.',
-                          body:
-                              'Trova qualcuno sulla tua stessa frequenza e il primo messaggio farà il resto.',
-                          action: 'Trova persone',
+                          title: AppLocalizations.of(context)!.inboxEmptyTitle,
+                          body: AppLocalizations.of(context)!.inboxEmptyBody,
+                          action: AppLocalizations.of(
+                            context,
+                          )!.friendsFindPeople,
                           onAction: () => context.push('/social'),
                         ),
                   onRefresh: () =>
@@ -416,9 +486,11 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen>
                   empty: filtering
                       ? noResults
                       : _InboxEmpty(
-                          title: 'Nessuna richiesta in attesa.',
-                          body:
-                              'Le nuove connessioni compariranno qui con calma.',
+                          icon: Icons.mark_email_unread_outlined,
+                          title: AppLocalizations.of(context)!.inboxNoRequests,
+                          body: AppLocalizations.of(
+                            context,
+                          )!.inboxNoRequestsBody,
                         ),
                   onRefresh: () =>
                       ref.read(conversationsProvider.notifier).refresh(),
@@ -454,19 +526,23 @@ class _ConversationList extends StatelessWidget {
           ? ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: const EdgeInsets.fromLTRB(20, 42, 20, 132),
+              padding: const EdgeInsets.fromLTRB(
+                VibraSpacing.pagePadding,
+                VibraSpacing.lg,
+                VibraSpacing.pagePadding,
+                VibraSpacing.navBarClearance,
+              ),
               children: [empty],
             )
           : ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: const EdgeInsets.only(top: 10, bottom: 132),
+              padding: const EdgeInsets.only(
+                top: VibraSpacing.xs,
+                bottom: VibraSpacing.navBarClearance,
+              ),
               itemCount: conversations.length,
-              itemBuilder: (context, index) =>
-                  rowBuilder(conversations[index]).animate().fadeIn(
-                    delay: Duration(milliseconds: index * 45),
-                    duration: 260.ms,
-                  ),
+              itemBuilder: (context, index) => rowBuilder(conversations[index]),
             ),
     );
   }
@@ -478,64 +554,22 @@ class _InboxEmpty extends StatelessWidget {
     required this.body,
     this.action,
     this.onAction,
+    this.icon = Icons.chat_bubble_outline_rounded,
   });
 
   final String title;
   final String body;
   final String? action;
   final VoidCallback? onAction;
+  final IconData icon;
 
   @override
-  Widget build(BuildContext context) {
-    final t = context.vibraTokens;
-    return VibraSurface(
-      padding: const EdgeInsets.all(22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 140,
-            child: VibraSignalWave(
-              height: 35,
-              color: t.accentPrimary,
-              secondaryColor: t.textPrimary,
-              amplitude: 7,
-              animate: true,
-            ),
-          ),
-          const SizedBox(height: 15),
-          Text(title, style: VibraTextStyles.headlineMedium),
-          const SizedBox(height: 6),
-          Text(body, style: VibraTextStyles.bodySmall),
-          if (action != null && onAction != null) ...[
-            const SizedBox(height: 18),
-            VibraButton(
-              label: action!,
-              tone: VibraButtonTone.signal,
-              onPressed: onAction,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _UnreadDot extends StatelessWidget {
-  const _UnreadDot();
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.vibraTokens;
-    return SizedBox(
-      width: 8,
-      height: 8,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: t.accentPrimary,
-          shape: BoxShape.circle,
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => VibraEmptyView(
+    compact: true,
+    icon: icon,
+    title: title,
+    message: body,
+    actionLabel: action,
+    onActionTap: onAction,
+  );
 }

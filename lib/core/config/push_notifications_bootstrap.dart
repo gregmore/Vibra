@@ -1,9 +1,9 @@
+import '../navigation/notification_routing.dart';
 import 'dart:async';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../router/app_router.dart';
 
 import 'package:flutter/foundation.dart';
@@ -11,8 +11,6 @@ import 'package:flutter/foundation.dart';
 import 'push_token_registration.dart';
 import 'push_preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../data/models/event_model.dart';
-import '../../data/mappers/domain_mappers.dart';
 
 import '../utils/logger.dart';
 import 'firebase_bootstrap.dart';
@@ -205,69 +203,27 @@ class PushNotificationsBootstrap {
           .rpc('record_notification_open', params: {'campaign': campaignId})
           .catchError((_) {});
     }
-    final type = data['type'];
-
-    switch (type) {
-      case 'chat_message':
-      case 'message_request':
-        final senderId = data['sender_id'];
-        if (senderId != null) {
-          context.push(
-            '/chat',
-            extra: {
-              'otherUserId': senderId,
-              'otherDisplayName':
-                  message.notification?.title?.replaceAll(
-                    'Nuovo messaggio da ',
-                    '',
-                  ) ??
-                  'Chat',
+    // A push for a stored notification marks it read when opened.
+    final notificationId = data['notification_id'];
+    if (notificationId != null && notificationId.isNotEmpty) {
+      Supabase.instance.client
+          .rpc(
+            'mark_notifications_read',
+            params: {
+              'p_ids': [notificationId],
             },
-          );
-        }
-        break;
-      case 'friend_request':
-        context.push('/friends');
-        break;
-      case 'match':
-        context.push('/social');
-        break;
-      case 'live_chat':
-        context.push('/live');
-        break;
-      case 'event_alert':
-      case 'artist_concert':
-      case 'retention':
-      case 'digest':
-        final eventId = data['event_id'];
-        if (eventId != null) {
-          unawaited(_openEvent(eventId, context));
-        }
-        break;
+          )
+          .catchError((_) {});
     }
-  }
-
-  static Future<void> _openEvent(String eventId, BuildContext context) async {
-    try {
-      final row = await Supabase.instance.client
-          .from('events')
-          .select()
-          .eq('id', eventId)
-          .maybeSingle();
-      if (!context.mounted) return;
-      if (row != null) {
-        unawaited(
-          context.push(
-            '/event-detail',
-            extra: EventModel.fromJson(row).toEntity(),
-          ),
-        );
-        return;
-      }
-    } catch (_) {
-      VibraLogger.warning('Evento della notifica non disponibile', tag: 'Push');
-    }
-    if (context.mounted) unawaited(context.push('/explore'));
+    openNotificationTarget(
+      context,
+      data['type'],
+      Map<String, dynamic>.from(data),
+      senderName: message.notification?.title?.replaceAll(
+        'Nuovo messaggio da ',
+        '',
+      ),
+    );
   }
 
   static Future<void> _persistToken(

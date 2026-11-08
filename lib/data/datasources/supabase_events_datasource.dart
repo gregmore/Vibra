@@ -1,3 +1,4 @@
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import '../../core/constants/db_tables.dart';
 import '../../core/errors/exceptions.dart';
 import '../../core/services/cache_service.dart';
@@ -8,6 +9,10 @@ import 'supabase_datasource.dart';
 /// Datasource Supabase per eventi e partecipazioni.
 class SupabaseEventsDatasource {
   SupabaseEventsDatasource(this._supabase);
+
+  /// Events returned for one map view (markers are clustered on the client).
+  static const int mapResultLimit = 2000;
+  static const int legacyMapResultLimit = 500;
 
   final SupabaseDatasource _supabase;
 
@@ -50,16 +55,23 @@ class SupabaseEventsDatasource {
     required double radiusMeters,
   }) async {
     try {
-      final rows = await _supabase.client.rpc(
+      Future<dynamic> query(int limit) => _supabase.client.rpc(
         'find_events_in_radius',
         params: {
           'p_latitude': latitude,
           'p_longitude': longitude,
           'p_radius_meters': radiusMeters,
-          'p_status': 'onsale',
-          'p_limit': 500,
+          'p_status': null,
+          'p_limit': limit,
         },
       );
+      dynamic rows;
+      try {
+        rows = await query(mapResultLimit);
+      } on PostgrestException {
+        // Databases without migration 20261105000000 accept at most 500.
+        rows = await query(legacyMapResultLimit);
+      }
       final events = List<Map<String, dynamic>>.from(rows)
           .map((row) {
             return EventModel.fromJson({
@@ -70,24 +82,71 @@ class SupabaseEventsDatasource {
           })
           .toList(growable: false);
 
-      // Salviamo anche gli eventi nearby in cache per avere sempre qualcosa sulla mappa offline
-      await CacheService.saveList(
-        '${CacheService.keyEvents}_nearby',
-        events.map((e) => e.toJson()).toList(),
-      );
+      // An offline result is usable only for the area actually queried. The
+      // single cache entry avoids persisting a history of device locations.
+      await CacheService.saveObject('${CacheService.keyEvents}_nearby', {
+        'latitude': latitude,
+        'longitude': longitude,
+        'radius_meters': radiusMeters,
+        'events': events.map((event) => event.toJson()).toList(),
+      });
       return events;
     } catch (e) {
-      final cachedJson = CacheService.getList(
-        '${CacheService.keyEvents}_nearby',
-      );
-      if (cachedJson != null && cachedJson.isNotEmpty) {
-        return cachedJson.map(EventModel.fromJson).toList(growable: false);
+      final cached = CacheService.getObject('${CacheService.keyEvents}_nearby');
+      if (cached?['latitude'] == latitude &&
+          cached?['longitude'] == longitude &&
+          cached?['radius_meters'] == radiusMeters &&
+          cached?['events'] is List) {
+        try {
+          final now = DateTime.now();
+          return (cached!['events'] as List)
+              .map((row) => EventModel.fromJson(Map<String, dynamic>.from(row)))
+              .where((event) => event.eventDate.isAfter(now))
+              .toList(growable: false);
+        } catch (_) {
+          // An invalid cache cannot turn an offline error into a parsing crash.
+        }
       }
       throw ServerException(
         message: 'Errore RPC find_events_in_radius e cache vuota',
         endpoint: 'rpc/find_events_in_radius',
       );
     }
+  }
+
+  /// Refresh the queried area with the provider key retained on the backend.
+  Future<List<EventModel>> searchNearbyEvents(
+    double latitude,
+    double longitude,
+    int radiusKm,
+  ) async {
+    final response = await _supabase.client.functions
+        .invoke(
+          'search-events',
+          body: {
+            'latitude': latitude,
+            'longitude': longitude,
+            'radius_km': radiusKm,
+          },
+        )
+        .timeout(const Duration(seconds: 35));
+    if (response.status != 200 ||
+        response.data is! Map ||
+        response.data['events'] is! List) {
+      throw const ServerException(
+        message: 'Event provider unavailable',
+        endpoint: 'search-events',
+      );
+    }
+    return (response.data['events'] as List)
+        .map(
+          (row) => EventModel.fromJson({
+            ...Map<String, dynamic>.from(row),
+            'latitude': row['location_lat'],
+            'longitude': row['location_lon'],
+          }),
+        )
+        .toList(growable: false);
   }
 
   Future<String> syncEvent(EventModel event) async {

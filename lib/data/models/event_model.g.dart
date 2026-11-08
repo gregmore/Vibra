@@ -28,6 +28,10 @@ _EventModel _$EventModelFromJson(Map<String, dynamic> json) => _EventModel(
   createdAt: json['created_at'] == null
       ? null
       : DateTime.parse(json['created_at'] as String),
+  genres:
+      (json['genres'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const <String>[],
+  priceCurrency: json['price_currency'] as String?,
 );
 
 Map<String, dynamic> _$EventModelToJson(_EventModel instance) =>
@@ -51,4 +55,6 @@ Map<String, dynamic> _$EventModelToJson(_EventModel instance) =>
       'description': instance.description,
       'status': instance.status,
       'created_at': instance.createdAt?.toIso8601String(),
+      'genres': instance.genres,
+      'price_currency': instance.priceCurrency,
     };

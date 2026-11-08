@@ -30,7 +30,7 @@ void main() async {
 Future<void> bootstrapAndRun() async {
   WidgetsFlutterBinding.ensureInitialized();
   LicenseRegistry.addLicense(() async* {
-    for (final family in ['inter', 'syne']) {
+    for (final family in ['inter']) {
       final license = await rootBundle.loadString(
         'assets/fonts/$family-OFL.txt',
       );

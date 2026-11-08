@@ -153,6 +153,8 @@ extension EventModelToEntity on EventModel {
       description: description,
       status: status,
       createdAt: createdAt,
+      genres: genres,
+      priceCurrency: priceCurrency,
     );
   }
 }
@@ -179,6 +181,8 @@ extension EventEntityToModel on Event {
       description: description,
       status: status,
       createdAt: createdAt,
+      genres: genres,
+      priceCurrency: priceCurrency,
     );
   }
 }

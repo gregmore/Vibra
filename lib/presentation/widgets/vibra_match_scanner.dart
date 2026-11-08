@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/vibra_text_styles.dart';
 import '../../core/theme/vibra_theme_tokens.dart';
-import 'vibra_signal_wave.dart';
+import 'common/vibra_logo.dart';
 
 /// Scanner musicale usato durante la ricerca di nuove affinità.
 ///
@@ -120,28 +120,16 @@ class _VibraMatchScannerState extends State<VibraMatchScanner>
                       child: Container(
                         width: 104,
                         height: 104,
-                        padding: const EdgeInsets.symmetric(horizontal: 17),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: t.primaryGradient,
-                          border: Border.all(
-                            color: t.onAccent.withValues(alpha: .28),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: t.accentPrimary.withValues(alpha: .3),
-                              blurRadius: 34,
-                              spreadRadius: 2,
-                            ),
-                          ],
+                          color: t.backgroundPrimary,
+                          border: Border.all(color: t.accentPrimary, width: 2),
                         ),
-                        child: VibraSignalWave(
-                          height: 42,
-                          color: t.onAccent,
-                          secondaryColor: t.onAccent,
-                          amplitude: 9,
-                          strokeWidth: 2.5,
-                          animate: true,
+                        alignment: Alignment.center,
+                        child: VibraLogo(
+                          width: 46,
+                          height: 40,
+                          color: t.textPrimary,
                         ),
                       ),
                     ),
@@ -153,7 +141,7 @@ class _VibraMatchScannerState extends State<VibraMatchScanner>
             Text(
               widget.title,
               textAlign: TextAlign.center,
-              style: VibraTextStyles.headlineMedium.copyWith(
+              style: VibraTextStyles.headlineSmall.copyWith(
                 color: t.textPrimary,
               ),
             ),
@@ -207,9 +195,6 @@ class _OrbitNode extends StatelessWidget {
           color: context.vibraTokens.surfaceElevated,
           shape: BoxShape.circle,
           border: Border.all(color: color.withValues(alpha: .72)),
-          boxShadow: [
-            BoxShadow(color: color.withValues(alpha: .24), blurRadius: 12),
-          ],
         ),
         child: Icon(icon, size: size * .48, color: color),
       ),

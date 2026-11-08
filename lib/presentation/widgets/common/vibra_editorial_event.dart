@@ -1,16 +1,57 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vibra/l10n/app_localizations.dart';
 
+import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/vibra_motion.dart';
 import '../../../core/theme/vibra_spacing.dart';
 import '../../../core/theme/vibra_text_styles.dart';
 import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../../domain/entities/event.dart';
 import '../../providers/usecase_providers.dart';
-import '../vibra_signal_wave.dart';
+import 'vibra_badge.dart';
+import 'vibra_event_meta.dart';
+import 'vibra_image.dart';
+import 'vibra_match_indicator.dart';
 
-/// Il contenuto editoriale dominante in Home: un poster, non una card CTA.
-class VibraEventFeature extends ConsumerWidget {
+const _greyscale = ColorFilter.matrix(<double>[
+  0.2126, 0.7152, 0.0722, 0, 0, //
+  0.2126, 0.7152, 0.0722, 0, 0, //
+  0.2126, 0.7152, 0.0722, 0, 0, //
+  0, 0, 0, 1, 0,
+]);
+
+String _semantics(
+  BuildContext context,
+  Event event,
+  VibraEventStatus status,
+  int? score,
+) {
+  final l10n = AppLocalizations.of(context)!;
+  final date = VibraEventDate(context, event.eventDate);
+  final place = event.venueName ?? event.city ?? l10n.eventVenueTBA;
+  return [
+    l10n.eventOpenSemantics(event.name, date.medium, place),
+    if (status != VibraEventStatus.upcoming) status.label(l10n),
+    if (score != null) l10n.eventAffinitySemantics(score),
+  ].join(', ');
+}
+
+void _logView(WidgetRef ref, Event event, int? score) {
+  ref
+      .read(logEventInteractionUseCaseProvider)
+      .execute(
+        event: event,
+        interactionType: 'view',
+        scoreAtTime: score?.toDouble(),
+      );
+}
+
+/// Hero event poster: the dominant recommendation on Home and Explore.
+///
+/// Full-bleed artwork, a date stamp, the match score and a bottom panel with
+/// name, venue, time, price and lifecycle status.
+class VibraEventFeature extends ConsumerStatefulWidget {
   const VibraEventFeature({
     required this.event,
     required this.onTap,
@@ -24,169 +65,145 @@ class VibraEventFeature extends ConsumerWidget {
   final int? matchScore;
   final double height;
 
-  String get _month {
-    const labels = [
-      'GEN',
-      'FEB',
-      'MAR',
-      'APR',
-      'MAG',
-      'GIU',
-      'LUG',
-      'AGO',
-      'SET',
-      'OTT',
-      'NOV',
-      'DIC',
-    ];
-    return labels[event.eventDate.month - 1];
-  }
+  @override
+  ConsumerState<VibraEventFeature> createState() => _VibraEventFeatureState();
+}
 
-  void _open(WidgetRef ref) {
-    ref
-        .read(logEventInteractionUseCaseProvider)
-        .execute(
-          event: event,
-          interactionType: 'view',
-          scoreAtTime: matchScore?.toDouble(),
-        );
-    onTap();
-  }
+class _VibraEventFeatureState extends ConsumerState<VibraEventFeature> {
+  bool _pressed = false;
+
+  int? get _score => AppConstants.spotifyEnabled ? widget.matchScore : null;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final t = context.vibraTokens;
-    final place = event.venueName ?? event.city ?? 'Luogo da definire';
+    final l10n = AppLocalizations.of(context)!;
+    final event = widget.event;
+    final status = vibraEventStatus(event);
+    final date = VibraEventDate(context, event.eventDate);
+    final place = [
+      event.venueName,
+      event.city,
+    ].whereType<String>().where((s) => s.isNotEmpty).join(' · ');
+    final price = vibraEventPriceLabel(context, event);
+    final radius = BorderRadius.circular(VibraSpacing.radiusXL);
+
+    Widget artwork = VibraNetworkImage(url: event.imageUrl, cacheWidth: 420);
+    if (status.isInactive) {
+      artwork = ColorFiltered(colorFilter: _greyscale, child: artwork);
+    }
 
     return Semantics(
       button: true,
-      label:
-          'Apri evento ${event.name}, ${event.eventDate.day} $_month, $place${matchScore == null ? '' : ', affinità $matchScore percento'}',
+      label: _semantics(context, event, status, _score),
       excludeSemantics: true,
-      child: SizedBox(
-        height: height,
-        child: ClipRRect(
-          borderRadius: VibraSpacing.borderMedium,
-          child: Material(
-            color: t.imageOverlay,
-            child: InkWell(
-              onTap: () => _open(ref),
-              splashColor: t.accentPrimary.withValues(alpha: 0.22),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (event.imageUrl != null && event.imageUrl!.isNotEmpty)
-                    CachedNetworkImage(
-                      imageUrl: event.imageUrl!,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 800,
-                      errorWidget: (_, _, _) => _FallbackPoster(),
-                    )
-                  else
-                    _FallbackPoster(),
-                  // WCAG safeguard: 60% black remains >= 4.5:1 for white text
-                  // even when the underlying poster is pure white.
-                  ColoredBox(color: t.imageScrim),
-                  Positioned(
-                    top: 14,
-                    left: 14,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: t.surfaceElevated,
-                        borderRadius: VibraSpacing.borderSmall,
-                        border: Border.all(color: t.borderDefault),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            event.eventDate.day.toString().padLeft(2, '0'),
-                            style: VibraTextStyles.titleLarge.copyWith(
-                              fontSize: 18,
-                            ),
-                          ),
-                          Text(
-                            _month,
-                            style: VibraTextStyles.labelSmall.copyWith(
-                              color: t.textSecondary,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (matchScore != null)
+      child: AnimatedScale(
+        scale: _pressed ? VibraMotion.pressedScale : 1,
+        duration: VibraMotion.durationFor(
+          context,
+          _pressed ? VibraMotion.tapIn : VibraMotion.tapOut,
+        ),
+        curve: VibraMotion.signalCurve,
+        child: SizedBox(
+          height: widget.height,
+          child: ClipRRect(
+            borderRadius: radius,
+            child: Material(
+              color: t.surface,
+              child: InkWell(
+                onTap: () {
+                  _logView(ref, event, _score);
+                  widget.onTap();
+                },
+                onHighlightChanged: (v) => setState(() => _pressed = v),
+                splashColor: t.accentPrimary.withValues(alpha: 0.16),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    artwork,
+                    VibraImageScrim(color: t.imageOverlay, start: .3),
                     Positioned(
-                      top: 16,
-                      right: 14,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: t.accentPrimary,
-                          borderRadius: VibraSpacing.borderSmall,
-                          border: Border.all(color: t.onAccent, width: 1.5),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 7,
-                        ),
-                        child: Text(
-                          '$matchScore% PER TE',
-                          style: VibraTextStyles.labelSmall.copyWith(
-                            color: t.onAccent,
-                            fontSize: 11,
-                          ),
+                      top: VibraSpacing.md,
+                      left: VibraSpacing.md,
+                      child: _DateStamp(date: date),
+                    ),
+                    if (_score != null)
+                      Positioned(
+                        top: VibraSpacing.md + 4,
+                        right: VibraSpacing.md,
+                        child: VibraMatchBadge(
+                          percentage: _score!,
+                          onImage: true,
                         ),
                       ),
-                    ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Container(
-                      width: double.infinity,
-                      color: t.imageOverlay,
-                      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+                    Positioned(
+                      left: VibraSpacing.xl,
+                      right: VibraSpacing.xl,
+                      bottom: VibraSpacing.xl,
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          SizedBox(
-                            width: 104,
-                            child: VibraSignalWave(
-                              height: 18,
-                              color: t.accentPrimary,
-                              secondaryColor: t.onImage,
-                              amplitude: 4,
-                              strokeWidth: 1.5,
-                              animate: true,
+                          if (status != VibraEventStatus.upcoming) ...[
+                            VibraEventStatusBadge(status: status),
+                            const SizedBox(height: VibraSpacing.sm),
+                          ],
+                          if (event.artistName != null &&
+                              event.artistName!.isNotEmpty &&
+                              event.artistName != event.name) ...[
+                            Text(
+                              event.artistName!.toUpperCase(),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: VibraTextStyles.labelSmall.copyWith(
+                                color: t.onImageMuted,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
+                            const SizedBox(height: VibraSpacing.xs),
+                          ],
                           Text(
                             event.name,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: VibraTextStyles.headlineLarge.copyWith(
+                            style: VibraTextStyles.headlineMedium.copyWith(
                               color: t.onImage,
-                              fontSize: 23,
+                              decoration: status == VibraEventStatus.cancelled
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                              decorationColor: t.onImage,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            place,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: VibraTextStyles.bodySmall.copyWith(
-                              color: t.onImageMuted,
-                            ),
+                          const SizedBox(height: VibraSpacing.sm),
+                          _MetaLine(
+                            icon: Icons.place_outlined,
+                            text: place.isEmpty ? l10n.eventVenueTBA : place,
+                            color: t.onImageMuted,
+                          ),
+                          const SizedBox(height: VibraSpacing.xs),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _MetaLine(
+                                  icon: Icons.schedule_rounded,
+                                  text: date.weekdayTime,
+                                  color: t.onImageMuted,
+                                ),
+                              ),
+                              if (price != null && !status.isInactive) ...[
+                                const SizedBox(width: VibraSpacing.sm),
+                                VibraBadge(
+                                  label: price,
+                                  tone: VibraBadgeTone.onImage,
+                                  icon: Icons.confirmation_number_outlined,
+                                ),
+                              ],
+                            ],
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -196,7 +213,8 @@ class VibraEventFeature extends ConsumerWidget {
   }
 }
 
-class VibraEventRow extends ConsumerWidget {
+/// List row: thumbnail, name, venue, date/time, status and match.
+class VibraEventRow extends ConsumerStatefulWidget {
   const VibraEventRow({
     required this.event,
     required this.onTap,
@@ -208,126 +226,157 @@ class VibraEventRow extends ConsumerWidget {
   final Event event;
   final VoidCallback onTap;
   final int? matchScore;
+
+  /// Kept for API compatibility; rows are now separated by spacing.
   final bool showDivider;
 
-  String get _month {
-    const labels = [
-      'GEN',
-      'FEB',
-      'MAR',
-      'APR',
-      'MAG',
-      'GIU',
-      'LUG',
-      'AGO',
-      'SET',
-      'OTT',
-      'NOV',
-      'DIC',
-    ];
-    return labels[event.eventDate.month - 1];
-  }
+  @override
+  ConsumerState<VibraEventRow> createState() => _VibraEventRowState();
+}
 
-  void _open(WidgetRef ref) {
-    ref
-        .read(logEventInteractionUseCaseProvider)
-        .execute(
-          event: event,
-          interactionType: 'view',
-          scoreAtTime: matchScore?.toDouble(),
-        );
-    onTap();
-  }
+class _VibraEventRowState extends ConsumerState<VibraEventRow> {
+  bool _pressed = false;
+
+  int? get _score => AppConstants.spotifyEnabled ? widget.matchScore : null;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final t = context.vibraTokens;
-    final place = event.venueName ?? event.city ?? 'Luogo da definire';
+    final l10n = AppLocalizations.of(context)!;
+    final event = widget.event;
+    final status = vibraEventStatus(event);
+    final date = VibraEventDate(context, event.eventDate);
+    final place = event.venueName ?? event.city ?? l10n.eventVenueTBA;
+    final price = vibraEventPriceLabel(context, event);
+
+    Widget thumb = VibraNetworkImage(url: event.imageUrl, cacheWidth: 80);
+    if (status.isInactive) {
+      thumb = ColorFiltered(colorFilter: _greyscale, child: thumb);
+    }
+
     return Semantics(
       button: true,
-      label:
-          'Apri evento ${event.name}, ${event.eventDate.day} $_month, $place${matchScore == null ? '' : ', affinità $matchScore percento'}',
+      label: _semantics(context, event, status, _score),
       excludeSemantics: true,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _open(ref),
-          splashColor: t.accentPrimary.withValues(alpha: 0.18),
-          hoverColor: t.accentPrimary.withValues(alpha: 0.08),
-          focusColor: t.accentPrimary.withValues(alpha: 0.12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 15),
-            decoration: BoxDecoration(
-              border: showDivider
-                  ? Border(bottom: BorderSide(color: t.borderDefault))
-                  : null,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 46,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        event.eventDate.day.toString().padLeft(2, '0'),
-                        style: VibraTextStyles.displaySmall.copyWith(
-                          color: t.textPrimary,
-                          fontSize: 25,
-                        ),
+      child: AnimatedScale(
+        scale: _pressed ? .985 : 1,
+        duration: VibraMotion.durationFor(
+          context,
+          _pressed ? VibraMotion.tapIn : VibraMotion.tapOut,
+        ),
+        curve: VibraMotion.signalCurve,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              _logView(ref, event, _score);
+              widget.onTap();
+            },
+            onHighlightChanged: (v) => setState(() => _pressed = v),
+            borderRadius: VibraSpacing.borderMedium,
+            splashColor: t.accentPrimary.withValues(alpha: 0.10),
+            highlightColor: t.textPrimary.withValues(alpha: 0.03),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: VibraSpacing.sm),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 72,
+                    height: 72,
+                    child: ClipRRect(
+                      borderRadius: VibraSpacing.borderMedium,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          thumb,
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 3),
+                              color: t.imageOverlay,
+                              child: Text(
+                                '${date.day} ${date.month}',
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                style: VibraTextStyles.labelSmall.copyWith(
+                                  color: t.onImage,
+                                  fontSize: 10,
+                                  letterSpacing: .4,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        _month,
-                        style: VibraTextStyles.labelSmall.copyWith(
-                          color: t.textSecondary,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        event.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: VibraTextStyles.titleLarge,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        place,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: VibraTextStyles.bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    if (matchScore != null)
-                      Text(
-                        '$matchScore%',
-                        style: VibraTextStyles.labelLarge.copyWith(
-                          color: t.matchColor(matchScore! / 100),
-                        ),
-                      ),
-                    const SizedBox(height: 7),
-                    Icon(
-                      Icons.arrow_outward_rounded,
-                      color: t.textPrimary,
-                      size: 18,
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  const SizedBox(width: VibraSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          event.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: VibraTextStyles.titleMedium.copyWith(
+                            color: status.isInactive
+                                ? t.textSecondary
+                                : t.textPrimary,
+                            decoration: status == VibraEventStatus.cancelled
+                                ? TextDecoration.lineThrough
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          place,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: VibraTextStyles.bodySmall.copyWith(
+                            color: t.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: VibraSpacing.sm,
+                          runSpacing: VibraSpacing.xs,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              date.weekdayTime,
+                              style: VibraTextStyles.caption.copyWith(
+                                color: t.textSecondary,
+                              ),
+                            ),
+                            if (status != VibraEventStatus.upcoming)
+                              VibraEventStatusBadge(status: status)
+                            else if (price != null)
+                              Text(
+                                price,
+                                style: VibraTextStyles.caption.copyWith(
+                                  color: t.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: VibraSpacing.sm),
+                  if (_score != null)
+                    VibraMatchBadge(percentage: _score!)
+                  else
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: t.textMuted,
+                      size: VibraSpacing.iconMd,
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -336,26 +385,70 @@ class VibraEventRow extends ConsumerWidget {
   }
 }
 
-class _FallbackPoster extends StatelessWidget {
+class _DateStamp extends StatelessWidget {
+  const _DateStamp({required this.date});
+
+  final VibraEventDate date;
+
   @override
   Widget build(BuildContext context) {
     final t = context.vibraTokens;
-    return ColoredBox(
-      color: t.imageOverlay,
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Align(
-          alignment: Alignment.center,
-          child: VibraSignalWave(
-            height: 96,
-            color: t.accentPrimary,
-            secondaryColor: t.onImage,
-            amplitude: 24,
-            strokeWidth: 3,
-            animate: true,
+    return Container(
+      width: 52,
+      padding: const EdgeInsets.symmetric(vertical: 7),
+      decoration: BoxDecoration(
+        color: t.imageOverlay,
+        borderRadius: VibraSpacing.borderSmall,
+      ),
+      child: Column(
+        children: [
+          Text(
+            date.day,
+            style: VibraTextStyles.headlineSmall.copyWith(
+              color: t.onImage,
+              height: 1,
+            ),
+            textScaler: TextScaler.noScaling,
           ),
-        ),
+          const SizedBox(height: 2),
+          Text(
+            date.month,
+            style: VibraTextStyles.labelSmall.copyWith(
+              color: t.onImageMuted,
+              fontSize: 10,
+            ),
+            textScaler: TextScaler.noScaling,
+          ),
+        ],
       ),
     );
   }
+}
+
+class _MetaLine extends StatelessWidget {
+  const _MetaLine({
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Icon(icon, size: VibraSpacing.iconSm, color: color),
+      const SizedBox(width: 6),
+      Expanded(
+        child: Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: VibraTextStyles.bodySmall.copyWith(color: color),
+        ),
+      ),
+    ],
+  );
 }

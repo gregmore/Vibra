@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:shimmer/shimmer.dart';
 
 import '../../../core/theme/vibra_spacing.dart';
-import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../../domain/entities/event.dart';
-import '../vibra_glassmorphic_card.dart';
-import '../vibra_pill_button.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:vibra/l10n/app_localizations.dart';
+import 'vibra_editorial_event.dart';
 
-import '../../providers/usecase_providers.dart';
-
-class VibraEventCard extends ConsumerWidget {
+/// Canonical event card for lists and grids.
+///
+/// * default: a poster card ([VibraEventFeature]) — artwork, date stamp,
+///   name, venue, time, price, status and match.
+/// * [compact]: a list row ([VibraEventRow]) with the same information
+///   density reduced to one line of metadata.
+///
+/// Both variants log the same `view` interaction as before.
+class VibraEventCard extends StatelessWidget {
   const VibraEventCard({
     required this.event,
     this.compact = false,
     this.matchScore,
     this.onTap,
+    this.height = 300,
     super.key,
   });
 
@@ -26,264 +26,33 @@ class VibraEventCard extends ConsumerWidget {
   final bool compact;
   final int? matchScore;
   final VoidCallback? onTap;
-
-  Color _getBadgeColor(BuildContext context, int score) {
-    return context.vibraTokens.matchColor(score / 100);
-  }
+  final double height;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final t = context.vibraTokens;
-    final dateText =
-        '${event.eventDate.day.toString().padLeft(2, '0')}/${event.eventDate.month.toString().padLeft(2, '0')}';
-
-    Widget card;
-
-    if (!compact) {
-      card = VibraGlassmorphicImageCard(
-        imageUrl: event.imageUrl ?? '',
-        height: 280,
-        onTap: () {
-          ref
-              .read(logEventInteractionUseCaseProvider)
-              .execute(
-                event: event,
-                interactionType: 'view',
-                scoreAtTime: matchScore?.toDouble(),
-              );
-          onTap?.call();
-        },
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (matchScore != null) ...[
-                  Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: VibraSpacing.sm,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getBadgeColor(
-                            context,
-                            matchScore!,
-                          ).withValues(alpha: 0.1),
-                          border: Border.all(
-                            color: _getBadgeColor(context, matchScore!),
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            VibraSpacing.radiusFull,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _getBadgeColor(
-                                context,
-                                matchScore!,
-                              ).withValues(alpha: 0.5),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          '$matchScore% MATCH',
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: t.onImage,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      )
-                      .animate()
-                      .fadeIn(duration: VibraSpacing.animNormal)
-                      .slideX(begin: -0.2, end: 0),
-                  const SizedBox(height: VibraSpacing.sm),
-                ],
-                Text(
-                  event.name,
-                  style: theme.textTheme.titleLarge?.copyWith(color: t.onImage),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '${event.venueName ?? AppLocalizations.of(context)!.eventCardTBA} · ${event.city ?? AppLocalizations.of(context)!.eventCardCity}',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: t.onImageMuted,
-                  ),
-                ),
-                const SizedBox(height: VibraSpacing.lg),
-                SizedBox(
-                  width: double.infinity,
-                  child: VibraPillButton(
-                    text: AppLocalizations.of(context)!.eventDetailBuyTickets,
-                    onPressed: () {
-                      ref
-                          .read(logEventInteractionUseCaseProvider)
-                          .execute(
-                            event: event,
-                            interactionType: 'click_ticket',
-                            scoreAtTime: matchScore?.toDouble(),
-                          );
-                      onTap?.call();
-                    },
-                  ),
-                ),
-              ],
-            ),
-            Positioned(
-              top: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: VibraSpacing.md,
-                  vertical: VibraSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: t.surfaceElevated,
-                  borderRadius: BorderRadius.circular(
-                    VibraSpacing.radiusMedium,
-                  ),
-                  border: Border.all(color: t.borderDefault),
-                ),
-                child: Text(
-                  dateText,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: t.textPrimary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
+  Widget build(BuildContext context) {
+    if (compact) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: VibraSpacing.pagePadding,
         ),
-      );
-    } else {
-      card = VibraGlassmorphicCard(
-        onTap: () {
-          ref
-              .read(logEventInteractionUseCaseProvider)
-              .execute(
-                event: event,
-                interactionType: 'view',
-                scoreAtTime: matchScore?.toDouble(),
-              );
-          onTap?.call();
-        },
-        margin: const EdgeInsets.symmetric(
-          horizontal: VibraSpacing.xl,
-          vertical: VibraSpacing.sm,
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(VibraSpacing.radiusSmall),
-              child: SizedBox(
-                width: 72,
-                height: 72,
-                child: event.imageUrl != null && event.imageUrl!.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: event.imageUrl!,
-                        fit: BoxFit.cover,
-                        memCacheWidth: 216,
-                        placeholder: (context, url) => Shimmer.fromColors(
-                          baseColor: t.shimmerBase,
-                          highlightColor: t.shimmerHighlight,
-                          child: Container(color: t.surfaceElevated),
-                        ),
-                        errorWidget: (context, url, error) =>
-                            _fallbackPoster(context),
-                      )
-                    : _fallbackPoster(context),
-              ),
-            ),
-            const SizedBox(width: VibraSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    event.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    event.city ??
-                        AppLocalizations.of(context)!.eventCardLocation,
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(dateText, style: theme.textTheme.titleMedium),
-                if (matchScore != null)
-                  Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getBadgeColor(
-                        context,
-                        matchScore!,
-                      ).withValues(alpha: 0.1),
-                      border: Border.all(
-                        color: _getBadgeColor(context, matchScore!),
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(
-                        VibraSpacing.radiusSmall,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _getBadgeColor(
-                            context,
-                            matchScore!,
-                          ).withValues(alpha: 0.5),
-                          blurRadius: 6,
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      '$matchScore%',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: _getBadgeColor(context, matchScore!),
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ).animate().fadeIn(delay: 200.ms).blurXY(begin: 4, end: 0),
-              ],
-            ),
-          ],
+        child: VibraEventRow(
+          event: event,
+          matchScore: matchScore,
+          onTap: onTap ?? () {},
         ),
       );
     }
-
-    return Semantics(
-      button: true,
-      label:
-          'Apri evento ${event.name}, $dateText${event.city == null ? '' : ', ${event.city}'}${matchScore == null ? '' : ', affinità $matchScore percento'}',
-      child: card
-          .animate(
-            target: MediaQuery.maybeOf(context)?.disableAnimations ?? false
-                ? 0
-                : 1,
-          )
-          .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
-    );
-  }
-
-  Widget _fallbackPoster(BuildContext context) {
-    final t = context.vibraTokens;
-    return Container(
-      decoration: BoxDecoration(gradient: t.primaryGradient),
-      child: Icon(Icons.multitrack_audio_rounded, color: t.onAccent),
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: VibraSpacing.pagePadding,
+        vertical: VibraSpacing.sm,
+      ),
+      child: VibraEventFeature(
+        event: event,
+        matchScore: matchScore,
+        height: height,
+        onTap: onTap ?? () {},
+      ),
     );
   }
 }

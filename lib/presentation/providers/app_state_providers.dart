@@ -8,7 +8,9 @@ import '../../core/config/push_notifications_bootstrap.dart';
 import '../../core/config/push_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../../core/constants/db_tables.dart';
+import '../../core/errors/exceptions.dart' as app_errors;
 import '../../core/services/cache_service.dart';
 import '../../core/utils/logger.dart';
 import '../../domain/entities/app_notification.dart';
@@ -21,17 +23,20 @@ import '../../domain/entities/friendship.dart';
 import '../../domain/entities/live_message.dart';
 import '../../domain/entities/music_profile.dart';
 import '../../domain/entities/matched_user_preview.dart';
+import '../../domain/entities/music_affinity.dart';
 import '../../domain/entities/music_stat_point.dart';
 import '../../domain/entities/settings_option.dart';
-import '../../domain/usecases/calculate_user_compatibility_usecase.dart';
 import '../../domain/usecases/events_usecases.dart';
 import '../../domain/usecases/social_usecases.dart';
 import '../../domain/usecases/usecase.dart';
 import '../../data/mappers/domain_mappers.dart';
 import '../../data/models/event_model.dart';
+import '../../data/models/user_model.dart';
 import 'core_providers.dart';
+import 'location_provider.dart';
 import 'usecase_providers.dart';
 import 'auth_provider.dart';
+import 'public_friends_provider.dart';
 
 export '../../domain/entities/conversation_summary.dart';
 export '../../domain/entities/follow_stats.dart';
@@ -40,6 +45,10 @@ export '../../domain/entities/music_stat_point.dart';
 export '../../domain/entities/settings_option.dart';
 
 final eventsFeedStatusProvider = StateProvider<AsyncValue<void>>(
+  (ref) => const AsyncData(null),
+);
+
+final conversationsStatusProvider = StateProvider<AsyncValue<void>>(
   (ref) => const AsyncData(null),
 );
 
@@ -85,13 +94,20 @@ class EventsFeedController extends StateNotifier<List<Event>> {
       if (!mounted) return;
       state = _filterPastEvents(loaded);
 
+      // The user's real position when available; the browsing default
+      // otherwise (it is never sent as the user's location).
+      final location = await ref
+          .read(userLocationProvider.future)
+          .catchError((_) => UserLocation.milano);
+      if (!mounted) return;
+
       if (loaded.length < 15) {
         final externalEvents = await ref
             .read(searchNearbyEventsUseCaseProvider)
             .call(
-              const SearchNearbyEventsParams(
-                latitude: 45.4642,
-                longitude: 9.19,
+              SearchNearbyEventsParams(
+                latitude: location.latitude,
+                longitude: location.longitude,
                 radiusKm: 50,
               ),
             )
@@ -105,17 +121,18 @@ class EventsFeedController extends StateNotifier<List<Event>> {
       }
 
       final user = ref.read(supabaseDatasourceProvider).currentUser;
-      if (user != null) {
+      if (user != null && AppConstants.spotifyEnabled) {
         try {
           final response = await ref
               .read(supabaseDatasourceProvider)
               .invokeFunction(
                 'recommend-events',
                 body: {
-                  'user_id': user.id,
                   'limit': 20,
-                  'latitude': 45.4642,
-                  'longitude': 9.19,
+                  if (location.isDeviceLocation) ...{
+                    'latitude': location.latitude,
+                    'longitude': location.longitude,
+                  },
                 },
               );
 
@@ -192,39 +209,54 @@ class ProfileController extends StateNotifier<AppUser> {
   }
 
   final Ref ref;
+  int _loadVersion = 0;
 
   Future<void> refresh() => _load();
 
   Future<void> _load() async {
+    if (!mounted) return;
+    final version = ++_loadVersion;
     try {
       final supabase = ref.read(supabaseDatasourceProvider);
       final authUser = supabase.currentUser;
       if (authUser == null) return;
-
+      bool active() =>
+          mounted &&
+          version == _loadVersion &&
+          supabase.currentUser?.id == authUser.id;
       try {
-        state = await ref
+        final loaded = await ref
             .read(getMyProfileUseCaseProvider)
             .call(const NoParams());
-      } catch (e) {
-        VibraLogger.error(
-          'Failed to load profile, checking if user was deleted',
-          error: e,
-        );
-
-        try {
-          // Verify if the user still exists in auth.users by calling the server
-          await supabase.client.auth.getUser();
-        } catch (authError) {
-          VibraLogger.error(
-            'User no longer exists on server, logging out',
-            error: authError,
+        if (active() && loaded.id == authUser.id) {
+          state = loaded;
+          await CacheService.saveObject(
+            'CACHE_USER_PROFILE_${authUser.id}',
+            loaded.toModel().toJson(),
           );
-          await ref.read(generalAuthProvider.notifier).signOut();
+        }
+      } catch (error) {
+        if (!active()) return;
+        // A temporary network error must not overwrite profile data or sign out
+        // someone whose existing session remains valid.
+        if (error is! app_errors.ServerException ||
+            error.message != 'Profilo utente non trovato') {
+          VibraLogger.error('Impossibile aggiornare il profilo', error: error);
           return;
         }
-
-        VibraLogger.info('User exists, trying to upsert bootstrap profile');
-
+        try {
+          await supabase.client.auth.getUser();
+        } catch (authError) {
+          if (!active()) return;
+          if (authError is AuthException &&
+              authError is! AuthRetryableFetchException &&
+              (authError.statusCode == '401' ||
+                  authError.statusCode == '403')) {
+            await ref.read(generalAuthProvider.notifier).signOut();
+          }
+          return;
+        }
+        if (!active()) return;
         final bootstrap = AppUser(
           id: authUser.id,
           email: authUser.email ?? '',
@@ -235,24 +267,27 @@ class ProfileController extends StateNotifier<AppUser> {
               (authUser.userMetadata?['display_name'] as String?) ??
               authUser.email?.split('@').first,
           avatarUrl: authUser.userMetadata?['avatar_url'] as String?,
-          bio: null,
-          spotifyId: null,
           onboardingCompleted: false,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
-
         try {
-          state = await ref
+          final created = await ref
               .read(upsertMyProfileUseCaseProvider)
               .call(bootstrap);
-        } catch (err) {
-          VibraLogger.error('Failed to upsert bootstrap profile', error: err);
-          state = bootstrap;
+          if (active()) {
+            state = created;
+            await CacheService.saveObject(
+              'CACHE_USER_PROFILE_${authUser.id}',
+              created.toModel().toJson(),
+            );
+          }
+        } catch (error) {
+          VibraLogger.error('Impossibile creare il profilo', error: error);
         }
       }
-    } catch (e) {
-      VibraLogger.error('Supabase not initialized or check failed', error: e);
+    } catch (error) {
+      VibraLogger.error('Impossibile caricare il profilo', error: error);
     }
   }
 
@@ -264,9 +299,22 @@ class ProfileController extends StateNotifier<AppUser> {
     bool? onboardingCompleted,
     String? avatarUrl,
   }) async {
+    if (!mounted) throw StateError('Profilo non più disponibile.');
     final supabase = ref.read(supabaseDatasourceProvider);
     final user = supabase.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      throw StateError(
+        'Sessione scaduta. Accedi di nuovo per salvare il profilo.',
+      );
+    }
+
+    void requireSameAccount() {
+      if (!mounted || supabase.currentUser?.id != user.id) {
+        throw StateError(
+          'La sessione è cambiata. Accedi di nuovo per salvare il profilo.',
+        );
+      }
+    }
 
     final updates = <String, dynamic>{};
     if (username != null) updates['username'] = username;
@@ -284,6 +332,7 @@ class ProfileController extends StateNotifier<AppUser> {
           !avatarUrl.startsWith('https://')) {
         try {
           final fileBytes = await io.File(avatarUrl).readAsBytes();
+          requireSameAccount();
           final ext = avatarUrl.split('.').last.toLowerCase();
           final mimeType = ext == 'png'
               ? 'image/png'
@@ -300,6 +349,7 @@ class ProfileController extends StateNotifier<AppUser> {
             // Each avatar has a new path: INSERT needs no overwrite permissions.
             upsert: false,
           );
+          requireSameAccount();
           updates['avatar_url'] = url;
         } catch (e) {
           VibraLogger.error('Failed to upload avatar', error: e);
@@ -311,12 +361,22 @@ class ProfileController extends StateNotifier<AppUser> {
     }
 
     if (updates.isNotEmpty) {
-      updates['updated_at'] = DateTime.now().toIso8601String();
-      await supabase.client
+      requireSameAccount();
+      updates['updated_at'] = DateTime.now().toUtc().toIso8601String();
+      final row = await supabase.client
           .from(DbTables.users)
           .update(updates)
-          .eq('id', user.id);
-      await _load();
+          .eq('id', user.id)
+          .select()
+          .single();
+      requireSameAccount();
+      _loadVersion++;
+      final updated = UserModel.fromJson(row);
+      state = updated.toEntity();
+      await CacheService.saveObject(
+        'CACHE_USER_PROFILE_${user.id}',
+        updated.toJson(),
+      );
     }
   }
 }
@@ -340,6 +400,7 @@ class MusicProfileController extends StateNotifier<MusicProfile> {
   Future<void> refresh() => _load();
 
   Future<void> _load() async {
+    if (!AppConstants.spotifyEnabled) return;
     try {
       final music = await ref
           .read(getMyMusicProfileUseCaseProvider)
@@ -364,8 +425,10 @@ class MusicProfileController extends StateNotifier<MusicProfile> {
 
 class MatchedUsersController extends StateNotifier<List<MatchedUserPreview>> {
   MatchedUsersController(this.ref) : super(const []) {
-    Future.microtask(_load);
-    _subscribe();
+    if (AppConstants.spotifyEnabled) {
+      Future.microtask(_load);
+      _subscribe();
+    }
   }
 
   final Ref ref;
@@ -395,152 +458,65 @@ class MatchedUsersController extends StateNotifier<List<MatchedUserPreview>> {
   }
 
   Future<void> _load() async {
+    if (!AppConstants.spotifyEnabled) return;
     final generation = ++_loadGeneration;
     try {
       final datasource = ref.read(supabaseSocialDatasourceProvider);
-      final rows = await datasource.listMyMatches(limit: 20);
-
-      final currentUserId = ref
-          .read(supabaseDatasourceProvider)
-          .currentUser
-          ?.id;
-      final ids = rows
+      // One server call: score, explanation and public profile, with
+      // blocked, ignored, connected and other-segment users already removed.
+      final rows = await datasource.getAffinityFeed(limit: 40);
+      final ranked = rows
           .map((row) {
-            final a = row['user_id_a']?.toString();
-            final b = row['user_id_b']?.toString();
-            return a == currentUserId ? b : a;
+            final otherId = row['user_id']?.toString();
+            if (otherId == null || otherId.isEmpty) return null;
+            final details = AffinityDetails.fromJson(
+              row['details'],
+              otherUserId: otherId,
+            );
+            return MatchedUserPreview(
+              user: AppUser(
+                id: otherId,
+                email: '',
+                username: row['username']?.toString() ?? 'user',
+                displayName: row['display_name']?.toString(),
+                avatarUrl: row['avatar_url']?.toString(),
+                bio: row['bio']?.toString(),
+              ),
+              compatibility: ((row['compatibility'] as num?) ?? 0)
+                  .round()
+                  .clamp(0, 100),
+              topArtists: details.sharedArtists,
+              city: '',
+              attendingEvents: 0,
+              affinity: details,
+            );
           })
-          .whereType<String>()
-          .toSet()
+          .whereType<MatchedUserPreview>()
           .toList(growable: false);
-
-      final publicUsers = await datasource.getPublicUsersByIds(ids);
-      final accepted = await datasource.listMyFriendships(status: 'accepted');
-      final pending = await datasource.listMyFriendships(status: 'pending');
-      final outgoingPendingIds = pending
-          .where((request) => request.requesterId == currentUserId)
-          .map((request) => request.receiverId)
-          .toSet();
-      final acceptedIds = accepted.map((f) {
-        final me = currentUserId;
-        return f.requesterId == me ? f.receiverId : f.requesterId;
-      }).toSet();
-
-      final userById = <String, Map<String, dynamic>>{
-        for (final user in publicUsers) user['id'].toString(): user,
-      };
-
-      // ── Recupera profili musicali per arricchire le card ──────────
-      final allIdsToFetch = [...ids];
-      if (currentUserId != null && !allIdsToFetch.contains(currentUserId)) {
-        allIdsToFetch.add(currentUserId);
-      }
-      final musicProfiles = await datasource.getMusicProfilesByUserIds(
-        allIdsToFetch,
-      );
-      final musicProfileByUserId = <String, Map<String, dynamic>>{
-        for (final mp in musicProfiles) mp['user_id'].toString(): mp,
-      };
-
-      // Il mio profilo musicale (per calcolo compatibilità con dettagli)
-      final myMusicRaw = currentUserId != null
-          ? musicProfileByUserId[currentUserId]
-          : null;
-      final myMusicProfile = myMusicRaw != null
-          ? _parseMusicProfile(currentUserId!, myMusicRaw)
-          : null;
-
-      final useCase = const CalculateUserCompatibilityUseCase();
 
       if (!mounted || generation != _loadGeneration) return;
-      state = rows
-          .where((row) {
-            final otherId = row['user_id_a'] == currentUserId
-                ? row['user_id_b'].toString()
-                : row['user_id_a'].toString();
-            return !outgoingPendingIds.contains(otherId);
-          })
-          .map((row) {
-            final otherId = row['user_id_a'] == currentUserId
-                ? row['user_id_b'].toString()
-                : row['user_id_a'].toString();
-            final user = userById[otherId];
-
-            final appUser = AppUser(
-              id: otherId,
-              email: '',
-              username: user?['username']?.toString() ?? 'user',
-              displayName: user?['display_name']?.toString(),
-              avatarUrl: user?['avatar_url']?.toString(),
-              bio: user?['bio']?.toString(),
-              spotifyId: user?['spotify_id']?.toString(),
-              createdAt: user?['created_at'] != null
-                  ? DateTime.tryParse(user!['created_at'].toString())
-                  : null,
-              updatedAt: user?['updated_at'] != null
-                  ? DateTime.tryParse(user!['updated_at'].toString())
-                  : null,
-            );
-
-            // ── Calcola artisti/generi condivisi tramite il nuovo algoritmo ──
-            List<String> sharedArtistNames = const [];
-            final otherMusicRaw = musicProfileByUserId[otherId];
-            if (myMusicProfile != null && otherMusicRaw != null) {
-              final otherProfile = _parseMusicProfile(otherId, otherMusicRaw);
-              final result = useCase.call(
-                left: myMusicProfile,
-                right: otherProfile,
-              );
-              sharedArtistNames = result.sharedArtistNames.take(5).toList();
-            }
-
-            return MatchedUserPreview(
-              user: appUser,
-              compatibility: (row['compatibility'] as num?)?.round() ?? 0,
-              topArtists: sharedArtistNames,
-              city: user?['city']?.toString() ?? 'Live nearby',
-              attendingEvents: 0,
-              isFriend: acceptedIds.contains(otherId),
-            );
-          })
-          .toList(growable: false);
+      state = diversifyAffinityFeed(
+        ranked,
+        score: (m) => m.compatibility,
+        details: (m) => m.affinity,
+      );
     } catch (e) {
       VibraLogger.error('Failed to load matched users', error: e);
       // state remains empty
     }
   }
 
-  /// Converte i dati raw JSONB di un music_profile nella entity domain.
-  MusicProfile _parseMusicProfile(String userId, Map<String, dynamic> raw) {
-    final topArtistsRaw = raw['top_artists'] as List<dynamic>? ?? [];
-    final topGenresRaw = raw['top_genres'] as List<dynamic>? ?? [];
-
-    return MusicProfile(
-      id: '',
-      userId: userId,
-      topArtists: topArtistsRaw
-          .map(
-            (a) => MusicArtistPreference(
-              id: a['id']?.toString() ?? '',
-              name: a['name']?.toString() ?? '',
-              score: (a['score'] as num?)?.toInt() ?? 0,
-            ),
-          )
-          .toList(growable: false),
-      topTracks: const [],
-      topGenres: topGenresRaw
-          .map(
-            (g) => GenrePreference(
-              genre: g['genre']?.toString() ?? '',
-              weight: (g['weight'] as num?)?.toDouble() ?? 0,
-            ),
-          )
-          .toList(growable: false),
-    );
-  }
-
+  /// Ignore: hidden at once and remembered server-side so the same profile
+  /// does not come back on the next load.
   void passMatch(String userId) {
+    _loadGeneration++;
     state = state.where((m) => m.user.id != userId).toList(growable: false);
+    ref
+        .read(supabaseSocialDatasourceProvider)
+        .dismissAffinity(userId)
+        .catchError((Object e) {
+          VibraLogger.warning('Ignore not persisted: $e', tag: 'Affinity');
+        });
   }
 
   Future<void> sendVibra(String userId) {
@@ -568,6 +544,7 @@ class PendingFriendshipsController extends StateNotifier<List<Friendship>> {
 
   final Ref ref;
   RealtimeChannel? _channel;
+  int _loadGeneration = 0;
 
   Future<void> refresh() => _load();
 
@@ -591,8 +568,12 @@ class PendingFriendshipsController extends StateNotifier<List<Friendship>> {
   }
 
   Future<void> _load() async {
+    final generation = ++_loadGeneration;
     try {
-      state = await ref.read(listFriendshipsUseCaseProvider).call('pending');
+      final loaded = await ref
+          .read(listFriendshipsUseCaseProvider)
+          .call('pending');
+      if (mounted && generation == _loadGeneration) state = loaded;
     } catch (e) {
       VibraLogger.error('Failed to load pending friendships', error: e);
       // state remains empty
@@ -610,6 +591,7 @@ class PendingFriendshipsController extends StateNotifier<List<Friendship>> {
             ),
           );
       await _load();
+      if (!mounted) return;
       ref.invalidate(matchedUsersProvider);
       ref.invalidate(conversationsProvider);
     } catch (e) {
@@ -629,6 +611,7 @@ class PendingFriendshipsController extends StateNotifier<List<Friendship>> {
             ),
           );
       await _load();
+      if (!mounted) return;
       ref.invalidate(matchedUsersProvider);
     } catch (e) {
       VibraLogger.error('Failed to reject friend request', error: e);
@@ -640,6 +623,7 @@ class PendingFriendshipsController extends StateNotifier<List<Friendship>> {
     try {
       await ref.read(cancelFriendRequestUseCaseProvider).call(friendshipId);
       await _load();
+      if (!mounted) return;
       ref.invalidate(matchedUsersProvider);
     } catch (e) {
       VibraLogger.error('Failed to cancel friend request', error: e);
@@ -651,6 +635,7 @@ class PendingFriendshipsController extends StateNotifier<List<Friendship>> {
     try {
       await ref.read(deleteFriendshipUseCaseProvider).call(friendshipId);
       await _load();
+      if (!mounted) return;
       ref.invalidate(matchedUsersProvider);
       ref.invalidate(conversationsProvider);
     } catch (e) {
@@ -662,12 +647,16 @@ class PendingFriendshipsController extends StateNotifier<List<Friendship>> {
 
 class ConversationsController extends StateNotifier<List<ConversationSummary>> {
   ConversationsController(this.ref) : super(const []) {
-    Future.microtask(_load);
+    Future.microtask(refresh);
     _subscribe();
   }
 
   final Ref ref;
   RealtimeChannel? _channel;
+
+  Future<void>? _inFlight;
+  bool _reloadRequested = false;
+  int _loadGeneration = 0;
 
   void _subscribe() {
     final ds = ref.read(supabaseDatasourceProvider);
@@ -678,7 +667,7 @@ class ConversationsController extends StateNotifier<List<ConversationSummary>> {
           schema: 'public',
           table: 'messages',
           callback: (payload) {
-            _load();
+            refresh();
           },
         )
         .subscribe();
@@ -688,15 +677,40 @@ class ConversationsController extends StateNotifier<List<ConversationSummary>> {
     });
   }
 
-  Future<void> refresh() => _load();
+  Future<void> refresh() {
+    _reloadRequested = true;
+    return _inFlight ??= _drainReloads().whenComplete(() => _inFlight = null);
+  }
+
+  Future<void> _drainReloads() async {
+    while (mounted && _reloadRequested) {
+      _reloadRequested = false;
+      await _load();
+    }
+  }
 
   Future<void> _load() async {
+    final generation = ++_loadGeneration;
+    if (mounted && state.isEmpty) {
+      ref.read(conversationsStatusProvider.notifier).state =
+          const AsyncLoading();
+    }
     try {
       final list = await ref
           .read(listConversationsUseCaseProvider)
           .call(const NoParams());
+      if (!mounted || generation != _loadGeneration) return;
       state = list;
-    } catch (e) {
+      ref.read(conversationsStatusProvider.notifier).state = const AsyncData(
+        null,
+      );
+    } catch (e, stackTrace) {
+      if (mounted && generation == _loadGeneration) {
+        ref.read(conversationsStatusProvider.notifier).state = AsyncError(
+          e,
+          stackTrace,
+        );
+      }
       VibraLogger.error('Failed to load conversations', error: e);
     }
   }
@@ -706,26 +720,47 @@ class UserFollowStatsController extends StateNotifier<FollowStats> {
   UserFollowStatsController(this.ref, this.userId)
     : super(const FollowStats.empty()) {
     if (userId.isNotEmpty) {
-      Future.microtask(_load);
+      Future.microtask(() => refresh().catchError((Object _) {}));
     }
   }
 
   final Ref ref;
   final String userId;
+  Future<void>? _toggleInFlight;
+  Future<void>? _loadInFlight;
+  bool _statsLoaded = false;
+  int _loadGeneration = 0;
 
-  Future<void> refresh() => _load();
+  Future<void> refresh() =>
+      _toggleInFlight ??
+      (_loadInFlight ??= _load().whenComplete(() => _loadInFlight = null));
 
   Future<void> _load() async {
+    final generation = ++_loadGeneration;
     try {
       final stats = await ref.read(getFollowStatsUseCaseProvider).call(userId);
-      state = stats;
+      if (mounted && generation == _loadGeneration) {
+        state = stats;
+        _statsLoaded = true;
+      }
     } catch (e) {
       VibraLogger.error('Failed to load follow stats for $userId', error: e);
+      rethrow;
     }
   }
 
-  Future<void> toggleFollow() async {
-    final wasFollowing = state.isFollowing;
+  Future<void> toggleFollow() => _toggleInFlight ??= _toggleFollow()
+      .whenComplete(() => _toggleInFlight = null);
+
+  Future<void> _toggleFollow() async {
+    // A failed or pending initial fetch cannot safely tell us whether to follow
+    // or unfollow. Resolve it before changing the count.
+    if (!_statsLoaded) await refresh();
+    if (!mounted) return;
+    final previous = state;
+    final wasFollowing = previous.isFollowing;
+    // A stale stats response must not overwrite the optimistic transition.
+    _loadGeneration++;
     final newFollowing = !wasFollowing;
     final newCount = newFollowing
         ? state.followersCount + 1
@@ -740,17 +775,20 @@ class UserFollowStatsController extends StateNotifier<FollowStats> {
       } else {
         await ref.read(unfollowUserUseCaseProvider).call(userId);
       }
+      if (!mounted) return;
       final me = ref.read(supabaseDatasourceProvider).currentUser;
       if (me != null) {
         ref.invalidate(userFollowStatsProvider(me.id));
       }
+      // Repeated follows and concurrent activity may change the real count.
+      // A stats refresh failing after a successful mutation is not a rollback.
+      try {
+        await _load();
+      } catch (_) {}
     } catch (e) {
       VibraLogger.error('Failed to toggle follow for $userId', error: e);
       // Revert
-      state = state.copyWith(
-        isFollowing: wasFollowing,
-        followersCount: state.followersCount,
-      );
+      if (mounted) state = previous;
       rethrow;
     }
   }
@@ -761,27 +799,19 @@ class DirectMessagesController extends StateNotifier<List<DirectMessage>> {
 
   final Ref ref;
   StreamSubscription? _subscription;
+  int _generation = 0;
 
   void loadConversation(String otherUserId) {
+    final generation = ++_generation;
     _subscription?.cancel();
+    state = const [];
     final ds = ref.read(supabaseSocialDatasourceProvider);
     _subscription = ds
         .streamMessagesWith(otherUserId: otherUserId)
         .listen(
           (models) {
-            final messages = models
-                .map(
-                  (m) => DirectMessage(
-                    id: m.id,
-                    senderId: m.senderId,
-                    receiverId: m.receiverId,
-                    content: m.content,
-                    createdAt: m.createdAt,
-                    readAt: m.readAt,
-                  ),
-                )
-                .toList(growable: false);
-            state = messages;
+            if (!mounted || generation != _generation) return;
+            state = models.map((message) => message.toEntity()).toList();
           },
           onError: (e) {
             VibraLogger.error('Failed to stream direct messages', error: e);
@@ -793,40 +823,6 @@ class DirectMessagesController extends StateNotifier<List<DirectMessage>> {
   void dispose() {
     _subscription?.cancel();
     super.dispose();
-  }
-}
-
-class LiveMessagesController extends StateNotifier<List<LiveMessage>> {
-  LiveMessagesController(this.ref, this.eventId) : super(const []) {
-    if (eventId != null) {
-      _subscribe();
-    }
-
-    ref.onDispose(() {
-      _subscription?.cancel();
-    });
-  }
-
-  final Ref ref;
-  final String? eventId;
-  StreamSubscription<List<LiveMessage>>? _subscription;
-
-  void _subscribe() {
-    if (eventId == null) return;
-    try {
-      _subscription = ref
-          .read(streamLiveMessagesUseCaseProvider)
-          .call(eventId!)
-          .listen((messages) {
-            state = messages.reversed.toList(growable: false);
-          });
-    } catch (e) {
-      VibraLogger.error(
-        'Failed to stream live messages for event $eventId',
-        error: e,
-      );
-      // state remains empty
-    }
   }
 }
 
@@ -851,7 +847,7 @@ class UserEventsController
     final going = state.going.where((item) => !sameEvent(item)).toList();
     final saved = state.saved.where((item) => !sameEvent(item)).toList();
     if (status == 'going') going.add(event);
-    if (status == 'maybe') saved.add(event);
+    if (status == 'maybe' || status == 'interested') saved.add(event);
     going.sort((a, b) => a.eventDate.compareTo(b.eventDate));
     saved.sort((a, b) => a.eventDate.compareTo(b.eventDate));
     state = (going: going, saved: saved);
@@ -879,7 +875,7 @@ class UserEventsController
         if (id != null) {
           if (status == 'going') {
             goingIds.add(id);
-          } else if (status == 'maybe') {
+          } else if (status == 'maybe' || status == 'interested') {
             savedIds.add(id);
           }
         }
@@ -949,11 +945,12 @@ final matchedUsersProvider =
       return MatchedUsersController(ref);
     });
 
+/// Accepted friendships, for everyone (independent of Spotify matching).
 final friendsProvider = Provider<List<MatchedUserPreview>>((ref) {
-  return ref
-      .watch(matchedUsersProvider)
-      .where((u) => u.isFriend)
-      .toList(growable: false);
+  final friends = ref.watch(publicFriendsProvider);
+  return friends.isLoading || friends.hasError
+      ? const []
+      : friends.valueOrNull ?? const [];
 });
 
 final pendingFriendshipsProvider =
@@ -1087,7 +1084,9 @@ final userProfileDetailProvider =
         );
 
         // Carica artisti condivisi
-        final musicProfiles = await ds.getMusicProfilesByUserIds([userId]);
+        final musicProfiles = AppConstants.spotifyEnabled
+            ? await ds.getMusicProfilesByUserIds([userId])
+            : <Map<String, dynamic>>[];
         List<String> topArtists = const [];
         if (musicProfiles.isNotEmpty) {
           final topArtistsRaw =
@@ -1109,13 +1108,45 @@ final userProfileDetailProvider =
               (f.receiverId == currentUserId && f.requesterId == userId),
         );
 
+        // Cached server affinity for this pair, if any (RLS returns it only
+        // when both consented and neither blocked the other).
+        var compatibility = 0;
+        AffinityDetails? affinity;
+        if (AppConstants.spotifyEnabled &&
+            currentUserId != null &&
+            currentUserId != userId) {
+          try {
+            final ids = [currentUserId, userId]..sort();
+            final pair = await coreDs.client
+                .from(DbTables.userMatches)
+                .select('compatibility, details')
+                .eq('user_id_a', ids[0])
+                .eq('user_id_b', ids[1])
+                .maybeSingle();
+            if (pair != null) {
+              compatibility = ((pair['compatibility'] as num?) ?? 0)
+                  .round()
+                  .clamp(0, 100);
+              affinity = AffinityDetails.fromJson(
+                pair['details'],
+                otherUserId: userId,
+              );
+            }
+          } catch (e) {
+            VibraLogger.warning('Affinity not loaded: $e', tag: 'Affinity');
+          }
+        }
+
         return MatchedUserPreview(
           user: appUser,
-          compatibility: 80,
+          compatibility: compatibility,
+          // The other person's own top artists. Shared artists live only in
+          // affinity.sharedArtists, so the two are never confused.
           topArtists: topArtists,
-          city: 'Live nearby',
+          city: '',
           attendingEvents: 0,
           isFriend: isFriend,
+          affinity: affinity,
         );
       } catch (e) {
         VibraLogger.error('Failed to load user profile for $userId', error: e);
@@ -1123,14 +1154,9 @@ final userProfileDetailProvider =
       }
     });
 
-final liveMessagesProvider =
-    StateNotifierProvider.autoDispose<
-      LiveMessagesController,
-      List<LiveMessage>
-    >((ref) {
-      final events = ref.watch(allEventsProvider);
-      final eventId = events.isNotEmpty ? events.first.id : null;
-      return LiveMessagesController(ref, eventId);
+final liveMessagesProvider = StreamProvider.autoDispose
+    .family<List<LiveMessage>, String>((ref, eventId) {
+      return ref.watch(streamLiveMessagesUseCaseProvider).call(eventId);
     });
 
 final myProfileProvider = StateNotifierProvider<ProfileController, AppUser>((
@@ -1395,10 +1421,13 @@ final localeStateProvider = StateNotifierProvider<LocaleController, Locale?>((
 
 /// Explicit appearance preference. The system choice maps to ThemeMode.system,
 /// so Flutter follows changes to the device setting while the app is open.
+///
+/// VIBRA is dark-first: without a stored choice the app opens in dark, like
+/// the logo. Users can still pick light or follow the system.
 enum VibraThemePreference { dark, light, system }
 
 class ThemePreferenceController extends StateNotifier<VibraThemePreference> {
-  ThemePreferenceController(this.ref) : super(VibraThemePreference.system) {
+  ThemePreferenceController(this.ref) : super(VibraThemePreference.dark) {
     _load();
   }
 
@@ -1453,9 +1482,9 @@ class ThemePreferenceController extends StateNotifier<VibraThemePreference> {
   }
 
   VibraThemePreference _fromStorage(String? raw) => switch (raw) {
-    'dark' => VibraThemePreference.dark,
     'light' => VibraThemePreference.light,
-    _ => VibraThemePreference.system,
+    'system' => VibraThemePreference.system,
+    _ => VibraThemePreference.dark,
   };
 }
 

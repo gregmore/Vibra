@@ -12,8 +12,8 @@
   "onboardingContinue": "Weiter",
   "onboardingGoToLogin": "Zum Login",
   "loginTitle": "Bei Vibra anmelden",
-  "loginSubtitle": "Melde dich mit deinem Konto an oder verbinde dich über einen der unterstützten Anbieter, um echte Empfehlungen freizuschalten.",
-  "loginConsent": "Mit der Authentifizierung akzeptieren Sie die Dateneinwilligung, die Verwaltung von JWT-Sitzungen und die DSGVO-Datenschutzeinstellungen.",
+  "loginSubtitle": "Entdecke Konzerte und Menschen, mit denen du sie erleben kannst.",
+  "loginConsent": "Lies die Nutzungsbedingungen und Datenschutzhinweise, bevor du fortfährst. Freiwillige Einstellungen verwaltest du in den Einstellungen.",
   "loginWithSpotify": "Weiter mit Spotify",
   "loginWithGoogle": "Weiter mit Google",
   "loginWithApple": "Weiter mit Apple",
@@ -29,7 +29,7 @@
   "settingsOptionDiscoverVisible": "Profil in Entdecken sichtbar",
   "settingsNotifications": "Benachrichtigungen",
   "settingsNotificationsSub": "Überprüfe Geräteberechtigungen und den Status der Push-Zustellung",
-  "settingsNotificationsSnackbar": "Benachrichtigungen hängen von den Geräteberechtigungen, der Firebase-Konfiguration und einem angemeldeten Konto ab.",
+  "settingsNotificationsSnackbar": "Melde dich an und aktiviere Vibra-Benachrichtigungen in den Geräteeinstellungen.",
   "settingsPrivacyPolicy": "Datenschutzerklärung",
   "settingsPrivacyPolicySub": "Datennutzung, Einwilligungen und Nutzerrechte",
   "settingsTermsOfService": "Nutzungsbedingungen",
@@ -57,7 +57,6 @@
       }
     }
   },
-  "homeSearchHint": "Künstler, Veranstaltungsorte, Städte",
   "homeForYouTitle": "Für Dich",
   "homeForYouSubtitle": "Events mit einer Übereinstimmung von über 70",
   "homeNearYouTitle": "In Deiner Nähe",
@@ -70,7 +69,7 @@
   "settingsSpotifyDisconnected": "Getrennt — Verbinden für Empfehlungen",
   "settingsSpotifyDisconnect": "Trennen",
   "settingsSpotifyDisconnectConfirmTitle": "Spotify trennen",
-  "settingsSpotifyDisconnectConfirmBody": "Bist du sicher, dass du dein Spotify-Konto trennen möchtest? Konzertempfehlungen werden nicht mehr personalisiert sein.",
+  "settingsSpotifyDisconnectConfirmBody": "Vibra löscht deine Spotify-Verbindung, synchronisierte Künstler und Genres, deinen Hörverlauf und musikalische Übereinstimmungen. Event-Vorschläge sind dann nicht mehr personalisiert.",
   "settingsSpotifyDisconnectedSuccess": "Spotify erfolgreich getrennt",
   "settingsGenerateCompatibleUsers": "Kompatible Benutzer generieren",
   "settingsGenerateCompatibleUsersSub": "Erstelle Bots mit ähnlichem Musikgeschmack",
@@ -79,7 +78,7 @@
   "settingsError": "Fehler: {error}",
   "settingsLogoutError": "Fehler beim Abmelden: {error}",
   "settingsSpotifyConnected": "Verbunden als @{username}",
-  "settingsDeleteAccountError": "Konto konnte nicht gelöscht werden. Stelle sicher, dass der RPC in der Datenbank geladen wurde.",
+  "settingsDeleteAccountError": "Dein Konto konnte nicht gelöscht werden. Versuche es erneut oder kontaktiere den Support.",
   "eventDetailChat": "Chat",
   "eventDetailTicketsUnavailable": "Ticket-Link nicht verfügbar.",
   "eventDetailTicketsError": "Ticket-Link kann nicht geöffnet werden.",
@@ -117,6 +116,19 @@
   "socialRequestsCount": "Anfragen ({count})",
   "socialPendingFriendships": "Ausstehende Freundschaften",
   "socialRequestsToManage": "Zu verwaltende Anfragen",
+  "socialPeopleSection": "Personen",
+  "socialAffinityTitle": "Finde deine musikalischen Matches",
+  "socialRequestsPreview": "{others, plural, =0{{name} möchte sich mit dir verbinden} =1{{name} und 1 weitere Person möchten sich verbinden} other{{name} und {others} weitere möchten sich verbinden}}",
+  "@socialRequestsPreview": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "others": {
+        "type": "int"
+      }
+    }
+  },
   "navHome": "Start",
   "navEvents": "Events",
   "navVibra": "Vibra",
@@ -125,19 +137,19 @@
   "friendsYourFriends": "Deine Freunde",
   "friendsYourConnections": "Deine Vibra-Verbindungen",
   "friendsNoFriendsYet": "Noch keine Freunde",
-  "friendsGoToExplore": "Gehe zum Bereich Entdecken oder nutze Social Match, um Leute mit dem gleichen Geschmack zu finden.",
+  "friendsGoToExplore": "Entdecke die Community, finde Menschen und sende Freundschaftsanfragen.",
   "friendsSentRequests": "Gesendete Anfragen",
   "friendsWaitingForReply": "Warten auf Antwort",
   "friendsPendingApproval": "Warten auf Genehmigung",
   "socialMatchNewAffinity": "NEUE AFFINITÄT",
-  "socialMatchScore": "MATCH-SCORE",
+  "socialMatchScore": "MUSIKALISCHE ÄHNLICHKEIT",
   "socialMatchWhyMatched": "WARUM IHR MATCHT",
   "socialMatchCommonEvents": "Live nearby • {count} gemeinsame Events",
   "socialMatchSendVibra": "Vibra senden",
   "exploreSearchHint": "Nach Name oder Stadt suchen (z.B. Mailand)",
   "exploreInteractiveMap": "Interaktive Karte",
   "exploreLiveAroundYou": "Entdecke Live-Events in deiner Nähe in Echtzeit",
-  "exploreSearchRadius": "Suchradius",
+  "exploreSearchRadius": "SUCHRADIUS: {radius} KM",
   "exploreFindEventsNearYou": "Finde Events in deiner Nähe",
   "exploreMusicGenre": "Musikgenre",
   "exploreFilterByGenre": "Nach Lieblingsgenres filtern",
@@ -197,10 +209,10 @@
   "myEventsTitle": "Meine Events",
   "myEventsGoing": "Ich gehe",
   "myEventsGoingSubtitle": "Bestätigte oder kommende Events",
-  "myEventsGoingEmpty": "Du hast deine Teilnahme an keinem Event bestätigt.\\nEntdecke und finde deine nächsten Konzerte!",
+  "myEventsGoingEmpty": "Du hast deine Teilnahme an keinem Event bestätigt.\nEntdecke und finde deine nächsten Konzerte!",
   "myEventsSaved": "Gespeichert",
   "myEventsSavedSubtitle": "Im Auge behalten",
-  "myEventsSavedEmpty": "Keine gespeicherten Events.\\nSpeichere die Events, die dich interessieren, um sie nicht zu verpassen.",
+  "myEventsSavedEmpty": "Keine gespeicherten Events.\nSpeichere die Events, die dich interessieren, um sie nicht zu verpassen.",
   "chatEmptyTitle": "Keine Nachrichten",
   "chatEmptyMessage": "Beginne das Gespräch!",
   "chatInputHint": "Schreibe eine Nachricht...",
@@ -245,7 +257,7 @@
   "legalPrivacyPolicyTitle": "Datenschutzrichtlinie",
   "spotifyAuthStep2Sub": "Generierung sicherer Schlüssel",
   "liveScreenSendFailed": "Senden fehlgeschlagen. Überprüfe deine Verbindung.",
-  "legalSupportBody3": "Berechtigungen, Spotify-Verbindungsstatus, Firebase-Konfiguration.",
+  "legalSupportBody3": "Prüfe Verbindung, Geräteberechtigungen und Anmeldestatus. Falls das Problem bleibt, melde es in den Einstellungen.",
   "legalSupportSec2": "Behandelte Probleme",
   "liveScreenTitle": "Live Vibra",
   "legalTermsBody1": "Durch die Nutzung stimmst du zu, die App rechtmäßig zu nutzen.",
@@ -271,7 +283,7 @@
   "errorTitle": "Systemfehler",
   "legalAboutSec3": "Was Vibra macht",
   "liveScreenChatSub": "Der Chat schließt automatisch nach 24h",
-  "legalAboutBody3": "Vibra hilft, Spotify zu verbinden und Live-Events zu entdecken.",
+  "legalAboutBody3": "Vibra hilft dir, Live-Events zu entdecken, die Karte zu erkunden, Konzerte zu speichern, Menschen zu treffen und zu chatten. Spotify-Funktionen sind nur bei aktiviertem Dienst verfügbar.",
   "langItalian": "Italiano",
   "legalAboutSec4": "Support",
   "spotifyAuthStep2Title": "2. Anmeldeinformationen austauschen",
@@ -284,11 +296,10 @@
   "musicStatsHeatmap": "Hör-Heatmap",
   "legalSupportBody2": "Anmeldeprobleme, Spotify-Verbindung, Events entdecken.",
   "langFrench": "Français",
-  "error": "Fehler",
   "legalPrivacySubtitle": "Eine Zusammenfassung der in der App verfügbaren Datenschutzinformationen, einschließlich Kategorien verarbeiteter Daten und Verwendungszwecke.",
   "legalTermsSubtitle": "Eine Zusammenfassung der Regeln, Verantwortlichkeiten und Nutzungsbedingungen für die Verwendung von Vibra.",
   "legalSupportSubtitle": "Support-Informationen für Kontozugriff, Benachrichtigungen, Spotify-Verbindung und Live-Funktionen.",
-  "legalAboutSubtitle": "Vibra kombiniert Musikgeschmack, Event-Entdeckung und soziale Interaktion rund um Live-Erlebnisse.",
+  "legalAboutSubtitle": "Live-Events, Karte und Community für gemeinsame Erlebnisse.",
   "exploreShowAllEvents": "Alle Events anzeigen",
   "musicStatsSyncSpotify": "Spotify synchronisieren",
   "liveModeDisabled": "Der Live-Modus ist deaktiviert",
@@ -308,7 +319,7 @@
   "authDontHaveAccount": "Hast du kein Konto? Registrieren",
   "authGenericError": "Ein Fehler ist aufgetreten",
   "eventCardLocation": "Ort",
-  "matchScore": "MATCH-SCORE",
+  "matchScore": "MUSIKALISCHE ÄHNLICHKEIT",
   "userGeneric": "Benutzer",
   "spotifyConnectTitle": "Spotify Verbinden",
   "spotifyConnectSubtitle": "Verbinde dein Konto, um deine Lieblingskünstler zu synchronisieren und personalisierte Empfehlungen für Konzerte freizuschalten.",
@@ -324,5 +335,1723 @@
   "homeSpotifySyncAction": "SPOTIFY VERBINDEN",
   "settingsLogoutAll": "Von allen Geräten abmelden",
   "settingsLogoutAllConfirmTitle": "Von allen Geräten abmelden",
-  "settingsLogoutAllConfirmBody": "Möchten Sie sich wirklich von allen Geräten abmelden? Sie werden überall abgemeldet."
+  "settingsLogoutAllConfirmBody": "Möchten Sie sich wirklich von allen Geräten abmelden? Sie werden überall abgemeldet.",
+  "loginBackToWelcome": "Zurück zum Willkommensbildschirm",
+  "authOr": "oder",
+  "authEmailLoginSubtitle": "Gib deine Zugangsdaten ein, um dich anzumelden und Konzerte zu entdecken.",
+  "authEmailRegisterSubtitle": "Gib deine Zugangsdaten ein, um dich zu registrieren und Live-Konzerte zu erleben.",
+  "authAgeConfirmation": "Ich bestätige, dass ich mindestens 18 Jahre alt bin.",
+  "authAgeExplanation": "Vibra hilft Menschen, sich kennenzulernen, und ist nicht für Minderjährige bestimmt.",
+  "authAgeRequired": "Du musst bestätigen, dass du mindestens 18 Jahre alt bist, um ein Konto zu erstellen.",
+  "authShowPassword": "Passwort anzeigen",
+  "authHidePassword": "Passwort verbergen",
+  "spotifyUnavailableTitle": "Spotify pausiert",
+  "spotifyUnavailableBody": "Spotify und musikalische Übereinstimmungen sind vorübergehend deaktiviert. Events, Freunde und Chats bleiben verfügbar.",
+  "launchExploreTitle": "Finde dein nächstes Konzert",
+  "launchExploreBody": "Suche Künstler, erkunde die Karte und speichere Events in deiner Nähe.",
+  "launchCommunityTitle": "Erlebe die Community",
+  "launchCommunityBody": "Finde Menschen, füge Freunde hinzu und plane Konzerte in deinen Chats.",
+  "launchSavedTitle": "Dein Live-Kalender",
+  "launchSavedBody": "Speichere Konzerte und finde die Events, die du besuchen möchtest.",
+  "launchCommunitySubtitle": "Personen nach Name oder Benutzername suchen",
+  "launchCommunityEmptyTitle": "Keine Personen gefunden",
+  "launchCommunityEmptyBody": "Versuche einen anderen Namen oder schaue später wieder vorbei.",
+  "launchCommunityLoadError": "Personen konnten nicht geladen werden. Versuche es erneut.",
+  "commonOK": "OK",
+  "commonLoading": "Wird geladen…",
+  "commonSave": "Speichern",
+  "commonClose": "Schließen",
+  "commonAll": "Alle",
+  "commonConnect": "Verbinden",
+  "commonActive": "Aktiv",
+  "commonNotNow": "Nicht jetzt",
+  "commonSkip": "Überspringen",
+  "commonTryLater": "Versuche es später erneut.",
+  "commonConnectionError": "Verbindungsfehler",
+  "commonLoadingLabel": "{label}, wird geladen",
+  "@commonLoadingLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSelectedLabel": "{label}, ausgewählt",
+  "@commonSelectedLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "commonNotSelectedLabel": "{label}, nicht ausgewählt",
+  "@commonNotSelectedLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOnline": "Online",
+  "commonAvatar": "Avatar",
+  "commonPercentLabel": "{percentage} Prozent {label}",
+  "@commonPercentLabel": {
+    "placeholders": {
+      "percentage": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAvatarAffinity": "{name}, {percentage} Prozent Übereinstimmung",
+  "@commonAvatarAffinity": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "percentage": {
+        "type": "int"
+      }
+    }
+  },
+  "commonRegistrationComplete": "Registrierung abgeschlossen",
+  "profileEditTitle": "Profil bearbeiten",
+  "profileBack": "Zurück zum Profil",
+  "profilePersonalSpace": "PERSÖNLICHER BEREICH",
+  "profileSpotifyConnected": "Spotify verbunden",
+  "profileFollowers": "Follower",
+  "profileFollowing": "Gefolgt",
+  "profileOpenMusicStats": "Musikstatistik öffnen",
+  "profileYourVibra": "DEINE VIBRA",
+  "profileInRotation": "In Rotation",
+  "profileSyncMusicBody": "Synchronisiere Spotify, um dein Musikprofil zu sehen.",
+  "profileShapeTitle": "Gestalte deine Vibra",
+  "profileShapeBody": "Verbinde Spotify, um deine musikalische Identität zu zeigen.",
+  "profileUsernameEmpty": "Der Benutzername darf nicht leer sein",
+  "profileUsernameShort": "Mindestens 3 Zeichen",
+  "profileUsernameCharacters": "Verwende nur Buchstaben, Zahlen, _ oder .",
+  "profileUsernameCharactersOnboarding": "Verwende nur Buchstaben, Zahlen und Unterstriche",
+  "profileUsernameTaken": "Benutzername bereits vergeben",
+  "profileUsernameTakenRetry": "Dieser Benutzername ist bereits vergeben. Wähle einen anderen.",
+  "profilePhotoPermission": "Erlaube den Zugriff auf Fotos in den Geräteeinstellungen und versuche es erneut.",
+  "profilePhotoPickError": "Das Foto konnte nicht ausgewählt werden. Versuche es erneut.",
+  "profilePhotoTitle": "Profilfoto",
+  "profilePhotoGallery": "Aus Galerie auswählen",
+  "profilePhotoGalleryBody": "Wähle ein Foto auf deinem Gerät",
+  "profilePhotoCamera": "Foto aufnehmen",
+  "profilePhotoCameraBody": "Nimm mit der Kamera ein neues Foto auf",
+  "profilePhotoRemove": "Foto entfernen",
+  "profilePhotoRestore": "Standardavatar wiederherstellen",
+  "profileSaved": "Profil aktualisiert!",
+  "profileSaveError": "Dein Profil konnte nicht gespeichert werden. Versuche es gleich erneut.",
+  "profilePhotoChange": "Profilfoto ändern",
+  "profileUsernameExample": "z. B. musik_fan",
+  "profileName": "Name",
+  "profileNameHint": "Dein Name oder Spitzname",
+  "profileNameEmpty": "Der Name darf nicht leer sein",
+  "profileDescription": "Beschreibung",
+  "profileDescriptionHint": "Erzähle etwas über dich…",
+  "profileMusicStreaming": "Musik und Streaming",
+  "profileAccountConnected": "Konto verbunden",
+  "profileConnectSuggestions": "Verbinde dein Konto für bessere Vorschläge",
+  "profileSaveChanges": "Änderungen speichern",
+  "homeYourSoundToday": "DEIN SOUND, HEUTE",
+  "homeSpotifySynced": "Spotify synchronisiert · Vorschläge lernen von dir",
+  "homeSpotifyPersonalize": "Verbinde Spotify für persönliche Vorschläge",
+  "homeCompleteProfile": "Vervollständige dein Profil",
+  "homeShapeVibra": "Gestalte deine Vibra",
+  "homeNextEvent": "ALS NÄCHSTES",
+  "homeNearbyEyebrow": "IN DER NÄHE",
+  "homeTrendingEyebrow": "JETZT ANGESAGT",
+  "settingsPrivateMessages": "Private Nachrichten und Anfragen",
+  "settingsPersonalizedUpdates": "Persönliche Neuigkeiten und Erinnerungen",
+  "settingsMusicWeek": "Deine Musikwoche",
+  "settingsMusicWeekBody": "Events und Übereinstimmungen für dich",
+  "settingsWeekly": "Wöchentlich",
+  "settingsMonthly": "Monatlich",
+  "settingsNever": "Nie",
+  "settingsPrivacyData": "Datenschutz und persönliche Daten",
+  "settingsPrivacyDataBody": "Einwilligungen, Datenexport und Löschung",
+  "settingsHelpCenter": "Hilfe-Center",
+  "settingsHelpCenterBody": "Hilfe zu Konto, Events, Chat und Spotify",
+  "settingsReportProblem": "Problem melden",
+  "settingsReportProblemBody": "Sende bereinigte Diagnosedaten und einen optionalen Screenshot",
+  "privacySaveError": "Die Einstellung konnte nicht gespeichert werden. Versuche es erneut.",
+  "privacyExportTitle": "Dein Datenexport",
+  "privacySaveJSON": "JSON speichern",
+  "privacyCopyJSON": "JSON kopieren",
+  "privacyCopiedJSON": "JSON in die Zwischenablage kopiert.",
+  "privacyExportError": "Datenexport nicht verfügbar. Versuche es später erneut.",
+  "privacyExportSaved": "Export gespeichert unter {path}",
+  "@privacyExportSaved": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyIntro": "Wähle jede optionale Datennutzung einzeln. Du kannst deine Entscheidung jederzeit ändern.",
+  "privacyPreciseLocation": "Genauer Standort",
+  "privacyPreciseLocationBody": "Für Events in der Nähe und Live-Funktionen. Wird höchstens 30 Tage gespeichert.",
+  "privacySpotifyMatching": "Spotify für musikalische Übereinstimmungen",
+  "privacySpotifyMatchingBody": "Nutze synchronisierte Künstler, Genres und Hörgewohnheiten für Vorschläge und Übereinstimmungen.",
+  "privacyServiceNotifications": "Service-Benachrichtigungen",
+  "privacyServiceNotificationsBody": "Übereinstimmungen, Nachrichten und gespeicherte Events.",
+  "privacyMarketing": "Marketing-Nachrichten",
+  "privacyMarketingBody": "Immer optional; du kannst die App auch ohne sie nutzen.",
+  "privacyExportAction": "Meine Daten exportieren",
+  "privacyExportBody": "Erstelle eine lesbare JSON-Kopie von Profil, Chats, Events und Interaktionen, einschließlich früherer Spotify-Daten, falls vorhanden.",
+  "privacyDeletionBody": "Beim Löschen deines Kontos werden dessen Daten entfernt. Gesendete Nachrichten werden anonymisiert; Inhalt und Medien werden entfernt. Backups folgen den Fristen der Datenschutzerklärung.",
+  "appearanceTitle": "Darstellung",
+  "appearanceBody": "Wähle das App-Design oder folge der Geräteeinstellung.",
+  "appearanceDark": "Dunkel",
+  "appearanceDarkBody": "Reduziert die Helligkeit bei wenig Licht",
+  "appearanceLight": "Hell",
+  "appearanceLightBody": "Helle Flächen und sanfte Schatten",
+  "appearanceSystem": "Automatisch (System)",
+  "appearanceSystemBody": "Passt sich an Änderungen der Geräteeinstellung an",
+  "onboardingBack": "Zurück zum vorherigen Schritt",
+  "onboardingStart": "Los geht’s",
+  "onboardingProfileTitle": "Dein Profil",
+  "onboardingProfileBody": "So sehen dich andere",
+  "onboardingSkipToHome": "Rest überspringen und zur Startseite",
+  "onboardingPhotoUploading": "Profilfoto wird hochgeladen",
+  "onboardingPhotoSelect": "Profilfoto auswählen oder ändern",
+  "onboardingUsernameExample": "z. B. vibra_user",
+  "onboardingRequired": "ERFORDERLICH",
+  "onboardingSpotifyBody": "Finde Events anhand deiner Hörgewohnheiten und entdecke musikalische Übereinstimmungen mit anderen.",
+  "onboardingSpotifyCancelled": "Verbindung abgebrochen. Versuche es erneut oder überspringe den Schritt.",
+  "onboardingSpotifyError": "Verbindung fehlgeschlagen. Versuche es später erneut.",
+  "onboardingLocationTitle": "Events in deiner Nähe",
+  "onboardingLocationBody": "Aktiviere den Standort, um Konzerte und Veranstaltungsorte in deiner Nähe zu entdecken.",
+  "onboardingLocationDenied": "Berechtigung dauerhaft verweigert. Du kannst sie später in den Geräteeinstellungen aktivieren.",
+  "onboardingAllowLocation": "Standort erlauben",
+  "onboardingNotificationsTitle": "Bleib auf dem Laufenden",
+  "onboardingNotificationsBody": "Erhalte Benachrichtigungen zu gespeicherten Events, Freundschaftsanfragen und Nachrichten.",
+  "onboardingNotificationsDenied": "Benachrichtigungen verweigert. Du kannst sie in den Geräteeinstellungen aktivieren.",
+  "onboardingAllowNotifications": "Benachrichtigungen aktivieren",
+  "liveAttendanceError": "Teilnahme konnte nicht bestätigt werden. Versuche es erneut.",
+  "liveEventsLoadError": "Live-Events konnten nicht geladen werden.",
+  "liveLocationHelp": "Live-Chat ist im Umkreis von 500 m eines Events während der 24 Stunden vor und nach dem Konzert verfügbar. Aktiviere den Standort in den Datenschutzeinstellungen.",
+  "liveUnavailableHere": "Der Chat für dieses Event ist an deinem Standort oder zu diesem Zeitpunkt nicht verfügbar.",
+  "liveRefreshLocation": "Standort aktualisieren",
+  "liveEventTitle": "Live-Event",
+  "liveConnectionInterrupted": "Verbindung zum Live-Chat unterbrochen.",
+  "liveEmpty": "Noch keine Nachrichten. Starte die Unterhaltung!",
+  "liveRetryAttendance": "Teilnahme erneut prüfen",
+  "liveConfirmingAttendance": "Teilnahme wird bestätigt…",
+  "liveJoinToChat": "Nimm am Event teil, um im Chat zu schreiben",
+  "liveInputHint": "Schreibe im Live-Chat…",
+  "liveSendMessage": "Live-Nachricht senden",
+  "musicReconnect": "Erneut verbinden",
+  "musicReconnectBody": "Verbinde Spotify erneut, um die Musikstatistik zu aktualisieren.",
+  "musicStatsUpdated": "Musikstatistik aktualisiert.",
+  "musicStatsRefreshing": "Musikstatistik wird aktualisiert",
+  "musicStatsNoArtists": "Nach der letzten Synchronisierung sind keine Künstler verfügbar.",
+  "musicStatsEmptyTitle": "Gib deinem Profil einen Sound.",
+  "musicStatsEmptyBody": "Verbinde Spotify, um deine Künstler und Rhythmen zu sehen.",
+  "musicStatsYourSound": "DEIN SOUND",
+  "musicStatsHeroTitle": "Musik, die dich ausmacht.",
+  "musicStatsArtists": "Künstler",
+  "musicStatsRhythm": "Rhythmus",
+  "spotifyBackToLogin": "Zurück zur Anmeldung",
+  "spotifyConsentBody": "Vibra liest dein Spotify-Profil, deine meistgehörten Künstler, Titel und Genres der letzten ~6 Monate sowie die Zeitpunkte deiner letzten Wiedergaben. Wir nutzen sie für Musikstatistiken, Event-Vorschläge und musikalische Übereinstimmung. Deine Spotify-Zugangsdaten bleiben verschlüsselt auf unseren Servern, nie auf diesem Gerät. Du kannst Spotify jederzeit in den Einstellungen trennen und diese Daten löschen.",
+  "eventBackToEvents": "Zurück zu den Events",
+  "eventPrice": "Preis",
+  "eventVenueTBA": "Veranstaltungsort folgt",
+  "eventOpenSemantics": "Event öffnen: {name}, {date}, {place}",
+  "@eventOpenSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "eventAffinitySemantics": "{percentage} Prozent Übereinstimmung",
+  "@eventAffinitySemantics": {
+    "placeholders": {
+      "percentage": {
+        "type": "int"
+      }
+    }
+  },
+  "eventForYouScore": "{percentage}% FÜR DICH",
+  "@eventForYouScore": {
+    "placeholders": {
+      "percentage": {
+        "type": "int"
+      }
+    }
+  },
+  "eventCommonSavedCount": "{count, plural, one{{count} gemeinsames oder gespeichertes Event} other{{count} gemeinsame oder gespeicherte Events}}",
+  "@eventCommonSavedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supportReportTitle": "Problem melden",
+  "supportReportIntro": "Beschreibe, was nicht funktioniert. Wir fügen App-Version, Betriebssystem und einige Diagnosedaten ohne sensible Informationen hinzu.",
+  "supportDescriptionLabel": "Problembeschreibung",
+  "supportDescriptionHint": "Nenne den Bildschirm, die Schritte und das erwartete Ergebnis.",
+  "supportAddScreenshot": "Screenshot hinzufügen",
+  "supportScreenshotAttached": "Screenshot angehängt",
+  "supportRemoveScreenshot": "Screenshot entfernen",
+  "supportScreenshotPrivacy": "Prüfe, dass der Screenshot keine Passwörter, privaten Nachrichten oder anderen sensiblen Daten zeigt.",
+  "supportSending": "Wird gesendet…",
+  "supportSendReport": "Meldung senden",
+  "supportDescriptionTooShort": "Beschreibe das Problem mit mindestens 8 Zeichen.",
+  "supportDescriptionTooLong": "Die Beschreibung darf höchstens 4000 Zeichen enthalten.",
+  "supportReportSentTitle": "Meldung gesendet",
+  "supportReportSentBody": "Wir haben deine Meldung erhalten. Der Support antwortet innerhalb von 48 Geschäftsstunden.",
+  "supportReportSendFailed": "Die Meldung konnte nicht gesendet werden. Versuche es erneut oder schreibe an {email}.",
+  "@supportReportSendFailed": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "supportReportAuthRequired": "Melde dich erneut an, um die Meldung zu senden.",
+  "supportReportRateLimited": "Du hast zu viele Meldungen gesendet. Warte eine Minute und versuche es erneut.",
+  "supportScreenshotTooLarge": "Der Screenshot muss kleiner als 5 MB sein.",
+  "supportScreenshotUnsupported": "Wähle einen Screenshot im JPG- oder PNG-Format.",
+  "supportScreenshotPickFailed": "Der Screenshot konnte nicht ausgewählt werden. Versuche es erneut.",
+  "supportScreenshotPermissionDenied": "Erlaube den Fotozugriff in den Geräteeinstellungen, um einen Screenshot anzuhängen.",
+  "supportAlternativeContact": "Du kannst auch an {email} schreiben. Wir antworten innerhalb von 48 Geschäftsstunden.",
+  "@supportAlternativeContact": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "supportFeedbackTitle": "Wie läuft es mit Vibra?",
+  "supportFeedbackBody": "Dein Feedback hilft uns, besser zu werden.",
+  "supportFeedbackNegative": "Nicht gut",
+  "supportFeedbackNeutral": "Geht so",
+  "supportFeedbackPositive": "Gut!",
+  "supportFeedbackDescriptionPrefix": "Feedback:",
+  "chatSendFriendshipRequired": "Sende dieser Person eine Freundschaftsanfrage und warte auf ihre Annahme, um ihr zu schreiben.",
+  "chatSendFirstContactLimit": "Du hast bereits 3 Nachrichten gesendet. Warte auf eine Antwort, bevor du weitere sendest.",
+  "chatSendUnavailable": "Diese Unterhaltung ist nicht verfügbar.",
+  "chatSendRateLimited": "Du sendest zu viele Nachrichten. Warte eine Minute und versuche es erneut.",
+  "chatSendSignInRequired": "Melde dich erneut an, um die Nachricht zu senden.",
+  "chatRequestFriendship": "Freundschaft anfragen",
+  "chatFriendshipRequestSent": "Freundschaftsanfrage gesendet",
+  "chatFriendshipRequestFailed": "Die Freundschaftsanfrage konnte nicht gesendet werden. Versuche es erneut.",
+  "chatMessageTooLong": "Die Nachricht darf höchstens 2000 Zeichen enthalten.",
+  "chatPermissionChecking": "Unterhaltung wird geprüft…",
+  "chatFriendshipRequestPending": "Freundschaftsanfrage wartet auf Annahme",
+  "chatAcceptFriendship": "Freundschaft annehmen",
+  "chatFriendshipAccepted": "Freundschaft angenommen. Du kannst jetzt Nachrichten senden.",
+  "socialReportUser": "Nutzer melden",
+  "socialReportSpam": "Spam",
+  "socialReportHarassment": "Belästigung",
+  "socialReportInappropriate": "Unangemessener Inhalt",
+  "socialReportDetailsHint": "Zusätzliche Details (optional)",
+  "socialReportSent": "Nutzer gemeldet",
+  "socialReportFailed": "Die Meldung konnte nicht gesendet werden. Versuche es erneut.",
+  "socialReportAction": "Melden",
+  "socialBlockUser": "Nutzer blockieren",
+  "socialBlockConfirm": "Diese Person blockieren? Ihr könnt dann keine Nachrichten mehr austauschen.",
+  "socialBlockSuccess": "Nutzer blockiert",
+  "socialBlockFailed": "Diese Person konnte nicht blockiert werden. Versuche es erneut.",
+  "socialBlockAction": "Blockieren",
+  "chatRequestTitle": "Nachrichtenanfrage",
+  "chatRequestBody": "{name} möchte dir schreiben. Antworte, um die Unterhaltung anzunehmen.",
+  "@chatRequestBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRequestRejected": "Anfrage abgelehnt und gelöscht",
+  "chatRequestRejectFailed": "Die Anfrage konnte nicht gelöscht werden. Versuche es erneut.",
+  "commonReject": "Ablehnen",
+  "commonReply": "Antworten",
+  "userProfileView": "Profil ansehen",
+  "chatConnectionInterrupted": "Chat-Verbindung unterbrochen.",
+  "chatMeetupTitle": "Treffvorschlag",
+  "chatMeetupAccept": "Ich bin dabei",
+  "chatMeetupDecline": "Ich kann nicht",
+  "chatMeetupAcceptMessage": "Ich bin dabei! {message}",
+  "@chatMeetupAcceptMessage": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "chatMeetupDeclineMessage": "Ich kann nicht teilnehmen. {message}",
+  "@chatMeetupDeclineMessage": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "helpIntro": "Schnelle Antworten und Hilfe. Wir antworten innerhalb von 48 Geschäftsstunden.",
+  "helpSearchHint": "Häufige Fragen durchsuchen",
+  "helpSearchEmpty": "Keine Antwort gefunden. Versuche eine andere Suche.",
+  "helpNeedMore": "Brauchst du noch Hilfe?",
+  "helpCategoryAll": "Alle",
+  "helpCategoryAccount": "Konto",
+  "helpCategoryChatMatch": "Chat und Übereinstimmung",
+  "helpCategoryPrivacy": "Datenschutz",
+  "helpLoginQuestion": "Ich kann mich nicht anmelden",
+  "helpLoginAnswer": "Prüfe E-Mail und Passwort und öffne Vibra erneut. Falls es weiter nicht klappt, nutze „Problem melden“ und nenne deine Anmeldemethode.",
+  "helpLogoutQuestion": "Wie melde ich mich ab?",
+  "helpLogoutAnswer": "Gehe zu Profil > Einstellungen > Abmelden. Wähle „Auf allen Geräten abmelden“, um alle Sitzungen zu beenden.",
+  "helpDeleteQuestion": "Wie lösche ich mein Konto?",
+  "helpDeleteAnswer": "Gehe zu Profil > Einstellungen > Konto löschen. Die Bestätigung entfernt Kontodaten gemäß der Datenschutzerklärung.",
+  "helpEventsQuestion": "Warum sehe ich keine Events in meiner Nähe?",
+  "helpEventsAnswer": "Prüfe den Standortzugriff und vergrößere den Suchradius. Die Verfügbarkeit hängt von den örtlichen Event-Quellen ab. Du kannst auch eine Stadt suchen.",
+  "helpTicketsQuestion": "Ein Event oder Ticket-Link lässt sich nicht öffnen",
+  "helpTicketsAnswer": "Events und Tickets stammen von externen Partnern. Versuche es später erneut. Falls das Problem bleibt, melde es mit Angabe des Events.",
+  "helpAffinityQuestion": "Wie wird die Übereinstimmung berechnet?",
+  "helpAffinityAnswer": "Der Wert vergleicht gemeinsame Künstler und Genres, mit einem kleinen Bonus für seltenere Vorlieben. Er zeigt Ähnlichkeiten, bietet aber keine Garantie.",
+  "helpBlockQuestion": "Wie blockiere oder melde ich jemanden?",
+  "helpBlockAnswer": "Öffne die Unterhaltung und nutze das Menü, um die Person zu blockieren oder zu melden. Blockieren verhindert künftige Interaktionen; Meldungen gehen an das Team.",
+  "helpSpotifyConnectQuestion": "Wie verbinde ich Spotify?",
+  "helpSpotifyConnectAnswer": "Gehe zu Profil > Einstellungen > Spotify-Konto und schließe die Autorisierung bei Spotify ab. Du kehrst automatisch zu Vibra zurück.",
+  "helpSpotifyDisconnectQuestion": "Wie trenne ich Spotify?",
+  "helpSpotifyDisconnectAnswer": "Gehe zu Profil > Einstellungen > Spotify-Konto und wähle „Trennen“.",
+  "helpSpotifyErrorQuestion": "Spotify-Verbindung schlägt fehl",
+  "helpSpotifyErrorAnswer": "Prüfe die Verbindung und schließe die Autorisierung ab. Teile keine Passwörter oder Tokens mit dem Support. Meldungen enthalten nur bereinigte Diagnosedaten.",
+  "helpReportDataQuestion": "Welche Daten sendet eine Problemmeldung?",
+  "helpReportDataAnswer": "App-Version, Betriebssystem, letzter fehlgeschlagener Endpoint und einige technische Logs ohne sensible Daten. Ein Screenshot ist optional. Prüfe, dass er keine privaten Informationen enthält.",
+  "helpPrivacyQuestion": "Wie übe ich meine Datenschutzrechte aus?",
+  "helpPrivacyAnswer": "Gehe zu Profil > Einstellungen > Datenschutz und persönliche Daten, um Einwilligungen zu verwalten und Daten zu exportieren. Schreibe für weitere Anfragen an {email}.",
+  "@helpPrivacyAnswer": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreEyebrow": "EVENTS IN DEINER NÄHE",
+  "exploreClearSearch": "Suche löschen",
+  "@exploreSearchRadius": {
+    "placeholders": {
+      "radius": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreEventsVisible": "{count, plural, one{{count} EVENT IM BLICK} other{{count} EVENTS IM BLICK}}",
+  "@exploreEventsVisible": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonReset": "Zurücksetzen",
+  "exploreLoadErrorTitle": "Events konnten nicht geladen werden.",
+  "exploreLoadErrorBody": "Prüfe deine Verbindung und suche erneut in diesem Bereich.",
+  "exploreEmptyTitle": "Keine Events in diesem Bereich gefunden.",
+  "exploreEmptyBody": "Vergrößere den Radius oder ändere die Filter.",
+  "exploreZoomIn": "Karte vergrößern",
+  "exploreZoomOut": "Karte verkleinern",
+  "exploreOpenEvents": "{count, plural, one{Liste mit {count} Event öffnen} other{Liste mit {count} Events öffnen}}",
+  "@exploreOpenEvents": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreMoveMapHint": "Verschiebe die Karte, um Events zu suchen",
+  "exploreEventsInArea": "{count, plural, one{{count} Event in diesem Bereich} other{{count} Events in diesem Bereich}}",
+  "@exploreEventsInArea": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreCloseEvents": "Event-Liste schließen",
+  "exploreGenreElectronic": "Elektronisch",
+  "exploreGenreAlternative": "Alternative",
+  "commonLinkOpenError": "Der Link konnte nicht geöffnet werden.",
+  "authConfirmEmail": "Wir haben dir eine Bestätigungs-E-Mail gesendet. Prüfe dein Postfach, bevor du dich anmeldest.",
+  "authEmailNotConfirmed": "Bestätige zuerst deine E-Mail-Adresse. Prüfe dein Postfach.",
+  "authInvalidCredentials": "E-Mail oder Passwort ist falsch. Prüfe beides und versuche es erneut.",
+  "authProviderUnavailable": "Diese Anmeldemethode ist nicht verfügbar. Nutze E-Mail oder versuche es später erneut.",
+  "authEmailAlreadyRegistered": "Diese E-Mail-Adresse ist bereits registriert. Versuche dich anzumelden.",
+  "authWeakPassword": "Wähle ein stärkeres Passwort und versuche es erneut.",
+  "errorNetwork": "Keine Verbindung verfügbar. Prüfe dein Netzwerk und versuche es erneut.",
+  "errorSessionChanged": "Deine Sitzung hat sich geändert. Melde dich erneut an und versuche es noch einmal.",
+  "errorRateLimited": "Zu viele Anfragen. Warte eine Minute und versuche es erneut.",
+  "errorActionFailed": "Die Aktion ist fehlgeschlagen. Versuche es gleich erneut.",
+  "socialAffinity": "Übereinstimmung",
+  "socialFollow": "Folgen",
+  "socialFollowing": "Gefolgt",
+  "socialFollowUpdateError": "Der Folgestatus konnte nicht aktualisiert werden. Versuche es erneut.",
+  "socialMessageAction": "Nachricht senden",
+  "socialFriendRequestSentShort": "Gesendet",
+  "socialFriendRequestError": "Die Anfrage konnte nicht gesendet werden. Versuche es erneut.",
+  "socialAddFriend": "Hinzufügen",
+  "socialCommonArtists": "Gemeinsame Künstler",
+  "socialUsersLoadError": "Personen konnten nicht geladen werden.",
+  "socialFollowersCount": "Follower ({count})",
+  "@socialFollowersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialFollowingCount": "Gefolgt ({count})",
+  "@socialFollowingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialNoFollowers": "Keine Follower",
+  "socialNoFollowersBody": "Personen, die diesem Profil folgen, erscheinen hier.",
+  "socialNoFollowing": "Folgt noch niemandem",
+  "socialNoFollowingBody": "Gefolgte Profile erscheinen hier.",
+  "friendsRequestUpdateError": "Die Anfrage konnte nicht aktualisiert werden. Versuche es erneut.",
+  "friendsRemoveTitle": "Freundschaft entfernen",
+  "friendsRemoveBody": "{name} aus deinen Freunden entfernen?",
+  "@friendsRemoveBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "friendsRemoved": "{name} aus Freunden entfernt",
+  "@friendsRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "friendsRemoveError": "Diese Freundschaft konnte nicht entfernt werden. Versuche es erneut.",
+  "commonRemove": "Entfernen",
+  "friendsConnectionsTitle": "Freunde und Kontakte",
+  "friendsCount": "Freunde ({count})",
+  "@friendsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "friendsReceived": "Empfangen",
+  "friendsSentCount": "Gesendet ({count})",
+  "@friendsSentCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "friendsSearchHint": "Freunde durchsuchen…",
+  "friendsNoneFound": "Keine Freunde gefunden",
+  "friendsFindBody": "Entdecke Profile, sende Freundschaftsanfragen und teile Events.",
+  "friendsFindPeople": "Personen finden",
+  "friendsNoReceived": "Keine Anfragen erhalten",
+  "friendsNoReceivedBody": "Hier erscheinen Freundschaftsanfragen von anderen.",
+  "friendsVibraUser": "Vibra-Nutzer",
+  "friendsNoSent": "Keine Anfragen gesendet",
+  "friendsNoSentBody": "Hier erscheinen gesendete Freundschaftsanfragen, die auf Antwort warten.",
+  "inboxOpenConversation": "Unterhaltung mit {name} öffnen",
+  "@inboxOpenConversation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inboxUnreadCount": "{count, plural, one{{count} ungelesene Nachricht} other{{count} ungelesene Nachrichten}}",
+  "@inboxUnreadCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inboxEyebrow": "IN KONTAKT",
+  "inboxMessages": "Nachrichten",
+  "inboxDirect": "Direkt",
+  "inboxRequests": "Anfragen",
+  "inboxSearchHint": "Unterhaltung suchen",
+  "inboxClearSearch": "Unterhaltungssuche löschen",
+  "inboxRefreshError": "Unterhaltungen konnten nicht aktualisiert werden.",
+  "inboxEmptyTitle": "Noch keine Unterhaltungen.",
+  "inboxEmptyBody": "Finde jemanden für ein gemeinsames Konzert und starte eine Unterhaltung.",
+  "inboxNoRequests": "Keine ausstehenden Anfragen.",
+  "inboxNoRequestsBody": "Hier erscheinen neue Nachrichtenanfragen.",
+  "socialMatchSend": "SENDEN",
+  "socialMatchPass": "WEITER",
+  "socialMatchSharedListening": "Deine Musik hat Gemeinsamkeiten gefunden.",
+  "socialYou": "Du",
+  "socialMatchFrequencyNow": "gleiche Frequenz, jetzt",
+  "socialMatchSharedSound": "GEMEINSAME MUSIK",
+  "socialMatchSameArea": "GLEICHE GEGEND",
+  "@settingsSpotifyConnected": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "@settingsError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@settingsLogoutError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@exploreRadius": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialRequestFrom": {
+    "placeholders": {
+      "userId": {
+        "type": "String"
+      }
+    }
+  },
+  "@userProfileCompatibility": {
+    "placeholders": {
+      "percentage": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialMatchVibraSent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialRequestsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@socialMatchCommonEvents": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialMatchListenBoth": {
+    "placeholders": {
+      "artists": {
+        "type": "String"
+      }
+    }
+  },
+  "@socialMatchCityEvents": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@myProfileMyEventsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@musicStatsSyncError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@spotifyAuthError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@legalPrivacyBody4": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "@legalTermsBody4": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "@legalSupportBody1": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "@legalAboutBody1": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "build": {
+        "type": "String"
+      }
+    }
+  },
+  "@legalAboutBody2": {
+    "placeholders": {
+      "android": {
+        "type": "String"
+      },
+      "ios": {
+        "type": "String"
+      }
+    }
+  },
+  "@legalAboutBody4": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "friendsLoadError": "Freunde konnten nicht geladen werden. Versuche es erneut.",
+  "matchTierHigh": "Hohe Übereinstimmung",
+  "matchTierMedium": "Gute Übereinstimmung",
+  "matchTierLow": "Geringe Übereinstimmung",
+  "eventStatusUpcoming": "Demnächst",
+  "eventStatusToday": "Heute",
+  "eventStatusSoldOut": "Ausverkauft",
+  "eventStatusCancelled": "Abgesagt",
+  "eventStatusPostponed": "Verschoben",
+  "eventStatusPast": "Vorbei",
+  "eventPriceFrom": "Ab {price}",
+  "@eventPriceFrom": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "offlineTitle": "Du bist offline",
+  "homeSpotifyBannerTitle": "Verbinde deinen Sound",
+  "homeUpNext": "ALS NÄCHSTES",
+  "homeSpotifyConnectedTitle": "Spotify verbunden",
+  "spotifyConsentSharing": "Personen mit aktivierter musikalischer Übereinstimmung sehen nur deinen Übereinstimmungswert sowie gemeinsame Künstler und Genres, nie deinen Hörverlauf.",
+  "spotifySyncFailedTitle": "Spotify ist verbunden, aber deine Musik wurde noch nicht geladen.",
+  "spotifySyncRetry": "Synchronisierung wiederholen",
+  "spotifyRevokedBody": "Der Zugriff von Vibra wurde in deinem Spotify-Konto entfernt. Wir haben die Verbindung getrennt und die synchronisierten Daten gelöscht. Verbinde dich erneut, um Statistiken und Übereinstimmungen wiederherzustellen.",
+  "spotifyRateLimited": "Spotify ist gerade ausgelastet. Versuche es in einer Minute erneut.",
+  "settingsSpotifyDisconnectError": "Spotify konnte nicht getrennt werden. Versuche es erneut.",
+  "socialConnectSpotifyBody": "Verbinde Spotify, um Menschen zu treffen, die hören, was du liebst.",
+  "socialAffinityCount": "{count, plural, =0{Noch keine neuen Übereinstimmungen} =1{1 Person teilt deinen Geschmack} other{{count} Personen teilen deinen Geschmack}}",
+  "@socialAffinityCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "spotifyAccessNotGranted": "Spotify hat Vibra für dein Konto noch nicht freigeschaltet. Alles andere in Vibra funktioniert wie gewohnt; versuche es später erneut.",
+  "spotifyConnectFailed": "Spotify konnte die Verbindung nicht abschließen. Versuche es gleich noch einmal.",
+  "settingsSectionMusic": "Musik",
+  "settingsSectionGeneral": "Allgemein",
+  "settingsSectionHelp": "Hilfe",
+  "settingsSectionLegal": "Rechtliches",
+  "settingsSectionAccount": "Konto",
+  "settingsDeleteAccountSub": "Konto und Daten endgültig löschen",
+  "settingsEditProfileSub": "Name, Foto, Bio und Benutzername",
+  "settingsVersion": "Version {version} ({build})",
+  "profileStatEvents": "Events",
+  "profileSpotifyBenefits": "Statistiken · Übereinstimmung · Für dich",
+  "@settingsVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "build": {
+        "type": "String"
+      }
+    }
+  },
+  "appearanceAuto": "Automatisch",
+  "affinityCategoryExceptional": "Außergewöhnliche musikalische Affinität",
+  "affinityCategoryVeryHigh": "Sehr hohe Affinität",
+  "affinityCategoryHigh": "Hohe Affinität",
+  "affinityCategoryModerate": "Mittlere Affinität",
+  "affinityCategoryLow": "Unterschiedliche Sounds",
+  "affinityCategoryVeryLow": "Neue Musikwelten",
+  "affinityHeadline": "{percent} % musikalische Affinität",
+  "@affinityHeadline": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "affinitySharedGenres": "Eure gemeinsamen Genres",
+  "affinityTheirGenres": "Ihre Hauptgenres",
+  "affinityArtistsInCommon": "Gemeinsame Künstler",
+  "affinityWhy": "Warum ihr zusammenpasst",
+  "affinityQuoteExceptional": "Ihr scheint Musik gleich zu hören.",
+  "affinityQuoteVeryHigh": "Euer Musikgeschmack hat sehr viel gemeinsam.",
+  "affinityQuoteHigh": "Euer Musikgeschmack hat viel gemeinsam.",
+  "affinityQuoteModerate": "Ihr teilt einige Sounds und könnt andere entdecken.",
+  "affinityQuoteDiscovery": "Verschiedene Welten: eine Chance, neue Musik zu entdecken.",
+  "affinityReasonSharedFamilies": "Ihr hört beide vor allem {genres}.",
+  "@affinityReasonSharedFamilies": {
+    "placeholders": {
+      "genres": {
+        "type": "String"
+      }
+    }
+  },
+  "affinityReasonSharedSubgenres": "Ihr teilt die Liebe zu {genres}.",
+  "@affinityReasonSharedSubgenres": {
+    "placeholders": {
+      "genres": {
+        "type": "String"
+      }
+    }
+  },
+  "affinityReasonDifferentSubgenres": "Ihr liebt beide {genre}, aber unterschiedliche Subgenres.",
+  "@affinityReasonDifferentSubgenres": {
+    "placeholders": {
+      "genre": {
+        "type": "String"
+      }
+    }
+  },
+  "affinityReasonRelatedFamilies": "{first} und {second} liegen musikalisch nah beieinander.",
+  "@affinityReasonRelatedFamilies": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "affinityReasonSharedArtists": "{count, plural, =1{Ihr teilt 1 Lieblingskünstler.} other{Ihr teilt {count} Lieblingskünstler.}}",
+  "@affinityReasonSharedArtists": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "affinityReasonDiscovery": "Unterschiedlicher Geschmack: gut, um Neues zu entdecken.",
+  "affinityListSeparator": " und ",
+  "genreFamilyHipHop": "Hip-Hop",
+  "genreFamilyRnb": "R&B",
+  "genreFamilyElectronic": "Elektronik",
+  "genreFamilyRock": "Rock",
+  "genreFamilyMetal": "Metal",
+  "genreFamilyPunk": "Punk",
+  "genreFamilyPop": "Pop",
+  "genreFamilyJazz": "Jazz",
+  "genreFamilyBlues": "Blues",
+  "genreFamilyReggae": "Reggae",
+  "genreFamilyLatin": "Latin",
+  "genreFamilyAfro": "Afro",
+  "genreFamilyCountry": "Country",
+  "genreFamilyFolk": "Folk",
+  "genreFamilyClassical": "Klassik",
+  "genreFamilySoundtrack": "Soundtracks",
+  "genreFamilyGospel": "Gospel & christlich",
+  "genreFamilyWorld": "Weltmusik",
+  "musicGenresTitle": "Deine Genres",
+  "musicGenresSubtitle": "Wähle die Genres, die du liebst: So finden wir Menschen mit ähnlichem Geschmack, mit oder ohne Spotify.",
+  "musicGenresSpotifyNote": "Spotify ist verbunden: Diese Genres ergänzen die aus deinem Hörverhalten.",
+  "musicGenresSearchHint": "Genre suchen",
+  "musicGenresNoResults": "Kein Genre gefunden",
+  "musicGenresSelected": "{count, plural, =0{Kein Genre gewählt} =1{1 Genre gewählt} other{{count} Genres gewählt}}",
+  "@musicGenresSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "musicGenresYourPicks": "Deine Auswahl",
+  "musicGenresLevelLike": "Mag ich",
+  "musicGenresLevelMuch": "Sehr",
+  "musicGenresLevelLove": "Liebe ich",
+  "musicGenresIntensityHint": "Tippe auf ein gewähltes Genre, um anzugeben, wie sehr du es magst.",
+  "musicGenresRemove": "{genre} entfernen",
+  "@musicGenresRemove": {
+    "placeholders": {
+      "genre": {
+        "type": "String"
+      }
+    }
+  },
+  "musicGenresLimit": "Du kannst bis zu 30 Genres wählen.",
+  "musicGenresMatching": "Mich Menschen mit ähnlichem Geschmack zeigen",
+  "musicGenresMatchingBody": "Sie sehen nur euren Affinitätswert und gemeinsame Genres und Künstler.",
+  "musicGenresSave": "Speichern",
+  "musicGenresSaved": "Genres gespeichert. Deine Affinitäten werden aktualisiert.",
+  "musicGenresSaveError": "Genres konnten nicht gespeichert werden. Versuche es erneut.",
+  "musicGenresLoadError": "Deine Genres konnten nicht geladen werden.",
+  "musicGenresEntry": "Lieblingsgenres",
+  "musicGenresEntrySub": "Wähle deine Genres, auch ohne Spotify",
+  "socialAffinityPickGenres": "Oder wähle deine Genres",
+  "socialAffinityPickGenresBody": "Wähle deine Lieblingsgenres, um Menschen mit ähnlichem Geschmack zu treffen.",
+  "privacyMusicAffinity": "Musikalische Affinität",
+  "privacyMusicAffinityBody": "Nutzt deine Spotify-Daten und gewählten Genres für Vorschläge und Affinität.",
+  "musicalDnaTitle": "Musik-DNA",
+  "musicalDnaEyebrow": "Deine musikalische Identität",
+  "musicalDnaUserTitle": "Musik-DNA von {name}",
+  "musicalDnaUserEyebrow": "Musikalische Identität",
+  "musicalDnaDistribution": "Genreverteilung",
+  "musicalDnaDistributionSub": "Wie sich dein Geschmack auf Genrefamilien verteilt",
+  "musicalDnaArtistsVia": "Über {artists}",
+  "musicalDnaDiversity": "Vielfalt",
+  "musicalDnaDiversityFocused": "Fokussiert",
+  "musicalDnaDiversityBalanced": "Ausgewogen",
+  "musicalDnaDiversityEclectic": "Eklektisch",
+  "musicalDnaDiversityFocusedBody": "Deine Identität lebt in wenigen, nahen Sounds.",
+  "musicalDnaDiversityBalancedBody": "Ein klarer Kern, mit Raum für andere Welten.",
+  "musicalDnaDiversityEclecticBody": "Dein Geschmack bewegt sich frei zwischen sehr verschiedenen Welten.",
+  "musicalDnaDiversityCounts": "{families} Familien · {subgenres} Subgenres",
+  "musicalDnaEvolution": "Entwicklung",
+  "musicalDnaEvolutionSub": "Wie sich deine DNA mit deinem Hören verändert",
+  "musicalDnaEvolutionEmpty": "Erfasst seit {date}. Veränderungen erscheinen hier, sobald sich dein Hören entwickelt.",
+  "musicalDnaShiftSince": "Seit {date}",
+  "musicalDnaNoShift": "Stabil: Keine Familie hat sich um mehr als 3 Punkte verändert.",
+  "musicalDnaShiftSemantics": "{family}, von {from} auf {to} Prozent",
+  "musicalDnaSources": "Basierend auf",
+  "musicalDnaSourceArtists": "{classified} deiner {total} meistgehörten Spotify-Künstler (letzte 6 Monate)",
+  "musicalDnaSourceSpotifyGenres": "Den Genres deiner meistgehörten Spotify-Künstler (letzte 6 Monate)",
+  "musicalDnaSourceTracks": "Deinen {count} meistgehörten Spotify-Titeln",
+  "musicalDnaSourceGenres": "{count} von dir gewählten Genres",
+  "musicalDnaEditGenres": "Deine Genres bearbeiten",
+  "musicalDnaVisibility": "Wer sie sehen kann",
+  "musicalDnaVisibilityPublic": "Alle",
+  "musicalDnaVisibilityMatches": "Matches",
+  "musicalDnaVisibilityPrivate": "Nur ich",
+  "musicalDnaVisibilityPublicBody": "Alle auf Vibra können deine Musik-DNA auf deinem Profil sehen.",
+  "musicalDnaVisibilityMatchesBody": "Nur Personen, mit denen du eine musikalische Affinität oder eine Verbindung hast.",
+  "musicalDnaVisibilityPrivateBody": "Nur du kannst sie sehen. Sie prägt trotzdem deine Vorschläge.",
+  "musicalDnaVisibilityError": "Deine Auswahl konnte nicht gespeichert werden. Versuch es erneut.",
+  "musicalDnaEmptyTitle": "Noch keine Musik-DNA",
+  "musicalDnaEmptyBody": "Verbinde Spotify oder wähle ein paar Genres, die du liebst – daraus entsteht deine DNA.",
+  "musicalDnaPickGenres": "Genres wählen",
+  "musicalDnaLoadError": "Deine Musik-DNA konnte nicht geladen werden.",
+  "musicalDnaUpdated": "Aktualisiert am {date}",
+  "musicalDnaFamilySemantics": "{family}, {percent} Prozent",
+  "musicalDnaProfileTile": "Musik-DNA",
+  "musicalDnaProfileTileSubtitle": "Deine Genres, deine Vielfalt und ihre Entwicklung",
+  "musicalDnaSeeFull": "Ganze DNA ansehen",
+  "affinityReasonCommonGround": "Ihr hört beide {genres}, in unterschiedlichem Maß.",
+  "affinityReasonBothEclectic": "Ihr seid beide eklektische Hörer, zwischen sehr verschiedenen Genres.",
+  "affinityReasonBothFocused": "Ihr bleibt beide nah an eurem Kernsound.",
+  "affinityReasonDiversityContrast": "Eine:r von euch erkundet viel, die andere Person bleibt fokussiert: viel zu teilen.",
+  "affinityHeadlineSentence": "Ihr habt {percent} % musikalische Affinität.",
+  "sameFrequencyTitle": "Same Frequency",
+  "sameFrequencyHeadline": "Ihr seid auf derselben Frequenz.",
+  "sameFrequencyCount": "{count, plural, =0{Noch keine starken musikalischen Verbindungen.} =1{Du hast 1 Person mit einer starken musikalischen Verbindung entdeckt.} other{Du hast {count} Personen mit einer starken musikalischen Verbindung entdeckt.}}",
+  "sameFrequencyTabForYou": "Für dich",
+  "sameFrequencyTabSaved": "Gespeichert",
+  "sameFrequencyEmptyTitle": "Noch niemand auf deiner Frequenz",
+  "sameFrequencyEmptyBody": "Hier erscheinen Menschen, die deinen Sound teilen. Wähle mehr Genres oder synchronisiere Spotify, um dein Signal zu verstärken.",
+  "sameFrequencySavedEmptyTitle": "Keine gespeicherten Profile",
+  "sameFrequencySavedEmptyBody": "Speichere Menschen, zu denen du zurückkehren willst. Sie bleiben hier, bis du sie entfernst.",
+  "sameFrequencySave": "Speichern",
+  "sameFrequencySaved": "Gespeichert",
+  "sameFrequencySaveError": "Deine gespeicherten Profile konnten nicht aktualisiert werden. Versuch es erneut.",
+  "sameFrequencyWhy": "Warum ihr auf derselben Frequenz seid",
+  "sameFrequencyReasonDiscoveries": "Ihr habt beide vor Kurzem {artists} entdeckt.",
+  "sameFrequencyReasonDirection": "Ihr bewegt euch beide in Richtung {genres}.",
+  "sameFrequencyReasonEvent": "Ihr geht beide zu {event} · {date}.",
+  "sameFrequencyReasonEvents": "{count, plural, =1{Ihr habt 1 gemeinsames Event gespeichert.} other{Ihr habt {count} gemeinsame Events gespeichert.}}",
+  "sameFrequencyDiscoverArtists": "Gemeinsame Künstler entdecken",
+  "sameFrequencySharedArtistsTitle": "Künstler, die du mit {name} teilst",
+  "sameFrequencyFindEvents": "Events finden",
+  "sameFrequencyEventsOptIn": "Gespeicherte Events vergleichen",
+  "sameFrequencyEventsOptInBody": "Finde Menschen, die zu denselben Konzerten gehen. Funktioniert nur mit Personen, die das ebenfalls aktiviert haben; sonst bleiben deine gespeicherten Events privat.",
+  "sameFrequencyEntryBody": "Menschen, mit denen du eine echte musikalische Verbindung teilst",
+  "sameFrequencyLoadError": "Same Frequency konnte nicht geladen werden.",
+  "sameFrequencyPersonSemantics": "{name}, {percent} Prozent musikalische Affinität",
+  "musicRadarTitle": "Music Radar",
+  "musicRadarHeadline": "Menschen in deiner Nähe, die deinen Musikgeschmack teilen.",
+  "musicRadarCount": "{count, plural, =0{Noch keine kompatiblen Personen im Umkreis von {distance} km.} =1{1 kompatible Person im Umkreis von {distance} km.} other{{count} kompatible Personen im Umkreis von {distance} km.}}",
+  "musicRadarAreaSound": "Der Sound deiner Gegend",
+  "musicRadarAreaSoundSub": "Was Menschen in deiner Nähe am meisten hören",
+  "musicRadarAreaTooFew": "Wird angezeigt, sobald genug Menschen in der Nähe das Radar nutzen.",
+  "musicRadarPeople": "Kompatible Profile",
+  "musicRadarEvents": "Kommende Events für deinen Sound",
+  "musicRadarEventYourArtist": "Einer deiner Künstler",
+  "musicRadarEventSharedArtist": "Ein Künstler, den du mit Menschen in der Nähe teilst",
+  "musicRadarEventYourGenre": "Deine Genres",
+  "musicRadarEventAreaGenre": "Beliebt in deiner Gegend",
+  "musicRadarIntroTitle": "Entdecke Menschen in deiner Nähe über Musik",
+  "musicRadarIntroBody": "Music Radar zeigt Menschen um dich herum mit ähnlichem Geschmack. Es bleibt aus, bis du es einschaltest.",
+  "musicRadarPrivacy1": "Niemand sieht deinen Standort oder deine Entfernung, nur dass du in seinem Umkreis bist.",
+  "musicRadarPrivacy2": "Deine Position wird auf ein Gebiet von etwa 5 km (oder 20 km) gerundet und ändert sich höchstens alle 6 Stunden.",
+  "musicRadarPrivacy3": "Verstecke dein Profil, ändere die Entfernung oder schalte das Radar jederzeit aus.",
+  "musicRadarTurnOn": "Music Radar einschalten",
+  "musicRadarLocationTitle": "Standort benötigt",
+  "musicRadarLocationBody": "Music Radar nutzt deinen ungefähren Standort. Aktiviere den Standort in den Datenschutzeinstellungen und komm dann zurück.",
+  "musicRadarOpenPrivacy": "Datenschutzeinstellungen öffnen",
+  "musicRadarMatchingNote": "Aktiviere Musikalische Affinität in den Datenschutzeinstellungen, um kompatible Personen zu sehen.",
+  "musicRadarSettings": "Radar-Einstellungen",
+  "musicRadarEnabled": "Music Radar",
+  "musicRadarVisible": "Mich auf dem Radar zeigen",
+  "musicRadarVisibleBody": "Wenn aus, kannst du dich trotzdem umsehen, aber niemand sieht dich.",
+  "musicRadarDistance": "Entdeckungsradius",
+  "musicRadarDistanceValue": "{km} km",
+  "musicRadarPrecision": "Standortgenauigkeit",
+  "musicRadarPrecisionArea": "Gebiet (~5 km)",
+  "musicRadarPrecisionRegion": "Region (~20 km)",
+  "musicRadarPrecisionBody": "Wie ungefähr du im Verhältnis zu anderen platziert wirst. Dein genauer Standort wird nie geteilt.",
+  "musicRadarSaveError": "Die Einstellung konnte nicht gespeichert werden. Versuch es erneut.",
+  "musicRadarLoadError": "Music Radar konnte nicht geladen werden.",
+  "musicRadarEntryBody": "Menschen in der Nähe mit deinem Geschmack",
+  "musicRadarEmptyPeople": "Gerade niemand Kompatibles in der Nähe. Versuch einen größeren Umkreis oder schau später wieder vorbei.",
+  "communitiesTitle": "Communities",
+  "communitiesEntryBody": "Genres, Künstler und Szenen, die du liebst",
+  "communitiesSearchHint": "Communities oder Künstler suchen",
+  "communitiesForYou": "Für dich",
+  "communitiesForYouSub": "Basierend auf deinem Musikprofil",
+  "communitiesMine": "Deine Communities",
+  "communitiesExplore": "Entdecken",
+  "communitiesEmptySearch": "Keine Community passt zu deiner Suche.",
+  "communitiesRecommendation": "Basierend auf deinem Musikprofil könnte dir {name} gefallen.",
+  "communitiesReasonArtist": "{artist} gehört zu deinen meistgehörten Künstlern.",
+  "communitiesReasonGenre": "{genre} macht {percent} % deiner Musik-DNA aus.",
+  "communitiesStartArtist": "Starte die {artist}-Community",
+  "communitiesStartArtistBody": "Einer deiner Lieblingskünstler hat noch keine Community.",
+  "communitiesMembers": "{count, plural, =1{1 Mitglied} other{{count} Mitglieder}}",
+  "communitiesOfficial": "Offiziell",
+  "communitiesKindGenre": "Genre",
+  "communitiesKindArtist": "Künstler",
+  "communitiesKindInterest": "Interesse",
+  "communitiesJoin": "Beitreten",
+  "communitiesJoined": "Beigetreten",
+  "communitiesLeave": "Verlassen",
+  "communitiesLeaveConfirm": "{name} verlassen?",
+  "communitiesCreate": "Community erstellen",
+  "communitiesCreateName": "Name",
+  "communitiesCreateDescription": "Beschreibung (optional)",
+  "communitiesCreateArtist": "Künstler",
+  "communitiesCreateGenre": "Genre",
+  "communitiesCreateAction": "Erstellen",
+  "communitiesTabPosts": "Beiträge",
+  "communitiesTabDiscussions": "Diskussionen",
+  "communitiesTabEvents": "Events",
+  "communitiesTabMembers": "Mitglieder",
+  "communitiesNewPost": "Neuer Beitrag",
+  "communitiesComposerPost": "Beitrag",
+  "communitiesComposerDiscussion": "Diskussion",
+  "communitiesComposerMusic": "Musik teilen",
+  "communitiesComposerBodyHint": "Was beschäftigt dich?",
+  "communitiesComposerTitleHint": "Thema der Diskussion",
+  "communitiesComposerLinkHint": "Link zu Spotify, Apple Music, YouTube, SoundCloud oder Bandcamp",
+  "communitiesComposerTrackHint": "Titel oder Album (optional)",
+  "communitiesComposerArtistHint": "Künstler (optional)",
+  "communitiesPublish": "Veröffentlichen",
+  "communitiesJoinToPost": "Tritt bei, um zu posten, zu kommentieren und zu reagieren.",
+  "communitiesEmptyFeed": "Noch keine Beiträge. Starte das Gespräch.",
+  "communitiesEmptyDiscussions": "Noch keine Diskussionen.",
+  "communitiesEmptyEvents": "Keine kommenden Events für diese Community.",
+  "communitiesComments": "{count, plural, =0{Kommentieren} =1{1 Kommentar} other{{count} Kommentare}}",
+  "communitiesCommentHint": "Kommentar hinzufügen",
+  "communitiesEmptyComments": "Noch keine Kommentare.",
+  "communitiesOpenMusic": "Anhören",
+  "communitiesHeld": "Ausgeblendet, während Moderatoren Meldungen prüfen",
+  "communitiesDelete": "Löschen",
+  "communitiesRemove": "Entfernen (Moderator)",
+  "communitiesRestore": "Wiederherstellen",
+  "communitiesBan": "Aus der Community ausschließen",
+  "communitiesBanConfirm": "{name} aus dieser Community ausschließen?",
+  "communitiesMakeModerator": "Zum Moderator machen",
+  "communitiesRemoveModerator": "Moderatorrolle entziehen",
+  "communitiesRoleOwner": "Inhaber",
+  "communitiesRoleModerator": "Moderator",
+  "communitiesModeration": "Moderation",
+  "communitiesModerationEmpty": "Nichts zu prüfen.",
+  "communitiesReports": "{count, plural, =1{1 Meldung} other{{count} Meldungen}}",
+  "communitiesReported": "Danke, die Moderatoren prüfen das.",
+  "communitiesError": "Etwas ist schiefgelaufen. Versuch es erneut.",
+  "communitiesErrorRate": "Du bist zu schnell. Warte einen Moment.",
+  "communitiesErrorSpam": "Das sieht nach Spam aus: zu viele Links, ein verdächtiger Link oder eine Wiederholung.",
+  "communitiesErrorBanned": "Du wurdest aus dieser Community ausgeschlossen.",
+  "communitiesErrorLink": "Verwende einen Link zu Spotify, Apple Music, YouTube, SoundCloud oder Bandcamp.",
+  "communitiesErrorExists": "Für diesen Künstler gibt es bereits eine Community.",
+  "communitiesErrorLimit": "Du hast das heutige Limit erreicht.",
+  "communitiesLoadError": "Communities konnten nicht geladen werden.",
+  "sameFrequencyReasonCommunities": "Ihr seid beide in {communities}.",
+  "musicRadarCommunities": "Communities für den Sound deiner Gegend",
+  "circlesTitle": "Circles",
+  "circlesSubtitle": "Kleine Gruppen für die Musik, die du liebst",
+  "circlesInvitations": "Einladungen",
+  "circlesInvitedBy": "{name} hat dich eingeladen",
+  "circlesAccept": "Annehmen",
+  "circlesDecline": "Ablehnen",
+  "circlesInviteDeclined": "Einladung abgelehnt",
+  "circlesSuggested": "VIBRA schlägt vor",
+  "circlesSuggestionGenre": "{count, plural, other{Ein Circle aus {count} Personen, die {genre} teilen.}}",
+  "circlesSuggestionArtist": "{count, plural, other{Ein Circle aus {count} Personen, die alle {artist} hören.}}",
+  "circlesSuggestionConsent": "Jede Person erhält eine Einladung und entscheidet selbst, ob sie beitritt.",
+  "circlesCreateAndInvite": "Erstellen und einladen",
+  "circlesSuggestionName": "{topic}-Circle",
+  "circlesInvitesSent": "{count, plural, =0{Circle erstellt. Es konnten keine Einladungen gesendet werden.} =1{Circle erstellt. 1 Einladung gesendet.} other{Circle erstellt. {count} Einladungen gesendet.}}",
+  "circlesMine": "Deine Circles",
+  "circlesEmptyTitle": "Noch keine Circles",
+  "circlesEmptyBody": "Erstelle eine kleine Gruppe rund um ein Genre, einen Künstler oder ein Konzert und lade Menschen ein, die du kennst.",
+  "circlesCreate": "Neuer Circle",
+  "circlesBasisGenre": "Genre",
+  "circlesBasisArtist": "Künstler",
+  "circlesBasisConcert": "Konzert",
+  "circlesBasisInterest": "Interesse",
+  "circlesBasisActivity": "Aktivität",
+  "circlesName": "Name",
+  "circlesDescription": "Beschreibung (optional)",
+  "circlesTopic": "Thema",
+  "circlesNoSavedEvents": "Speichere zuerst ein Event, um einen Circle darum zu starten.",
+  "circlesCreateAction": "Erstellen",
+  "circlesMembers": "{count}/{max} Mitglieder",
+  "circlesTabChat": "Chat",
+  "circlesTabPlaylist": "Playlist",
+  "circlesTabEvents": "Events",
+  "circlesTabMembers": "Mitglieder",
+  "circlesMessageHint": "Schreib dem Circle",
+  "circlesChatEmpty": "Sag hallo zu deinem Circle.",
+  "circlesPlaylistEmpty": "Noch keine Titel. Füge den ersten hinzu.",
+  "circlesAddTrack": "Titel hinzufügen",
+  "circlesEventsEmpty": "Noch keine geteilten Events.",
+  "circlesShareEvent": "Event teilen",
+  "circlesInvite": "Personen einladen",
+  "circlesInviteHint": "Du kannst deine Verbindungen und Menschen mit musikalischer Affinität einladen. Sie entscheiden selbst, ob sie beitreten.",
+  "circlesInviteNone": "Gerade niemand weiteres zum Einladen.",
+  "circlesInviteSend": "Einladungen senden",
+  "circlesPending": "Eingeladen",
+  "circlesRevoke": "Einladung zurückziehen",
+  "circlesAdmin": "Admin",
+  "circlesMakeAdmin": "Zum Admin machen",
+  "circlesRemoveMember": "Aus dem Circle entfernen",
+  "circlesMute": "Benachrichtigungen stummschalten",
+  "circlesUnmute": "Benachrichtigungen aktivieren",
+  "circlesEdit": "Circle bearbeiten",
+  "circlesLeave": "Circle verlassen",
+  "circlesLeaveConfirm": "{name} verlassen?",
+  "circlesSave": "Speichern",
+  "circlesError": "Etwas ist schiefgelaufen. Versuch es erneut.",
+  "circlesErrorFull": "Dieser Circle ist voll.",
+  "circlesErrorNotAllowed": "Du kannst nur deine Verbindungen oder Menschen mit musikalischer Affinität einladen.",
+  "circlesErrorDeclined": "Diese Person hat kürzlich abgelehnt. Versuch es später erneut.",
+  "circlesLoadError": "Circles konnten nicht geladen werden.",
+  "circlesRemove": "Entfernen",
+  "concertTitle": "Concert Finder",
+  "concertHeadline": "Diese kommenden Events könnten dir gefallen.",
+  "concertWhy": "Warum wir es empfehlen",
+  "concertReasonTopArtist": "{artist} ist Nr. {rank} deiner meistgehörten Künstler.",
+  "concertReasonTrackArtist": "{artist} ist in deinen meistgehörten Titeln.",
+  "concertReasonSavedArtist": "Du hast ein anderes Event von {artist} gespeichert.",
+  "concertReasonGenre": "{genre} macht {percent} % deiner Musik-DNA aus.",
+  "concertReasonSimilarToSaved": "Wie andere {genre}-Events, die du gespeichert hast.",
+  "concertReasonDistance": "{km} km von dir entfernt.",
+  "concertReasonSoon": "{days, plural, =0{Heute.} =1{Morgen.} other{In {days} Tagen.}}",
+  "concertFilterGenre": "Genre",
+  "concertFilterAll": "Alle",
+  "concertArtistHint": "Künstler suchen",
+  "concertFilterDate": "Wann",
+  "concertDateAny": "Jederzeit",
+  "concertDateWeek": "Nächste 7 Tage",
+  "concertDateMonth": "Nächste 30 Tage",
+  "concertDate3Months": "Nächste 3 Monate",
+  "concertFilterDistance": "Entfernung",
+  "concertDistanceAny": "Jede Entfernung",
+  "concertDistanceValue": "{km} km",
+  "concertFilterPrice": "Preis",
+  "concertPriceAny": "Jeder Preis",
+  "concertPriceUpTo": "Bis {price}",
+  "concertPriceNote": "Nur Events mit veröffentlichtem Preis in Euro.",
+  "concertEmpty": "Keine empfohlenen Events passen zu diesen Filtern.",
+  "concertEmptyBody": "Versuch eine größere Entfernung, ein anderes Datum oder weniger Filter.",
+  "concertNoProfileTitle": "Erzähl uns, was du hörst",
+  "concertNoProfileBody": "Verbinde Spotify oder wähle ein paar Genres, um Konzertempfehlungen zu bekommen.",
+  "concertLocationNote": "Aktiviere den Standort, um Entfernungen und Events in der Nähe zu sehen.",
+  "concertLoadError": "Empfehlungen konnten nicht geladen werden.",
+  "concertSaved": "Gespeichert",
+  "eventDetailInterested": "Interessiert",
+  "eventDetailAttendanceInterested": "Als interessiert gespeichert",
+  "eventDetailAttendanceRemoved": "Aus deinen Events entfernt",
+  "whosGoingTitle": "Wer geht hin?",
+  "whosGoingSubtitle": "Menschen, die ihre Pläne mit dir teilen",
+  "whosGoingGoing": "{count} gehen hin",
+  "whosGoingMaybe": "{count} vielleicht",
+  "whosGoingInterested": "{count} interessiert",
+  "whosGoingFriends": "Freunde",
+  "whosGoingCompatible": "Kompatible Personen",
+  "whosGoingOthers": "Andere",
+  "whosGoingEmpty": "Niemand, den du sehen kannst, hat Pläne für dieses Event geteilt.",
+  "whosGoingPrivacyNote": "Du siehst nur Menschen, die ihre Pläne mit dir teilen. Deine folgen deiner Auswahl unten.",
+  "whosGoingCommunities": "Communities zu diesem Event",
+  "whosGoingAffinity": "{percent} % Affinität",
+  "whosGoingRequested": "Anfrage gesendet",
+  "attendanceVisibility": "Wer deine Pläne sehen kann",
+  "visibilityPrivate": "Nur ich",
+  "visibilityFriends": "Freunde",
+  "visibilityMatches": "Freunde & Matches",
+  "visibilityPublic": "Alle",
+  "attendanceVisibilityDefault": "Für alle meine Events verwenden",
+  "attendanceVisibilityHint": "Andere sehen deine Pläne nur, wenn du es erlaubst. Du siehst trotzdem, wer seine teilt.",
+  "attendanceVisibilitySaved": "Sichtbarkeit aktualisiert",
+  "concertMatchTitle": "Concert Match",
+  "concertMatchHeadlineMine": "{count, plural, =0{Du bist die erste Person, die du sehen kannst. Unten Menschen, die diesen Künstler lieben.} =1{Du und 1 weitere Person interessiert euch für dieses Konzert.} other{Du und {count} weitere Personen interessiert euch für dieses Konzert.}}",
+  "concertMatchHeadlineOthers": "{count, plural, =0{Noch hat niemand, den du sehen kannst, Pläne für dieses Konzert geteilt.} =1{1 Person, die du sehen kannst, interessiert sich für dieses Konzert.} other{{count} Personen, die du sehen kannst, interessieren sich für dieses Konzert.}}",
+  "concertMatchFan": "Liebt auch {artist}",
+  "concertMatchCreateGroup": "{count, plural, =0{Event-Gruppe erstellen} other{Event-Gruppe erstellen ({count})}}",
+  "concertMatchGroupNote": "Personen treten nur bei, wenn sie deine Einladung annehmen. Niemandes Standort oder Reisepläne werden geteilt.",
+  "concertMatchShare": "In einem Circle teilen",
+  "concertMatchShared": "Event mit dem Circle geteilt",
+  "concertMatchSharedMessage": "Hat ein Event geteilt: {event} · {date}",
+  "concertMatchNoCircles": "Du hast noch keine Circles.",
+  "concertMatchEmpty": "Noch keine Matches für dieses Konzert.",
+  "concertMatchSelectHint": "Wähle Personen für eine Event-Gruppe aus",
+  "circlePlans": "Pläne",
+  "circlePlansEmpty": "Noch keine Pläne. Schlag einen vor: Essen, Drinks vor der Show, ein Treffpunkt.",
+  "circleAddPlan": "Plan hinzufügen",
+  "circlePlanTitle": "Was",
+  "circlePlanWhen": "Wann (optional)",
+  "circlePlanNote": "Details (optional)",
+  "circlePlanIn": "Ich bin dabei",
+  "circlePlanJoined": "Du bist dabei",
+  "circlePlanPeople": "{count, plural, =1{1 dabei} other{{count} dabei}}",
+  "circlePlanPrivacy": "Nur Circle-Mitglieder sehen Pläne.",
+  "groupConcert": "Das Konzert",
+  "groupYourStatus": "Dein Status",
+  "groupStatusHint": "Nur Mitglieder dieser Gruppe sehen ihn.",
+  "groupHeld": "Ausgeblendet, während Admins Meldungen prüfen",
+  "groupRemoveAdmin": "Entfernen (Admin)",
+  "groupBan": "Aus der Gruppe ausschließen",
+  "groupBanConfirm": "{name} aus dieser Gruppe ausschließen? Die Person kann nicht wieder beitreten.",
+  "groupErrorBanned": "Diese Person kann nicht in diese Gruppe eingeladen werden.",
+  "groupYourGroups": "Deine Gruppen für dieses Event",
+  "groupStart": "Konzertgruppe starten",
+  "groupReportMember": "Mitglied melden",
+  "vibeTitle": "Daily Vibe",
+  "vibeQuestion": "Was ist dein Vibe heute?",
+  "vibeShare": "Teile deinen Vibe",
+  "vibeChange": "Heutigen Vibe ändern",
+  "vibeSearchHint": "Song auf Spotify suchen",
+  "vibeTabSpotify": "Spotify",
+  "vibeTabLink": "Anderer Link",
+  "vibeLinkHint": "Link zu Apple Music, YouTube, SoundCloud oder Bandcamp",
+  "vibeTitleHint": "Songtitel",
+  "vibeArtistHint": "Künstler",
+  "vibeCaptionHint": "Bildunterschrift hinzufügen (optional)",
+  "vibeExpires": "Verschwindet nach 24 Stunden",
+  "vibeEveryone": "Für alle sichtbar",
+  "vibeVisibilityBody": "Aus: Nur deine Verbindungen und musikalischen Matches sehen ihn.",
+  "vibePost": "Vibe posten",
+  "vibePosted": "Dein Vibe ist online",
+  "vibeEmptyTitle": "Heute noch keine Vibes",
+  "vibeEmptyBody": "Teile deinen und verbinde dich mit Menschen oder folge ihnen, um ihre zu sehen.",
+  "vibeListen": "Auf Spotify anhören",
+  "vibeOpen": "Link öffnen",
+  "vibeSave": "Zu Entdeckungen hinzufügen",
+  "vibeSaved": "In deinen Entdeckungen",
+  "vibeComments": "{count, plural, =0{Kommentieren} =1{1 Kommentar} other{{count} Kommentare}}",
+  "vibeCommentHint": "Kommentar hinzufügen",
+  "vibeReply": "Antworten",
+  "vibeReplyingTo": "Antwort an {name}",
+  "vibeExpiresIn": "{hours, plural, =0{Weniger als 1 Std.} =1{Noch 1 Std.} other{Noch {hours} Std.}}",
+  "vibeDelete": "Meinen Vibe löschen",
+  "vibeSearchEmpty": "Keine Songs gefunden.",
+  "vibeProviderUnavailable": "Die Spotify-Suche ist gerade nicht verfügbar. Du kannst einen Link einfügen.",
+  "vibeError": "Dein Vibe konnte nicht gepostet werden. Versuch es erneut.",
+  "vibeAttribution": "Songinfos und Cover von Spotify",
+  "discoveriesTitle": "Entdeckungen",
+  "discoveriesEmpty": "Songs, die du aus Daily Vibes, Storys, Beiträgen und Communities hinzufügst, erscheinen hier. Nur du kannst sie sehen.",
+  "discoveriesSubtitle": "Auf VIBRA entdeckte Songs",
+  "vibeLoadError": "Daily Vibe konnte nicht geladen werden.",
+  "vibeHomeCta": "Teile den Song, der heute dein Vibe ist",
+  "storyAdd": "Story hinzufügen",
+  "storyYours": "Deine Story",
+  "storyNew": "Neue Musik-Story",
+  "storyKindNowPlaying": "Höre gerade",
+  "storyKindArtist": "Lieblingskünstler",
+  "storyKindAlbum": "Album-Tipp",
+  "storyKindPlaylist": "Playlist",
+  "storyKindConcertPhoto": "Konzertfoto",
+  "storyKindOpinion": "Musikmeinung",
+  "storyAttribution": "Musikinfos und Cover von Spotify",
+  "storyPreview": "Story-Vorschau",
+  "storySearchArtist": "Künstler auf Spotify suchen",
+  "storySearchAlbum": "Album auf Spotify suchen",
+  "storySearchPlaylist": "Öffentliche Playlist auf Spotify suchen",
+  "storySearchEmpty": "Nichts gefunden.",
+  "storyArtistNameHint": "Name des Künstlers",
+  "storyAlbumTitleHint": "Albumtitel",
+  "storyPlaylistTitleHint": "Name der Playlist",
+  "storyPlaylistOwnerHint": "Erstellt von (optional)",
+  "storyPickPhoto": "Konzertfoto auswählen",
+  "storyChangePhoto": "Foto ändern",
+  "storyPhotoPrivacy": "Standort- und Kameradaten werden vor dem Teilen aus dem Foto entfernt.",
+  "storyTagConcert": "Konzert (optional)",
+  "storyNoConcert": "Kein Konzert",
+  "storyOpinionHint": "Deine Meinung: ein Album, eine Szene, ein Song…",
+  "storyBackground": "Hintergrund",
+  "storyAudience": "Wer sie sehen kann",
+  "storyDefaultAudience": "Wer deine Storys standardmäßig sieht",
+  "storyAudienceConnections": "Verbindungen",
+  "storyAudienceEveryone": "Alle",
+  "storyAudienceConnectionsBody": "Deine Verbindungen und musikalischen Matches.",
+  "storyAudienceEveryoneBody": "Auch Personen, die dir folgen. Blockierte und ausgeblendete Personen sehen sie nie.",
+  "storyAllowReplies": "Antworten erlauben",
+  "storyAllowRepliesBody": "Antworten sind privat: Nur du und die antwortende Person seht sie.",
+  "storyExpires": "Verschwindet nach 24 Stunden.",
+  "storyShare": "Story teilen",
+  "storyPosted": "Deine Story ist 24 Stunden online",
+  "storyError": "Etwas ist schiefgelaufen. Versuch es erneut.",
+  "storyRateLimited": "Du teilst gerade viel. Warte kurz und versuch es erneut.",
+  "storySpam": "Das sieht nach Spam aus. Entferne Links und versuch es erneut.",
+  "storyPhotoError": "Dieses Foto kann nicht verwendet werden. Wähle ein JPG oder PNG bis 10 MB.",
+  "storySettingsTitle": "Story-Privatsphäre",
+  "storyHideFrom": "Storys ausblenden für",
+  "storyHideFromBody": "Sie sehen deine Storys nicht und werden nicht benachrichtigt.",
+  "storyHidden": "Von deinen Storys ausgeblendet",
+  "storyNoConnections": "Sobald du Verbindungen hast, kannst du hier wählen, wer deine Storys nicht sieht.",
+  "storyJustNow": "jetzt",
+  "storyMinutesAgo": "{minutes} Min.",
+  "storyHoursAgo": "{hours} Std.",
+  "storyPrevious": "Vorherige Story",
+  "storyNext": "Nächste Story",
+  "storyMore": "Weitere Optionen",
+  "storyLoadError": "Diese Storys konnten nicht geladen werden.",
+  "storyGone": "Diese Storys sind abgelaufen oder nicht mehr verfügbar.",
+  "storyHeld": "Nach Meldungen zur Prüfung ausgeblendet. Nur du kannst sie sehen.",
+  "storyReplyHint": "{name} antworten…",
+  "storySendReply": "Senden",
+  "storyReplySent": "Antwort privat gesendet",
+  "storyRepliesOff": "Antworten sind für diese Story deaktiviert",
+  "storyRepliesOffMine": "Antworten sind für diese Story deaktiviert.",
+  "storyViews": "{count, plural, =0{Keine Aufrufe} =1{1 Aufruf} other{{count} Aufrufe}}",
+  "storyReplies": "{count, plural, =0{Antworten} =1{1 Antwort} other{{count} Antworten}}",
+  "storyReactionCount": "{count, plural, =1{1 Reaktion} other{{count} Reaktionen}}",
+  "storyInsightsPrivate": "Nur du siehst, wer angesehen und geantwortet hat.",
+  "storyNoViewers": "Noch keine Aufrufe.",
+  "storyNoReplies": "Noch keine Antworten.",
+  "storyAnswerHint": "{name} privat antworten…",
+  "storyMakeEveryone": "Allen zeigen",
+  "storyMakeConnectionsOnly": "Nur Verbindungen zeigen",
+  "storyNowEveryone": "Jetzt können alle diese Story sehen",
+  "storyNowConnections": "Jetzt sehen nur deine Verbindungen diese Story",
+  "storyTurnRepliesOff": "Antworten deaktivieren",
+  "storyTurnRepliesOn": "Antworten aktivieren",
+  "storyDelete": "Story löschen",
+  "storyDeleted": "Story gelöscht",
+  "storyMute": "Storys von {name} stummschalten",
+  "storyMuted": "Du siehst die Storys von {name} nicht mehr. Die Person wird nicht benachrichtigt.",
+  "feedTitle": "VIBRA Feed",
+  "feedHomeCta": "Empfehlungen, Rezensionen und Entdeckungen aus deiner Musikwelt",
+  "feedForYou": "Für dich",
+  "feedFollowing": "Gefolgt",
+  "feedLatest": "Neueste",
+  "feedForYouBody": "Sortiert nach Personen, denen du folgst, deinen Verbindungen, Communities und der Musik, die du liebst. Jeder Beitrag sagt, warum er hier ist.",
+  "feedFollowingBody": "Neueste zuerst, von Personen, denen du folgst, und deinen Verbindungen.",
+  "feedLatestBody": "Neueste zuerst, alle Beiträge, die du sehen kannst.",
+  "feedCompose": "Posten",
+  "feedNewPost": "Neuer Beitrag",
+  "feedPublish": "Veröffentlichen",
+  "feedPosted": "Dein Beitrag ist online",
+  "feedKindSong": "Song",
+  "feedKindAlbum": "Album",
+  "feedKindPlaylist": "Playlist",
+  "feedKindRecommendation": "Empfehlung",
+  "feedKindDiscovery": "Entdeckung",
+  "feedKindReview": "Rezension",
+  "feedKindOpinion": "Meinung",
+  "feedKindConcertPhoto": "Konzertfoto",
+  "feedKindShare": "Geteilt",
+  "feedItemTrack": "Song",
+  "feedItemAlbum": "Album",
+  "feedItemArtist": "Künstler",
+  "feedItemPlaylist": "Playlist",
+  "feedWhatAbout": "Worum geht es?",
+  "feedYourRating": "Deine Bewertung",
+  "feedRatingLabel": "{rating, plural, =1{1 Stern} other{{rating} Sterne}}",
+  "feedReviewHint": "Was hältst du davon? Sei konkret.",
+  "feedDiscoveryHint": "Wie hast du es entdeckt?",
+  "feedRecommendationHint": "Warum sollte man es hören?",
+  "feedBodyHint": "Schreib etwas dazu (optional)",
+  "feedAudienceEveryoneBody": "Alle auf VIBRA können ihn sehen, außer blockierte Personen.",
+  "feedAllowComments": "Kommentare erlauben",
+  "feedDuplicatePost": "Das hast du heute schon gepostet.",
+  "feedError": "Etwas ist schiefgelaufen. Versuch es erneut.",
+  "feedLoadError": "Der Feed konnte nicht geladen werden.",
+  "feedEmptyTitle": "Noch nichts hier",
+  "feedEmptyBody": "Teile eine Empfehlung oder tritt Communities bei und folge Personen, um deinen Feed zu füllen.",
+  "feedEmptyFollowing": "Hier erscheinen Beiträge von Personen, denen du folgst, und deinen Verbindungen.",
+  "feedEnd": "Du bist auf dem neuesten Stand",
+  "feedReasonFollowing": "Du folgst der Person",
+  "feedReasonConnection": "Deine Verbindung",
+  "feedReasonArtists": "Ein Künstler, den du hörst",
+  "feedReasonGenres": "Genres, die du liebst",
+  "feedReasonCommunity": "Aus deinen Communities",
+  "feedReasonMatch": "Musikalische Affinität",
+  "feedReasonInteraction": "Du interagierst oft mit der Person",
+  "feedReasonNew": "Neu auf VIBRA",
+  "feedDaysAgo": "{days} T.",
+  "feedHeld": "Nach Meldungen zur Prüfung ausgeblendet. Nur du kannst ihn sehen.",
+  "feedLike": "Gefällt mir",
+  "feedUnlike": "Gefällt mir entfernen",
+  "feedReact": "Reagieren",
+  "feedComments": "Kommentare",
+  "feedShare": "Teilen",
+  "feedSave": "Speichern",
+  "feedUnsave": "Aus Gespeichertem entfernen",
+  "feedSaved": "Gespeichert",
+  "feedUnsaved": "Aus Gespeichertem entfernt",
+  "feedShareToFeed": "In deinem Feed teilen",
+  "feedShareCommentHint": "Kommentar hinzufügen (optional)",
+  "feedShareOnlyPublic": "Nur öffentliche Beiträge anderer Personen können in deinem Feed geteilt werden.",
+  "feedShared": "In deinem Feed geteilt",
+  "feedAlreadyShared": "Du hast diesen Beitrag schon geteilt.",
+  "feedCopyLink": "Musiklink kopieren",
+  "feedLinkCopied": "Link kopiert",
+  "feedTurnCommentsOff": "Kommentare deaktivieren",
+  "feedTurnCommentsOn": "Kommentare aktivieren",
+  "feedDelete": "Beitrag löschen",
+  "feedDeleted": "Beitrag gelöscht",
+  "feedNotInterested": "Kein Interesse",
+  "feedNotInterestedDone": "Du siehst weniger Beiträge wie diesen",
+  "feedPostTitle": "Beitrag",
+  "feedPostGone": "Beitrag nicht verfügbar",
+  "feedPostGoneBody": "Er wurde gelöscht oder du kannst ihn nicht mehr sehen.",
+  "feedCommentHint": "Kommentar hinzufügen",
+  "feedCommentsOff": "Kommentare sind für diesen Beitrag deaktiviert.",
+  "feedDuplicateComment": "Diesen Kommentar hast du schon geschrieben.",
+  "feedNoComments": "Noch keine Kommentare. Fang das Gespräch an.",
+  "feedDeleteComment": "Kommentar löschen",
+  "feedSavedTitle": "Gespeicherte Beiträge",
+  "feedSavedSubtitle": "Beiträge, die du im Feed gespeichert hast",
+  "feedSavedEmpty": "Keine gespeicherten Beiträge",
+  "feedSavedEmptyBody": "Tippe auf das Lesezeichen eines Beitrags, um ihn hier zu behalten. Nur du siehst deine gespeicherten Beiträge.",
+  "feedPostsTitle": "Beiträge",
+  "feedPostsOf": "Beiträge von {name}",
+  "feedSeeAllPosts": "Alle ansehen",
+  "feedNoPosts": "Noch keine Beiträge",
+  "feedNoPostsBody": "Beiträge, die du sehen kannst, erscheinen hier.",
+  "feedYourPosts": "Deine Beiträge",
+  "feedYourPostsSubtitle": "Alles, was du im Feed veröffentlicht hast",
+  "reactionFire": "Feuer",
+  "reactionObsessed": "Besessen",
+  "reactionUnderrated": "Unterschätzt",
+  "reactionClassic": "Klassiker",
+  "reactionNewDiscovery": "Neue Entdeckung",
+  "reactionOnRepeat": "In Dauerschleife",
+  "reactionHeart": "Liebe",
+  "reactionHeadphones": "Höre ich",
+  "reactionClap": "Applaus",
+  "reactionMindBlown": "Umwerfend",
+  "reactionTrackTitle": "Auf diesen Song reagieren",
+  "discoveryAdded": "Zu deinen Entdeckungen hinzugefügt",
+  "discoveryAddFailed": "Der Song konnte nicht hinzugefügt werden. Versuch es erneut.",
+  "discoveryOffer": "Eine neue Entdeckung? Behalte sie in deinen Entdeckungen.",
+  "discoveryFoundVia": "über {name}",
+  "aiTitle": "VIBRA AI",
+  "aiHomeCta": "Frag nach Künstlern, Alben, Konzerten und Genres zum Entdecken",
+  "aiPrivacyTile": "Optionaler Musikassistent. Aus, bis du ihn einschaltest.",
+  "aiUnavailableTitle": "VIBRA AI ist nicht verfügbar",
+  "aiUnavailableBody": "Der Assistent ist gerade nicht verfügbar. Alles andere in VIBRA funktioniert wie gewohnt.",
+  "aiConsentTitle": "Dein Musikassistent",
+  "aiConsentIntro": "Frag nach ähnlichen Künstlern, Alben für deinen Geschmack, passenden Konzerten, Communities und neuen Genres. Optional und aus, bis du ihn einschaltest.",
+  "aiConsentUses": "Zum Antworten nutzt er",
+  "aiConsentUsesProfile": "Deine Musical DNA, deine Top-Künstler und die Genres, die du gewählt hast",
+  "aiConsentUsesChat": "Deine Frage und die letzten Nachrichten dieses Chats",
+  "aiConsentUsesCatalogue": "Spotifys öffentlichen Katalog sowie Konzerte und Communities von VIBRA",
+  "aiConsentNever": "Er nutzt nie",
+  "aiConsentNeverBody": "Deine Nachrichten, deinen Standort, Kontakte, Profile anderer oder deinen Spotify-Login. VIBRA speichert die Chats nicht.",
+  "aiConsentProvider": "Antworten werden von einem externen KI-Anbieter (Anthropic) erzeugt, der für jede Frage die oben genannten Informationen erhält. Du kannst VIBRA AI jederzeit ausschalten.",
+  "aiConsentAccept": "VIBRA AI einschalten",
+  "aiConsentDecline": "Jetzt nicht",
+  "aiTurnOff": "VIBRA AI ausschalten",
+  "aiTurnedOff": "VIBRA AI ist aus",
+  "aiNewChat": "Neues Gespräch",
+  "aiIntro": "Was möchtest du entdecken?",
+  "aiExampleSimilar": "Empfiehl mir Künstler ähnlich wie Travis Scott",
+  "aiExampleUnderground": "Finde Underground-Hip-Hop-Künstler",
+  "aiExampleAlbums": "Empfiehl mir Alben nach meinem Musikprofil",
+  "aiExampleExplain": "Erklär, warum zwei Künstler ähnlich klingen",
+  "aiExampleConcerts": "Finde Konzerte, die zu meinen Interessen passen",
+  "aiExampleCommunities": "Schlag mir Communities vor, die mir gefallen könnten",
+  "aiExampleGenres": "Hilf mir, neue Genres zu entdecken",
+  "aiInputHint": "Frag VIBRA AI zu Musik",
+  "aiThinking": "Ich schaue nach…",
+  "aiGeneratedLabel": "KI-generiert · kann Fehler enthalten",
+  "aiVerifiedTitle": "Verifizierte Ergebnisse",
+  "aiIdeasTitle": "Ideen zum Entdecken",
+  "aiIdeasBody": "Generierte Vorschläge, nicht verifiziert.",
+  "aiSourceSpotify": "Auf Spotify verifiziert",
+  "aiSourceEvents": "Aus VIBRAs Konzertliste",
+  "aiSourceCommunities": "VIBRA-Community",
+  "aiSourceDna": "Aus deiner Musical DNA",
+  "aiSourceGenres": "VIBRA-Genrekatalog",
+  "aiMembersCount": "{count, plural, =1{1 Mitglied} other{{count} Mitglieder}}",
+  "aiRateLimited": "Du hast viel gefragt. Versuch es gleich noch einmal.",
+  "aiError": "Etwas ist schiefgelaufen. Versuch es erneut.",
+  "aiRefused": "Dabei kann VIBRA AI nicht helfen. Versuch eine Musikfrage.",
+  "aiIncomplete": "Die Antwort konnte nicht fertiggestellt werden. Frag einfacher.",
+  "discoverTitle": "Entdecke deinen nächsten Künstler",
+  "discoverHomeCta": "Ähnliche, aufstrebende und Underground-Künstler für dich",
+  "discoverIntro": "Basierend auf deinen Lieblingskünstlern, deiner Musical DNA, entdeckten Songs und deinem Feedback. Deine Antworten prägen die nächsten Vorschläge.",
+  "discoverAll": "Alle",
+  "discoverSimilar": "Ähnlich",
+  "discoverCollaborations": "Kollaborationen",
+  "discoverEmerging": "Aufstrebend",
+  "discoverUnderground": "Underground",
+  "discoverExploration": "Neue Genres",
+  "discoverReasonCollab": "Hat mit {artist} zusammengearbeitet",
+  "discoverReasonExplore": "Ein Schritt in Richtung {genre}",
+  "discoverReasonGenres": "Passt zu: {genres}",
+  "discoverLike": "Gefällt mir",
+  "discoverSave": "Für später speichern",
+  "discoverKnown": "Kenne ich schon",
+  "discoverNotInterested": "Kein Interesse",
+  "discoverLiked": "Verstanden: mehr davon",
+  "discoverUndone": "Entfernt",
+  "discoverSaved": "Für später gespeichert",
+  "discoverUnsaved": "Aus Gespeichertem entfernt",
+  "discoverKnownDone": "Notiert. Dieser Künstler wird nicht mehr vorgeschlagen.",
+  "discoverNotInterestedDone": "Du siehst diesen Künstler nicht mehr und weniger ähnliche.",
+  "discoverRefresh": "Neue Vorschläge",
+  "discoverRefreshLimited": "Aktualisieren gerade nicht möglich. Versuch es in ein paar Minuten.",
+  "discoverError": "Etwas ist schiefgelaufen. Versuch es erneut.",
+  "discoverEmptyTitle": "Noch keine neuen Künstler",
+  "discoverEmptyBody": "Schau später wieder vorbei oder tippe auf Neue Vorschläge.",
+  "discoverNoProfile": "Verbinde Spotify oder wähle ein paar Genres, damit VIBRA weiß, was dir gefällt.",
+  "discoverPickGenres": "Genres wählen",
+  "discoverSavedTitle": "Gespeicherte Künstler",
+  "discoverSavedSubtitle": "Künstler, die du für später gespeichert hast",
+  "discoverSavedEmpty": "Keine gespeicherten Künstler",
+  "discoverSavedEmptyBody": "Tippe bei einem Vorschlag auf Für später speichern, um ihn hier zu behalten.",
+  "tasteTitle": "Geschmacksentwicklung",
+  "tasteOpen": "Sieh, wie sich dein Geschmack entwickelt hat",
+  "tastePeriodMonth": "1 Monat",
+  "tastePeriodThreeMonths": "3 Monate",
+  "tastePeriodSixMonths": "6 Monate",
+  "tastePeriodYear": "1 Jahr",
+  "tasteEvolved": "{period, select, month{Dein Musikgeschmack hat sich im letzten Monat verändert} year{Dein Musikgeschmack hat sich im letzten Jahr verändert} three{Dein Musikgeschmack hat sich in den letzten 3 Monaten verändert} six{Dein Musikgeschmack hat sich in den letzten 6 Monaten verändert} other{Dein Musikgeschmack hat sich in den letzten 3 Monaten verändert}}",
+  "tasteSteady": "{period, select, month{Dein Musikgeschmack ist im letzten Monat stabil geblieben} year{Dein Musikgeschmack ist im letzten Jahr stabil geblieben} three{Dein Musikgeschmack ist in den letzten 3 Monaten stabil geblieben} six{Dein Musikgeschmack ist in den letzten 6 Monaten stabil geblieben} other{Dein Musikgeschmack ist in den letzten 3 Monaten stabil geblieben}}",
+  "tasteComparing": "Vergleich deiner Musical DNA vom {from} mit der vom {to}.",
+  "tasteShortHistory": "Dein Verlauf beginnt am {from}, daher wird {from} mit {to} verglichen.",
+  "tasteChangePoints": "{points} Prozentpunkte deines Genre-Mix haben sich verschoben.",
+  "tasteThenNow": "Damals und heute",
+  "tasteThen": "Damals",
+  "tasteNow": "Heute",
+  "tasteTimeline": "Im Lauf der Zeit",
+  "tasteTimelineBody": "{count, plural, =1{1 Momentaufnahme} other{{count} Momentaufnahmen}} deiner Musical DNA aus diesem Zeitraum.",
+  "tasteNewGenres": "Neu entdeckte Genres",
+  "tasteNoNewGenres": "Keine neuen Genres in diesem Zeitraum.",
+  "tasteEmergingArtists": "Aufsteigende Favoriten",
+  "tasteNoEmergingArtists": "Deine Lieblingskünstler sind dieselben wie zuvor.",
+  "tasteNoArtistData": "Verbinde Spotify, um zu sehen, wie sich deine Lieblingskünstler ändern.",
+  "tasteArtistNew": "Neu",
+  "tasteArtistRose": "#{from} → #{to}",
+  "tastePrevious": "Was du früher mehr gehört hast",
+  "tasteNoPrevious": "Nichts, was du geliebt hast, ist verblasst.",
+  "tasteFormerTopArtist": "War einer deiner Top-Künstler",
+  "tasteCommunities": "Communities, denen du beigetreten bist",
+  "tasteNoCommunities": "Du bist in diesem Zeitraum keiner Community beigetreten.",
+  "tasteJoinedOn": "Beigetreten am {date}",
+  "tasteNoDnaTitle": "Noch keine Musical DNA",
+  "tasteNoDnaBody": "Deine Geschmacksentwicklung beginnt, sobald VIBRA deine Musical DNA hat.",
+  "tasteTooEarlyTitle": "Noch nicht genug Verlauf",
+  "tasteTooEarlyBody": "Dein Verlauf beginnt am {date}. Schau in ein paar Wochen wieder vorbei.",
+  "tasteOffTitle": "Geschmacksverlauf ist aus",
+  "tasteOffBody": "VIBRA speichert nur deine aktuelle Musical DNA. Schalte den Verlauf unten ein, um ab heute deinen Geschmack zu verfolgen.",
+  "tasteKeepHistory": "Geschmacksverlauf speichern",
+  "tasteKeepHistoryBody": "Eine Musical-DNA-Momentaufnahme pro Tag, bis zu 400 Tage gespeichert und nur für dich sichtbar.",
+  "tasteTurnOffTitle": "Geschmacksverlauf ausschalten?",
+  "tasteTurnOffBody": "Deine früheren Momentaufnahmen werden gelöscht und nur deine aktuelle Musical DNA bleibt. Funktionen, die deinen Geschmack über die Zeit vergleichen, funktionieren erst wieder, wenn du ihn einschaltest.",
+  "tasteTurnOffConfirm": "Ausschalten und löschen",
+  "tasteError": "Etwas ist schiefgelaufen. Versuch es erneut.",
+  "profileSectionGenres": "Lieblingsgenres",
+  "profileSectionArtists": "Lieblingskünstler",
+  "profileSectionStats": "Musikstatistiken",
+  "profileSectionSavedSongs": "Gespeicherte Songs",
+  "profileSectionPlaylists": "Geteilte Playlists",
+  "profileSectionEvents": "Kommende Events",
+  "profileSectionCommunities": "Communities",
+  "profileSectionCircles": "Circles",
+  "profileSectionActivity": "Musikaktivität",
+  "profileLevelPublic": "Alle",
+  "profileLevelConnections": "Verbindungen",
+  "profileLevelPrivate": "Nur ich",
+  "profileRelationConnection": "Deine Verbindung",
+  "profileRelationMatch": "Musikalisches Match",
+  "profileMemberSince": "Bei VIBRA seit {date}",
+  "profileSignatureSemantics": "{name}, Klangsignatur: {genres}",
+  "profileNoGenres": "Noch keine Lieblingsgenres.",
+  "profileNoArtists": "Noch keine Lieblingskünstler.",
+  "profileNoPlaylists": "Noch keine Playlists geteilt.",
+  "profileNoEvents": "Keine kommenden Events zum Anzeigen.",
+  "profileNoCommunities": "Noch in keiner Community.",
+  "profileNoCircles": "Du bist noch in keinem Circle.",
+  "profileNoSharedCircles": "Ihr seid in keinem gemeinsamen Circle.",
+  "profileSharedCirclesNote": "Circles, in denen ihr beide seid.",
+  "profileNoActivity": "Keine aktuelle Aktivität.",
+  "profileActivityPosted": "Gepostet: {title}",
+  "profileActivityVibe": "Daily Vibe: {title}",
+  "profileActivityJoined": "Ist {name} beigetreten",
+  "profileEventGoing": "Geht hin",
+  "profileEventMaybe": "Vielleicht",
+  "profileEventInterested": "Interessiert",
+  "profileStatGenres": "Genres",
+  "profileStatDiversity": "Vielfalt",
+  "profileStatDiscoveries": "Entdeckungen",
+  "profileStatPosts": "Beiträge",
+  "profileStatConcerts": "Besuchte Konzerte",
+  "profileSomePrivate": "Einige Bereiche dieses Profils sind privat.",
+  "profilePrivacyTitle": "Profil-Privatsphäre",
+  "profilePrivacyTile": "Wähle, wer welchen Teil deines Musikprofils sieht",
+  "profilePrivacyIntro": "Wähle, wer welchen Teil deines Profils sehen kann. Foto, Name, Benutzername und Bio sind für Personen sichtbar, mit denen du interagieren kannst.",
+  "profilePrivacyEventsNote": "Jedes Event behält zusätzlich die Sichtbarkeit aus „Wer geht hin“.",
+  "profilePrivacyCirclesNote": "Andere sehen nur Circles, in denen sie selbst auch sind.",
+  "profilePrivacyPostsNote": "Jeder Beitrag behält zusätzlich sein eigenes Publikum.",
+  "profilePrivacyDnaNote": "Die Musical DNA hat eine eigene Sichtbarkeitseinstellung.",
+  "profilePrivacyError": "Speichern fehlgeschlagen. Versuch es erneut.",
+  "safetyTitle": "Sicherheit & Privatsphäre",
+  "safetySettingsSubtitle": "Blockierungen, Meldungen, Sichtbarkeit und Standort an einem Ort",
+  "safetyIntro": "Alles, was bestimmt, wer dich erreichen kann und was andere sehen. VIBRAs Server setzen diese Regeln überall in der App durch.",
+  "safetyPeople": "Personen",
+  "safetyBlockedTitle": "Blockierte Personen",
+  "safetyBlockedCount": "{count, plural, =0{Niemand blockiert} =1{1 Person} other{{count} Personen}}",
+  "safetyBlockExplain": "Blockieren gilt überall: Nachrichten, Kommentare, Beiträge, Storys, Communities, Circles, Events und Radar. Es entfernt auch Follows und Verbindungen zwischen euch. Die andere Person wird nicht benachrichtigt.",
+  "safetyNoBlocked": "Du hast niemanden blockiert",
+  "safetyBlockedOn": "Blockiert am {date}",
+  "safetyUnblock": "Entsperren",
+  "safetyUnblockTitle": "{name} entsperren?",
+  "safetyUnblockBody": "Die Person kann dich wieder finden und kontaktieren. Durch das Blockieren entfernte Follows und Verbindungen kommen nicht zurück.",
+  "safetyUnblocked": "{name} ist entsperrt",
+  "safetyBlockTitle": "{name} blockieren?",
+  "safetyBlockBody": "Ihr seht euch nirgends mehr auf VIBRA, und Follows und Verbindungen zwischen euch werden entfernt. Niemand wird benachrichtigt.",
+  "safetyReportUser": "Diese Person melden",
+  "safetyReported": "Danke. Unser Team prüft die Meldung.",
+  "safetyDuplicateReport": "Das hast du kürzlich schon gemeldet.",
+  "safetyRateLimited": "Zu viele Versuche. Versuch es später erneut.",
+  "safetyUserUnavailable": "Diese Person ist nicht verfügbar.",
+  "safetyVisibility": "Was andere sehen",
+  "safetyHiddenFrom": "{count, plural, =1{vor 1 Person verborgen} other{vor {count} Personen verborgen}}",
+  "safetyAttendance": "Event-Teilnahme",
+  "safetyAttendanceBody": "pro Event unter „Wer geht hin“ wählbar",
+  "safetyLocation": "Standort",
+  "safetyLocationExplain": "Dein genauer Standort wird niemandem gezeigt. Der Radar nutzt ungefähre Bereiche, und nur, wenn du ihn einschaltest.",
+  "safetyRadarVisible": "An, sichtbar",
+  "safetyRadarHidden": "An, verborgen",
+  "safetyOn": "An",
+  "safetyOff": "Aus",
+  "safetyData": "Deine Daten",
+  "safetyAllPrivacy": "Alle Privatsphäre-Einstellungen",
+  "safetyAllPrivacyBody": "Einwilligungen, Benachrichtigungen und Datenexport",
+  "safetyReporting": "Meldungen",
+  "safetyReportingBody": "Du kannst eine Person über ihr Profil melden und jede Nachricht, jeden Beitrag, Kommentar, jede Story, Antwort, Vibe oder Community-Inhalt über sein Menü. Meldungen sind privat. Von mehreren gemeldete Inhalte werden während der Prüfung ausgeblendet, und Community-Moderatoren können Inhalte entfernen und Mitglieder sperren.",
+  "safetyContact": "Support kontaktieren",
+  "notifTitle": "Benachrichtigungen",
+  "notifCenterSubtitle": "Alles, was passiert ist, an einem Ort",
+  "notifSettingsTitle": "Benachrichtigungseinstellungen",
+  "notifSettingsSubtitle": "Kategorien, Ruhezeiten und Tageslimit",
+  "notifToday": "Heute",
+  "notifThisWeek": "Diese Woche",
+  "notifEarlier": "Früher",
+  "notifMarkAllRead": "Alle als gelesen markieren",
+  "notifUnread": "Ungelesen",
+  "notifUnreadCount": "{count, plural, =1{1 ungelesene Benachrichtigung} other{{count} ungelesene Benachrichtigungen}}",
+  "notifGrouped": "{count} Updates",
+  "notifEmptyTitle": "Noch keine Benachrichtigungen",
+  "notifEmptyBody": "Anfragen, Nachrichten, Konzerte und alles andere erscheinen hier.",
+  "notifError": "Etwas ist schiefgelaufen. Versuch es erneut.",
+  "notifPushAll": "Push-Benachrichtigungen",
+  "notifPushAllBody": "Aus: Alles erscheint weiterhin in der Übersicht, aber nichts wird gepusht.",
+  "notifNoDevice": "Push ist auf diesem Gerät noch nicht eingerichtet. Du siehst trotzdem jede Benachrichtigung hier.",
+  "notifCategoriesTitle": "Was Push senden darf",
+  "notifCategoriesBody": "Eine Kategorie auszuschalten stoppt ihre Pushs. Sie erscheint weiterhin in der Übersicht.",
+  "notifOncePerDay": "Höchstens ein Push pro Tag.",
+  "notifCatRequests": "Vibra-Anfragen",
+  "notifCatRequestsBody": "Neue und angenommene Anfragen.",
+  "notifCatMessages": "Nachrichten",
+  "notifCatMessagesBody": "Direktnachrichten, Nachrichtenanfragen und Live-Chats bei Events.",
+  "notifCatCommunities": "Community-Aktivität",
+  "notifCatCommunitiesBody": "Kommentare zu deinen Community-Beiträgen.",
+  "notifCatCircles": "Circles",
+  "notifCatCirclesBody": "Einladungen, Nachrichten und Pläne.",
+  "notifCatConcerts": "Konzertankündigungen",
+  "notifCatConcertsBody": "Neue Konzerte von Künstlern, die du hörst, und Event-Updates.",
+  "notifCatReminders": "Event-Erinnerungen",
+  "notifCatRemindersBody": "Eine Woche vorher, am Vortag und am Tag deiner Events.",
+  "notifCatRecommendations": "Empfehlungen",
+  "notifCatRecommendationsBody": "Von Personen, denen du folgst, empfohlene Musik und neue musikalische Matches.",
+  "notifCatSocial": "Daily Vibe, Storys und Beiträge",
+  "notifCatSocialBody": "Kommentare und Antworten auf das, was du teilst.",
+  "notifCatDiscoveries": "Musikalische Entdeckungen",
+  "notifCatDiscoveriesBody": "Wenn jemand einen Song speichert, den du geteilt hast.",
+  "notifCatUpdates": "VIBRA-Neuigkeiten",
+  "notifCatUpdatesBody": "Deine Musikwoche und gelegentliche Vorschläge.",
+  "notifQuietTitle": "Ruhezeiten",
+  "notifQuietBody": "In diesen Stunden keine Pushs außer Direktnachrichten. Alles wartet in der Übersicht.",
+  "notifQuietFrom": "Von",
+  "notifQuietTo": "Bis",
+  "notifDailyCap": "Höchstens {count} Pushs pro Tag",
+  "notifCalmExplain": "Damit Benachrichtigungen nützlich bleiben, fasst VIBRA wiederholte Aktivität zu einer zusammen („3 neue Kommentare“), pusht dieselbe Gruppe nicht innerhalb von 30 Minuten erneut, hält Pushs in Ruhezeiten zurück, begrenzt weniger wichtige Kategorien auf einen Push pro Tag und benachrichtigt dich nie über blockierte Personen.",
+  "circlesMuted": "Benachrichtigungen stumm",
+  "profileStories": "Storys",
+  "storyCardSemantics": "Musik-Story von {name}: {kind}, vor {hours} Std.",
+  "musicRadarMapSemantics": "{count, plural, =0{Affinitätskarte, noch niemand} =1{Affinitätskarte mit 1 Person} other{Affinitätskarte mit {count} Personen}}",
+  "musicRadarMapPerson": "{name}, {percent} % Affinität",
+  "musicRadarMapNote": "Näher an der Mitte heißt mehr gemeinsame Musik. Die Positionen zeigen Affinität, nie, wo jemand ist.",
+  "safetyOverviewError": "Deine aktuellen Einstellungen konnten nicht geladen werden. Du kannst trotzdem jeden Bereich öffnen.",
+  "homeSignatureEyebrow": "DEINE MUSIK, DEINE LEUTE",
+  "homeSignatureTitle": "Finde deine Leute durch Musik",
+  "homeDnaTop": "{family} prägt deinen Sound",
+  "homeDnaEmpty": "Erstelle sie aus deinen Lieblingsgenres",
+  "homeFrequencyCount": "{count, plural, =0{Entdecke Leute mit deinem Geschmack} =1{1 Person auf deiner Frequenz} other{{count} Personen auf deiner Frequenz}}",
+  "homeConcertMatchNext": "Triff Leute, die zu {name} gehen",
+  "homeConcertMatchNone": "Wähle ein Konzert und triff Leute, die hingehen",
+  "homeCirclesCount": "{count, plural, =0{Gründe eine kleine Musikgruppe} =1{1 Circle} other{{count} Circles}}",
+  "homeCirclesInvites": "{count, plural, =1{1 Einladung wartet} other{{count} Einladungen warten}}"
 }

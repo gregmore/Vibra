@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$EventModel {
 
  String get id;@JsonKey(name: 'external_id') String get externalId; String get source;// ticketmaster|songkick|bandsintown
- String get name;@JsonKey(name: 'artist_name') String? get artistName;@JsonKey(name: 'artist_spotify_id') String? get artistSpotifyId;@JsonKey(name: 'venue_name') String? get venueName; String? get city; String? get country; double? get latitude; double? get longitude;@JsonKey(name: 'event_date') DateTime get eventDate;@JsonKey(name: 'ticket_url') String? get ticketUrl;@JsonKey(name: 'price_min') double? get priceMin;@JsonKey(name: 'price_max') double? get priceMax;@JsonKey(name: 'image_url') String? get imageUrl; String? get description; String? get status;@JsonKey(name: 'created_at') DateTime? get createdAt;
+ String get name;@JsonKey(name: 'artist_name') String? get artistName;@JsonKey(name: 'artist_spotify_id') String? get artistSpotifyId;@JsonKey(name: 'venue_name') String? get venueName; String? get city; String? get country; double? get latitude; double? get longitude;@JsonKey(name: 'event_date') DateTime get eventDate;@JsonKey(name: 'ticket_url') String? get ticketUrl;@JsonKey(name: 'price_min') double? get priceMin;@JsonKey(name: 'price_max') double? get priceMax;@JsonKey(name: 'image_url') String? get imageUrl; String? get description; String? get status;@JsonKey(name: 'created_at') DateTime? get createdAt; List<String> get genres;@JsonKey(name: 'price_currency') String? get priceCurrency;
 /// Create a copy of EventModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $EventModelCopyWith<EventModel> get copyWith => _$EventModelCopyWithImpl<EventMo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EventModel&&(identical(other.id, id) || other.id == id)&&(identical(other.externalId, externalId) || other.externalId == externalId)&&(identical(other.source, source) || other.source == source)&&(identical(other.name, name) || other.name == name)&&(identical(other.artistName, artistName) || other.artistName == artistName)&&(identical(other.artistSpotifyId, artistSpotifyId) || other.artistSpotifyId == artistSpotifyId)&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.city, city) || other.city == city)&&(identical(other.country, country) || other.country == country)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.eventDate, eventDate) || other.eventDate == eventDate)&&(identical(other.ticketUrl, ticketUrl) || other.ticketUrl == ticketUrl)&&(identical(other.priceMin, priceMin) || other.priceMin == priceMin)&&(identical(other.priceMax, priceMax) || other.priceMax == priceMax)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EventModel&&(identical(other.id, id) || other.id == id)&&(identical(other.externalId, externalId) || other.externalId == externalId)&&(identical(other.source, source) || other.source == source)&&(identical(other.name, name) || other.name == name)&&(identical(other.artistName, artistName) || other.artistName == artistName)&&(identical(other.artistSpotifyId, artistSpotifyId) || other.artistSpotifyId == artistSpotifyId)&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.city, city) || other.city == city)&&(identical(other.country, country) || other.country == country)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.eventDate, eventDate) || other.eventDate == eventDate)&&(identical(other.ticketUrl, ticketUrl) || other.ticketUrl == ticketUrl)&&(identical(other.priceMin, priceMin) || other.priceMin == priceMin)&&(identical(other.priceMax, priceMax) || other.priceMax == priceMax)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other.genres, genres)&&(identical(other.priceCurrency, priceCurrency) || other.priceCurrency == priceCurrency));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,externalId,source,name,artistName,artistSpotifyId,venueName,city,country,latitude,longitude,eventDate,ticketUrl,priceMin,priceMax,imageUrl,description,status,createdAt]);
+int get hashCode => Object.hashAll([runtimeType,id,externalId,source,name,artistName,artistSpotifyId,venueName,city,country,latitude,longitude,eventDate,ticketUrl,priceMin,priceMax,imageUrl,description,status,createdAt,const DeepCollectionEquality().hash(genres),priceCurrency]);
 
 @override
 String toString() {
-  return 'EventModel(id: $id, externalId: $externalId, source: $source, name: $name, artistName: $artistName, artistSpotifyId: $artistSpotifyId, venueName: $venueName, city: $city, country: $country, latitude: $latitude, longitude: $longitude, eventDate: $eventDate, ticketUrl: $ticketUrl, priceMin: $priceMin, priceMax: $priceMax, imageUrl: $imageUrl, description: $description, status: $status, createdAt: $createdAt)';
+  return 'EventModel(id: $id, externalId: $externalId, source: $source, name: $name, artistName: $artistName, artistSpotifyId: $artistSpotifyId, venueName: $venueName, city: $city, country: $country, latitude: $latitude, longitude: $longitude, eventDate: $eventDate, ticketUrl: $ticketUrl, priceMin: $priceMin, priceMax: $priceMax, imageUrl: $imageUrl, description: $description, status: $status, createdAt: $createdAt, genres: $genres, priceCurrency: $priceCurrency)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $EventModelCopyWith<$Res>  {
   factory $EventModelCopyWith(EventModel value, $Res Function(EventModel) _then) = _$EventModelCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'external_id') String externalId, String source, String name,@JsonKey(name: 'artist_name') String? artistName,@JsonKey(name: 'artist_spotify_id') String? artistSpotifyId,@JsonKey(name: 'venue_name') String? venueName, String? city, String? country, double? latitude, double? longitude,@JsonKey(name: 'event_date') DateTime eventDate,@JsonKey(name: 'ticket_url') String? ticketUrl,@JsonKey(name: 'price_min') double? priceMin,@JsonKey(name: 'price_max') double? priceMax,@JsonKey(name: 'image_url') String? imageUrl, String? description, String? status,@JsonKey(name: 'created_at') DateTime? createdAt
+ String id,@JsonKey(name: 'external_id') String externalId, String source, String name,@JsonKey(name: 'artist_name') String? artistName,@JsonKey(name: 'artist_spotify_id') String? artistSpotifyId,@JsonKey(name: 'venue_name') String? venueName, String? city, String? country, double? latitude, double? longitude,@JsonKey(name: 'event_date') DateTime eventDate,@JsonKey(name: 'ticket_url') String? ticketUrl,@JsonKey(name: 'price_min') double? priceMin,@JsonKey(name: 'price_max') double? priceMax,@JsonKey(name: 'image_url') String? imageUrl, String? description, String? status,@JsonKey(name: 'created_at') DateTime? createdAt, List<String> genres,@JsonKey(name: 'price_currency') String? priceCurrency
 });
 
 
@@ -66,7 +66,7 @@ class _$EventModelCopyWithImpl<$Res>
 
 /// Create a copy of EventModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? externalId = null,Object? source = null,Object? name = null,Object? artistName = freezed,Object? artistSpotifyId = freezed,Object? venueName = freezed,Object? city = freezed,Object? country = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? eventDate = null,Object? ticketUrl = freezed,Object? priceMin = freezed,Object? priceMax = freezed,Object? imageUrl = freezed,Object? description = freezed,Object? status = freezed,Object? createdAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? externalId = null,Object? source = null,Object? name = null,Object? artistName = freezed,Object? artistSpotifyId = freezed,Object? venueName = freezed,Object? city = freezed,Object? country = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? eventDate = null,Object? ticketUrl = freezed,Object? priceMin = freezed,Object? priceMax = freezed,Object? imageUrl = freezed,Object? description = freezed,Object? status = freezed,Object? createdAt = freezed,Object? genres = null,Object? priceCurrency = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,externalId: null == externalId ? _self.externalId : externalId // ignore: cast_nullable_to_non_nullable
@@ -87,7 +87,9 @@ as double?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: 
 as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,genres: null == genres ? _self.genres : genres // ignore: cast_nullable_to_non_nullable
+as List<String>,priceCurrency: freezed == priceCurrency ? _self.priceCurrency : priceCurrency // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -172,10 +174,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'external_id')  String externalId,  String source,  String name, @JsonKey(name: 'artist_name')  String? artistName, @JsonKey(name: 'artist_spotify_id')  String? artistSpotifyId, @JsonKey(name: 'venue_name')  String? venueName,  String? city,  String? country,  double? latitude,  double? longitude, @JsonKey(name: 'event_date')  DateTime eventDate, @JsonKey(name: 'ticket_url')  String? ticketUrl, @JsonKey(name: 'price_min')  double? priceMin, @JsonKey(name: 'price_max')  double? priceMax, @JsonKey(name: 'image_url')  String? imageUrl,  String? description,  String? status, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'external_id')  String externalId,  String source,  String name, @JsonKey(name: 'artist_name')  String? artistName, @JsonKey(name: 'artist_spotify_id')  String? artistSpotifyId, @JsonKey(name: 'venue_name')  String? venueName,  String? city,  String? country,  double? latitude,  double? longitude, @JsonKey(name: 'event_date')  DateTime eventDate, @JsonKey(name: 'ticket_url')  String? ticketUrl, @JsonKey(name: 'price_min')  double? priceMin, @JsonKey(name: 'price_max')  double? priceMax, @JsonKey(name: 'image_url')  String? imageUrl,  String? description,  String? status, @JsonKey(name: 'created_at')  DateTime? createdAt,  List<String> genres, @JsonKey(name: 'price_currency')  String? priceCurrency)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _EventModel() when $default != null:
-return $default(_that.id,_that.externalId,_that.source,_that.name,_that.artistName,_that.artistSpotifyId,_that.venueName,_that.city,_that.country,_that.latitude,_that.longitude,_that.eventDate,_that.ticketUrl,_that.priceMin,_that.priceMax,_that.imageUrl,_that.description,_that.status,_that.createdAt);case _:
+return $default(_that.id,_that.externalId,_that.source,_that.name,_that.artistName,_that.artistSpotifyId,_that.venueName,_that.city,_that.country,_that.latitude,_that.longitude,_that.eventDate,_that.ticketUrl,_that.priceMin,_that.priceMax,_that.imageUrl,_that.description,_that.status,_that.createdAt,_that.genres,_that.priceCurrency);case _:
   return orElse();
 
 }
@@ -193,10 +195,10 @@ return $default(_that.id,_that.externalId,_that.source,_that.name,_that.artistNa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'external_id')  String externalId,  String source,  String name, @JsonKey(name: 'artist_name')  String? artistName, @JsonKey(name: 'artist_spotify_id')  String? artistSpotifyId, @JsonKey(name: 'venue_name')  String? venueName,  String? city,  String? country,  double? latitude,  double? longitude, @JsonKey(name: 'event_date')  DateTime eventDate, @JsonKey(name: 'ticket_url')  String? ticketUrl, @JsonKey(name: 'price_min')  double? priceMin, @JsonKey(name: 'price_max')  double? priceMax, @JsonKey(name: 'image_url')  String? imageUrl,  String? description,  String? status, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'external_id')  String externalId,  String source,  String name, @JsonKey(name: 'artist_name')  String? artistName, @JsonKey(name: 'artist_spotify_id')  String? artistSpotifyId, @JsonKey(name: 'venue_name')  String? venueName,  String? city,  String? country,  double? latitude,  double? longitude, @JsonKey(name: 'event_date')  DateTime eventDate, @JsonKey(name: 'ticket_url')  String? ticketUrl, @JsonKey(name: 'price_min')  double? priceMin, @JsonKey(name: 'price_max')  double? priceMax, @JsonKey(name: 'image_url')  String? imageUrl,  String? description,  String? status, @JsonKey(name: 'created_at')  DateTime? createdAt,  List<String> genres, @JsonKey(name: 'price_currency')  String? priceCurrency)  $default,) {final _that = this;
 switch (_that) {
 case _EventModel():
-return $default(_that.id,_that.externalId,_that.source,_that.name,_that.artistName,_that.artistSpotifyId,_that.venueName,_that.city,_that.country,_that.latitude,_that.longitude,_that.eventDate,_that.ticketUrl,_that.priceMin,_that.priceMax,_that.imageUrl,_that.description,_that.status,_that.createdAt);case _:
+return $default(_that.id,_that.externalId,_that.source,_that.name,_that.artistName,_that.artistSpotifyId,_that.venueName,_that.city,_that.country,_that.latitude,_that.longitude,_that.eventDate,_that.ticketUrl,_that.priceMin,_that.priceMax,_that.imageUrl,_that.description,_that.status,_that.createdAt,_that.genres,_that.priceCurrency);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -213,10 +215,10 @@ return $default(_that.id,_that.externalId,_that.source,_that.name,_that.artistNa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'external_id')  String externalId,  String source,  String name, @JsonKey(name: 'artist_name')  String? artistName, @JsonKey(name: 'artist_spotify_id')  String? artistSpotifyId, @JsonKey(name: 'venue_name')  String? venueName,  String? city,  String? country,  double? latitude,  double? longitude, @JsonKey(name: 'event_date')  DateTime eventDate, @JsonKey(name: 'ticket_url')  String? ticketUrl, @JsonKey(name: 'price_min')  double? priceMin, @JsonKey(name: 'price_max')  double? priceMax, @JsonKey(name: 'image_url')  String? imageUrl,  String? description,  String? status, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'external_id')  String externalId,  String source,  String name, @JsonKey(name: 'artist_name')  String? artistName, @JsonKey(name: 'artist_spotify_id')  String? artistSpotifyId, @JsonKey(name: 'venue_name')  String? venueName,  String? city,  String? country,  double? latitude,  double? longitude, @JsonKey(name: 'event_date')  DateTime eventDate, @JsonKey(name: 'ticket_url')  String? ticketUrl, @JsonKey(name: 'price_min')  double? priceMin, @JsonKey(name: 'price_max')  double? priceMax, @JsonKey(name: 'image_url')  String? imageUrl,  String? description,  String? status, @JsonKey(name: 'created_at')  DateTime? createdAt,  List<String> genres, @JsonKey(name: 'price_currency')  String? priceCurrency)?  $default,) {final _that = this;
 switch (_that) {
 case _EventModel() when $default != null:
-return $default(_that.id,_that.externalId,_that.source,_that.name,_that.artistName,_that.artistSpotifyId,_that.venueName,_that.city,_that.country,_that.latitude,_that.longitude,_that.eventDate,_that.ticketUrl,_that.priceMin,_that.priceMax,_that.imageUrl,_that.description,_that.status,_that.createdAt);case _:
+return $default(_that.id,_that.externalId,_that.source,_that.name,_that.artistName,_that.artistSpotifyId,_that.venueName,_that.city,_that.country,_that.latitude,_that.longitude,_that.eventDate,_that.ticketUrl,_that.priceMin,_that.priceMax,_that.imageUrl,_that.description,_that.status,_that.createdAt,_that.genres,_that.priceCurrency);case _:
   return null;
 
 }
@@ -228,7 +230,7 @@ return $default(_that.id,_that.externalId,_that.source,_that.name,_that.artistNa
 @JsonSerializable()
 
 class _EventModel implements EventModel {
-  const _EventModel({required this.id, @JsonKey(name: 'external_id') required this.externalId, required this.source, required this.name, @JsonKey(name: 'artist_name') this.artistName, @JsonKey(name: 'artist_spotify_id') this.artistSpotifyId, @JsonKey(name: 'venue_name') this.venueName, this.city, this.country, this.latitude, this.longitude, @JsonKey(name: 'event_date') required this.eventDate, @JsonKey(name: 'ticket_url') this.ticketUrl, @JsonKey(name: 'price_min') this.priceMin, @JsonKey(name: 'price_max') this.priceMax, @JsonKey(name: 'image_url') this.imageUrl, this.description, this.status, @JsonKey(name: 'created_at') this.createdAt});
+  const _EventModel({required this.id, @JsonKey(name: 'external_id') required this.externalId, required this.source, required this.name, @JsonKey(name: 'artist_name') this.artistName, @JsonKey(name: 'artist_spotify_id') this.artistSpotifyId, @JsonKey(name: 'venue_name') this.venueName, this.city, this.country, this.latitude, this.longitude, @JsonKey(name: 'event_date') required this.eventDate, @JsonKey(name: 'ticket_url') this.ticketUrl, @JsonKey(name: 'price_min') this.priceMin, @JsonKey(name: 'price_max') this.priceMax, @JsonKey(name: 'image_url') this.imageUrl, this.description, this.status, @JsonKey(name: 'created_at') this.createdAt, final  List<String> genres = const <String>[], @JsonKey(name: 'price_currency') this.priceCurrency}): _genres = genres;
   factory _EventModel.fromJson(Map<String, dynamic> json) => _$EventModelFromJson(json);
 
 @override final  String id;
@@ -251,6 +253,14 @@ class _EventModel implements EventModel {
 @override final  String? description;
 @override final  String? status;
 @override@JsonKey(name: 'created_at') final  DateTime? createdAt;
+ final  List<String> _genres;
+@override@JsonKey() List<String> get genres {
+  if (_genres is EqualUnmodifiableListView) return _genres;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_genres);
+}
+
+@override@JsonKey(name: 'price_currency') final  String? priceCurrency;
 
 /// Create a copy of EventModel
 /// with the given fields replaced by the non-null parameter values.
@@ -265,16 +275,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EventModel&&(identical(other.id, id) || other.id == id)&&(identical(other.externalId, externalId) || other.externalId == externalId)&&(identical(other.source, source) || other.source == source)&&(identical(other.name, name) || other.name == name)&&(identical(other.artistName, artistName) || other.artistName == artistName)&&(identical(other.artistSpotifyId, artistSpotifyId) || other.artistSpotifyId == artistSpotifyId)&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.city, city) || other.city == city)&&(identical(other.country, country) || other.country == country)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.eventDate, eventDate) || other.eventDate == eventDate)&&(identical(other.ticketUrl, ticketUrl) || other.ticketUrl == ticketUrl)&&(identical(other.priceMin, priceMin) || other.priceMin == priceMin)&&(identical(other.priceMax, priceMax) || other.priceMax == priceMax)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EventModel&&(identical(other.id, id) || other.id == id)&&(identical(other.externalId, externalId) || other.externalId == externalId)&&(identical(other.source, source) || other.source == source)&&(identical(other.name, name) || other.name == name)&&(identical(other.artistName, artistName) || other.artistName == artistName)&&(identical(other.artistSpotifyId, artistSpotifyId) || other.artistSpotifyId == artistSpotifyId)&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.city, city) || other.city == city)&&(identical(other.country, country) || other.country == country)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.eventDate, eventDate) || other.eventDate == eventDate)&&(identical(other.ticketUrl, ticketUrl) || other.ticketUrl == ticketUrl)&&(identical(other.priceMin, priceMin) || other.priceMin == priceMin)&&(identical(other.priceMax, priceMax) || other.priceMax == priceMax)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other._genres, _genres)&&(identical(other.priceCurrency, priceCurrency) || other.priceCurrency == priceCurrency));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,externalId,source,name,artistName,artistSpotifyId,venueName,city,country,latitude,longitude,eventDate,ticketUrl,priceMin,priceMax,imageUrl,description,status,createdAt]);
+int get hashCode => Object.hashAll([runtimeType,id,externalId,source,name,artistName,artistSpotifyId,venueName,city,country,latitude,longitude,eventDate,ticketUrl,priceMin,priceMax,imageUrl,description,status,createdAt,const DeepCollectionEquality().hash(_genres),priceCurrency]);
 
 @override
 String toString() {
-  return 'EventModel(id: $id, externalId: $externalId, source: $source, name: $name, artistName: $artistName, artistSpotifyId: $artistSpotifyId, venueName: $venueName, city: $city, country: $country, latitude: $latitude, longitude: $longitude, eventDate: $eventDate, ticketUrl: $ticketUrl, priceMin: $priceMin, priceMax: $priceMax, imageUrl: $imageUrl, description: $description, status: $status, createdAt: $createdAt)';
+  return 'EventModel(id: $id, externalId: $externalId, source: $source, name: $name, artistName: $artistName, artistSpotifyId: $artistSpotifyId, venueName: $venueName, city: $city, country: $country, latitude: $latitude, longitude: $longitude, eventDate: $eventDate, ticketUrl: $ticketUrl, priceMin: $priceMin, priceMax: $priceMax, imageUrl: $imageUrl, description: $description, status: $status, createdAt: $createdAt, genres: $genres, priceCurrency: $priceCurrency)';
 }
 
 
@@ -285,7 +295,7 @@ abstract mixin class _$EventModelCopyWith<$Res> implements $EventModelCopyWith<$
   factory _$EventModelCopyWith(_EventModel value, $Res Function(_EventModel) _then) = __$EventModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'external_id') String externalId, String source, String name,@JsonKey(name: 'artist_name') String? artistName,@JsonKey(name: 'artist_spotify_id') String? artistSpotifyId,@JsonKey(name: 'venue_name') String? venueName, String? city, String? country, double? latitude, double? longitude,@JsonKey(name: 'event_date') DateTime eventDate,@JsonKey(name: 'ticket_url') String? ticketUrl,@JsonKey(name: 'price_min') double? priceMin,@JsonKey(name: 'price_max') double? priceMax,@JsonKey(name: 'image_url') String? imageUrl, String? description, String? status,@JsonKey(name: 'created_at') DateTime? createdAt
+ String id,@JsonKey(name: 'external_id') String externalId, String source, String name,@JsonKey(name: 'artist_name') String? artistName,@JsonKey(name: 'artist_spotify_id') String? artistSpotifyId,@JsonKey(name: 'venue_name') String? venueName, String? city, String? country, double? latitude, double? longitude,@JsonKey(name: 'event_date') DateTime eventDate,@JsonKey(name: 'ticket_url') String? ticketUrl,@JsonKey(name: 'price_min') double? priceMin,@JsonKey(name: 'price_max') double? priceMax,@JsonKey(name: 'image_url') String? imageUrl, String? description, String? status,@JsonKey(name: 'created_at') DateTime? createdAt, List<String> genres,@JsonKey(name: 'price_currency') String? priceCurrency
 });
 
 
@@ -302,7 +312,7 @@ class __$EventModelCopyWithImpl<$Res>
 
 /// Create a copy of EventModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? externalId = null,Object? source = null,Object? name = null,Object? artistName = freezed,Object? artistSpotifyId = freezed,Object? venueName = freezed,Object? city = freezed,Object? country = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? eventDate = null,Object? ticketUrl = freezed,Object? priceMin = freezed,Object? priceMax = freezed,Object? imageUrl = freezed,Object? description = freezed,Object? status = freezed,Object? createdAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? externalId = null,Object? source = null,Object? name = null,Object? artistName = freezed,Object? artistSpotifyId = freezed,Object? venueName = freezed,Object? city = freezed,Object? country = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? eventDate = null,Object? ticketUrl = freezed,Object? priceMin = freezed,Object? priceMax = freezed,Object? imageUrl = freezed,Object? description = freezed,Object? status = freezed,Object? createdAt = freezed,Object? genres = null,Object? priceCurrency = freezed,}) {
   return _then(_EventModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,externalId: null == externalId ? _self.externalId : externalId // ignore: cast_nullable_to_non_nullable
@@ -323,7 +333,9 @@ as double?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: 
 as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,genres: null == genres ? _self._genres : genres // ignore: cast_nullable_to_non_nullable
+as List<String>,priceCurrency: freezed == priceCurrency ? _self.priceCurrency : priceCurrency // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

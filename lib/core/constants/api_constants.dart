@@ -13,9 +13,11 @@ class ApiConstants {
   static const String spotifyMe = '/me';
 
   /// Scopes OAuth richiesti per analisi gusti musicali.
+  /// Minimum Spotify scopes. `/v1/me` (id, name, images) needs no scope;
+  /// e-mail and private account fields are never used, so not requested.
+  /// * user-top-read: top artists/tracks → stats, matching, event suggestions
+  /// * user-read-recently-played: play times → listening heatmap
   static const List<String> spotifyScopes = [
-    'user-read-private',
-    'user-read-email',
     'user-top-read',
     'user-read-recently-played',
   ];

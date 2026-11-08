@@ -1,8 +1,11 @@
-import '../../../core/errors/exceptions.dart' show ServerException;
+import 'package:vibra/l10n/app_localizations.dart';
+import '../../../core/constants/app_constants.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,10 +13,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/theme/vibra_theme_tokens.dart';
+import '../../../core/theme/vibra_colors.dart';
 import '../../../core/theme/vibra_spacing.dart';
 import '../../providers/app_state_providers.dart';
+import '../../providers/profile_photo_provider.dart';
+import '../../widgets/common/vibra_button.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
-import '../../widgets/vibra_neon_avatar.dart';
+import '../../widgets/common/vibra_avatar.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -35,6 +41,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   File? _selectedImageFile;
   bool _removeAvatar = false;
   bool _isSaving = false;
+  bool _isPickingImage = false;
+  int _usernameValidation = 0;
+  int _photoSelectionVersion = 0;
 
   bool _isUsernameValid = true;
   bool _isCheckingUsername = false;
@@ -52,11 +61,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       text: profile.displayName ?? profile.username,
     );
     _bioController = TextEditingController(text: profile.bio ?? '');
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      Future.microtask(_recoverLostImage);
+    }
   }
 
   @override
   void dispose() {
     _debounceTimer?.cancel();
+    _usernameValidation++;
     _usernameController.dispose();
     _displayNameController.dispose();
     _bioController.dispose();
@@ -68,13 +81,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   Future<void> _validateUsername(String value) async {
     _debounceTimer?.cancel();
+    final validation = ++_usernameValidation;
     final trimmed = value.trim();
 
     if (trimmed.isEmpty) {
       setState(() {
         _isUsernameValid = false;
         _isCheckingUsername = false;
-        _usernameError = 'L\'username non può essere vuoto';
+        _usernameError = AppLocalizations.of(context)!.profileUsernameEmpty;
       });
       return;
     }
@@ -83,7 +97,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       setState(() {
         _isUsernameValid = false;
         _isCheckingUsername = false;
-        _usernameError = 'Minimo 3 caratteri';
+        _usernameError = AppLocalizations.of(context)!.profileUsernameShort;
       });
       return;
     }
@@ -93,7 +107,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       setState(() {
         _isUsernameValid = false;
         _isCheckingUsername = false;
-        _usernameError = 'Usa solo lettere, numeri, _ o .';
+        _usernameError = AppLocalizations.of(
+          context,
+        )!.profileUsernameCharacters;
       });
       return;
     }
@@ -117,18 +133,20 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       try {
         final currentUserId = Supabase.instance.client.auth.currentUser?.id;
         final res = await Supabase.instance.client
-            .from('users')
+            .from('users_public')
             .select('id')
             .eq('username', trimmed)
-            .neq('id', currentUserId ?? '')
+            .neq('id', currentUserId ?? '00000000-0000-0000-0000-000000000000')
             .maybeSingle();
 
-        if (mounted) {
+        if (mounted && validation == _usernameValidation) {
           setState(() {
             _isCheckingUsername = false;
             if (res != null) {
               _isUsernameValid = false;
-              _usernameError = 'Username già in uso';
+              _usernameError = AppLocalizations.of(
+                context,
+              )!.profileUsernameTaken;
             } else {
               _isUsernameValid = true;
               _usernameError = null;
@@ -136,7 +154,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           });
         }
       } catch (e) {
-        if (mounted) {
+        if (mounted && validation == _usernameValidation) {
           setState(() {
             _isCheckingUsername = false;
             // Se c'è un errore di connessione offline, lasciamo procedere
@@ -149,12 +167,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
+    if (_isPickingImage || _isSaving) return;
+    _photoSelectionVersion++;
+    setState(() => _isPickingImage = true);
     try {
-      final picker = ImagePicker();
+      final picker = ref.read(profileImagePickerProvider);
       final XFile? image = await picker.pickImage(
         source: source,
         maxWidth: 1024,
+        maxHeight: 1024,
         imageQuality: 85,
+        requestFullMetadata: false,
       );
       if (image != null && mounted) {
         setState(() {
@@ -166,15 +189,47 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Impossibile selezionare l\'immagine.'),
+            content: Text(
+              e is PlatformException && e.code.contains('denied')
+                  ? AppLocalizations.of(context)!.profilePhotoPermission
+                  : AppLocalizations.of(context)!.profilePhotoPickError,
+            ),
             backgroundColor: context.vibraTokens.error,
           ),
         );
       }
+    } finally {
+      if (mounted) setState(() => _isPickingImage = false);
+    }
+  }
+
+  Future<void> _recoverLostImage() async {
+    final version = _photoSelectionVersion;
+    try {
+      final response = await ref
+          .read(profileImagePickerProvider)
+          .retrieveLostData();
+      if (!mounted ||
+          response.isEmpty ||
+          _isPickingImage ||
+          version != _photoSelectionVersion) {
+        return;
+      }
+      final files =
+          response.files ?? (response.file == null ? null : [response.file!]);
+      if (files != null && files.isNotEmpty) {
+        setState(() {
+          _selectedImageFile = File(files.first.path);
+          _removeAvatar = false;
+        });
+      }
+    } catch (_) {
+      // Recovery is optional when no Android gallery result was interrupted.
     }
   }
 
   void _showImagePickerModal() {
+    if (_isPickingImage || _isSaving) return;
     final profile = ref.read(myProfileProvider);
     final hasImage =
         _selectedImageFile != null ||
@@ -182,6 +237,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: context.vibraTokens.surfaceElevated,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
@@ -190,113 +246,47 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       ),
       builder: (ctx) {
         return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: context.vibraTokens.borderDefault,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Foto Profilo',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 20),
-                ListTile(
-                  leading: Container(
-                    padding: EdgeInsets.all(10),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
                     decoration: BoxDecoration(
-                      color: context.vibraTokens.accentPrimary.withValues(
-                        alpha: 0.15,
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.photo_library_rounded,
-                      color: context.vibraTokens.accentPrimary,
-                      size: 22,
+                      color: context.vibraTokens.borderDefault,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  title: Text(
-                    'Scegli dalla galleria',
-                    style: TextStyle(fontWeight: FontWeight.w600),
+                  SizedBox(height: 16),
+                  Text(
+                    AppLocalizations.of(context)!.profilePhotoTitle,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text(
-                    'Seleziona una foto dal tuo dispositivo',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: context.vibraTokens.textSecondary,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.of(ctx).pop();
-                    _pickImage(ImageSource.gallery);
-                  },
-                ),
-                ListTile(
-                  leading: Container(
-                    padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: context.vibraTokens.accentSecondary.withValues(
-                        alpha: 0.15,
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.camera_alt_rounded,
-                      color: context.vibraTokens.accentSecondary,
-                      size: 22,
-                    ),
-                  ),
-                  title: Text(
-                    'Scatta una foto',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Text(
-                    'Usa la fotocamera per un nuovo scatto',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: context.vibraTokens.textSecondary,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.of(ctx).pop();
-                    _pickImage(ImageSource.camera);
-                  },
-                ),
-                if (hasImage) ...[
-                  Divider(color: context.vibraTokens.borderDefault, height: 24),
+                  SizedBox(height: 20),
                   ListTile(
                     leading: Container(
                       padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: context.vibraTokens.error.withValues(
+                        color: context.vibraTokens.accentPrimary.withValues(
                           alpha: 0.15,
                         ),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        Icons.delete_outline_rounded,
-                        color: context.vibraTokens.error,
+                        Icons.photo_library_rounded,
+                        color: context.vibraTokens.accentPrimary,
                         size: 22,
                       ),
                     ),
                     title: Text(
-                      'Rimuovi foto',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: context.vibraTokens.error,
-                      ),
+                      AppLocalizations.of(context)!.profilePhotoGallery,
+                      style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(
-                      'Ripristina l\'avatar predefinito',
+                      AppLocalizations.of(context)!.profilePhotoGalleryBody,
                       style: TextStyle(
                         fontSize: 12,
                         color: context.vibraTokens.textSecondary,
@@ -304,14 +294,86 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     ),
                     onTap: () {
                       Navigator.of(ctx).pop();
-                      setState(() {
-                        _selectedImageFile = null;
-                        _removeAvatar = true;
-                      });
+                      _pickImage(ImageSource.gallery);
                     },
                   ),
+                  ListTile(
+                    leading: Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: context.vibraTokens.accentSecondary.withValues(
+                          alpha: 0.15,
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.camera_alt_rounded,
+                        color: context.vibraTokens.accentSecondary,
+                        size: 22,
+                      ),
+                    ),
+                    title: Text(
+                      AppLocalizations.of(context)!.profilePhotoCamera,
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(
+                      AppLocalizations.of(context)!.profilePhotoCameraBody,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.vibraTokens.textSecondary,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      _pickImage(ImageSource.camera);
+                    },
+                  ),
+                  if (hasImage) ...[
+                    Divider(
+                      color: context.vibraTokens.borderDefault,
+                      height: 24,
+                    ),
+                    ListTile(
+                      leading: Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: context.vibraTokens.error.withValues(
+                            alpha: 0.15,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.delete_outline_rounded,
+                          color: context.vibraTokens.error,
+                          size: 22,
+                        ),
+                      ),
+                      title: Text(
+                        AppLocalizations.of(context)!.profilePhotoRemove,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: context.vibraTokens.error,
+                        ),
+                      ),
+                      subtitle: Text(
+                        AppLocalizations.of(context)!.profilePhotoRestore,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: context.vibraTokens.textSecondary,
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        setState(() {
+                          _photoSelectionVersion++;
+                          _selectedImageFile = null;
+                          _removeAvatar = true;
+                        });
+                      },
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         );
@@ -320,9 +382,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _saveProfile() async {
+    if (_isSaving || _isPickingImage) return;
     if (!_formKey.currentState!.validate()) return;
     if (!_isUsernameValid || _isCheckingUsername) return;
 
+    _photoSelectionVersion++;
     setState(() => _isSaving = true);
     try {
       String? avatarParam;
@@ -348,23 +412,35 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               children: [
                 Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
                 SizedBox(width: 12),
-                Text('Profilo aggiornato con successo!'),
+                Expanded(
+                  child: Text(AppLocalizations.of(context)!.profileSaved),
+                ),
               ],
             ),
             backgroundColor: context.vibraTokens.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
-        context.pop();
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/profile');
+        }
       }
     } catch (e) {
       if (mounted) {
+        if (e is PostgrestException && e.code == '23505') {
+          setState(() {
+            _isUsernameValid = false;
+            _usernameError = AppLocalizations.of(context)!.profileUsernameTaken;
+          });
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              e is ServerException
-                  ? 'Impossibile salvare il profilo: ${e.message}'
-                  : 'Impossibile salvare il profilo. Riprova tra poco.',
+              e is PostgrestException && e.code == '23505'
+                  ? AppLocalizations.of(context)!.profileUsernameTakenRetry
+                  : AppLocalizations.of(context)!.profileSaveError,
             ),
             backgroundColor: context.vibraTokens.error,
             behavior: SnackBarBehavior.floating,
@@ -384,7 +460,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final theme = Theme.of(context);
     final hasSpotify =
         profile.spotifyId != null && profile.spotifyId!.isNotEmpty;
-    final canSave = !_isSaving && _isUsernameValid && !_isCheckingUsername;
+    final canSave =
+        !_isSaving &&
+        !_isPickingImage &&
+        _isUsernameValid &&
+        !_isCheckingUsername;
 
     final String displayAvatarUrl = _removeAvatar
         ? ''
@@ -395,15 +475,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'Modifica Profilo',
+          AppLocalizations.of(context)!.profileEditTitle,
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
         leading: IconButton(
+          tooltip: AppLocalizations.of(context)!.profileBack,
           icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => context.pop(),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/profile'),
         ),
         actions: [
           if (_isSaving)
@@ -424,7 +506,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             TextButton(
               onPressed: canSave ? _saveProfile : null,
               child: Text(
-                'Salva',
+                AppLocalizations.of(context)!.commonSave,
                 style: TextStyle(
                   color: canSave
                       ? context.vibraTokens.accentPrimary
@@ -448,30 +530,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 children: [
                   Center(
                     child: GestureDetector(
-                      onTap: _isSaving ? null : _showImagePickerModal,
+                      onTap: _isSaving || _isPickingImage
+                          ? null
+                          : _showImagePickerModal,
                       child: Stack(
                         alignment: Alignment.bottomRight,
                         children: [
-                          // Glow / Bordo Neon Avatar
-                          Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: context.vibraTokens.accentPrimary
-                                      .withValues(alpha: 0.3),
-                                  blurRadius: 24,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                            ),
-                            child: VibraNeonAvatar(
-                              imageUrl: displayAvatarUrl,
-                              imageFile: _selectedImageFile,
+                          SizedBox(
+                            child: VibraAvatar(
+                              imageUrl:
+                                  _selectedImageFile?.path ?? displayAvatarUrl,
                               radius: 56,
-                              score: 1.0,
-                              displayName:
-                                  _displayNameController.text.isNotEmpty
+                              signalRing: true,
+                              name: _displayNameController.text.isNotEmpty
                                   ? _displayNameController.text
                                   : _usernameController.text,
                             ),
@@ -481,23 +552,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           Container(
                             padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              gradient: context.vibraTokens.primaryGradient,
+                              color: context.vibraTokens.accentFill,
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: context.vibraTokens.backgroundPrimary,
                                 width: 3,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: context.vibraTokens.accentPrimary
-                                      .withValues(alpha: 0.4),
-                                  blurRadius: 8,
-                                ),
-                              ],
                             ),
                             child: Icon(
                               Icons.camera_alt_rounded,
-                              color: Colors.white,
+                              color: context.vibraTokens.onAccent,
                               size: 18,
                             ),
                           ),
@@ -508,10 +572,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   SizedBox(height: 8),
                   Center(
                     child: TextButton.icon(
-                      onPressed: _isSaving ? null : _showImagePickerModal,
+                      onPressed: _isSaving || _isPickingImage
+                          ? null
+                          : _showImagePickerModal,
                       icon: Icon(Icons.edit_rounded, size: 16),
                       label: Text(
-                        'Cambia immagine profilo',
+                        AppLocalizations.of(context)!.profilePhotoChange,
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
@@ -549,12 +615,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             // Campo Username
                             _buildInputField(
                               icon: Icons.alternate_email_rounded,
-                              label: 'Username',
-                              hint: 'es. musica_fan',
+                              label: AppLocalizations.of(context)!.authUsername,
+                              hint: AppLocalizations.of(
+                                context,
+                              )!.profileUsernameExample,
                               controller: _usernameController,
                               focusNode: _usernameFocus,
                               nextFocus: _displayNameFocus,
                               onChanged: _validateUsername,
+                              maxLength: 30,
                               errorText: _usernameError,
                               isRequired: true,
                               trailing: _isCheckingUsername
@@ -581,8 +650,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             // Campo Nome (Display Name)
                             _buildInputField(
                               icon: Icons.person_outline_rounded,
-                              label: 'Nome',
-                              hint: 'Il tuo nome o nickname',
+                              label: AppLocalizations.of(context)!.profileName,
+                              hint: AppLocalizations.of(
+                                context,
+                              )!.profileNameHint,
                               controller: _displayNameController,
                               focusNode: _displayNameFocus,
                               nextFocus: _bioFocus,
@@ -590,7 +661,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               isRequired: true,
                               validator: (val) {
                                 if (val == null || val.trim().isEmpty) {
-                                  return 'Il nome non può essere vuoto';
+                                  return AppLocalizations.of(
+                                    context,
+                                  )!.profileNameEmpty;
                                 }
                                 return null;
                               },
@@ -601,9 +674,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             // Campo Descrizione (Bio)
                             _buildInputField(
                               icon: Icons.edit_note_rounded,
-                              label: 'Descrizione',
-                              hint:
-                                  'Racconta qualcosa sui tuoi gusti musicali e su di te...',
+                              label: AppLocalizations.of(
+                                context,
+                              )!.profileDescription,
+                              hint: AppLocalizations.of(
+                                context,
+                              )!.profileDescriptionHint,
                               controller: _bioController,
                               focusNode: _bioFocus,
                               maxLines: 4,
@@ -622,216 +698,170 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               SizedBox(height: 28),
 
               // ─── Scheda Spotify ──────────────────────────────────
-              Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 28,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              color: Color(0xFF1DB954).withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(8),
+              if (AppConstants.spotifyEnabled)
+                Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: VibraPalette.spotifyGreen.withValues(
+                                  alpha: 0.15,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.music_note_rounded,
+                                color: VibraPalette.spotifyGreen,
+                                size: 14,
+                              ),
                             ),
-                            child: Icon(
-                              Icons.music_note_rounded,
-                              color: Color(0xFF1DB954),
-                              size: 14,
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                AppLocalizations.of(
+                                  context,
+                                )!.profileMusicStreaming,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                            'Musica e Streaming',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 12),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                          VibraSpacing.radiusMedium,
+                          ],
                         ),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                          child: Container(
-                            padding: EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: context.vibraTokens.surfaceElevated
-                                  .withValues(alpha: 0.8),
-                              borderRadius: BorderRadius.circular(
-                                VibraSpacing.radiusMedium,
-                              ),
-                              border: Border.all(
-                                color: context.vibraTokens.borderDefault,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Color(
-                                      0xFF1DB954,
-                                    ).withValues(alpha: 0.15),
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Color(
-                                          0xFF1DB954,
-                                        ).withValues(alpha: 0.25),
-                                        blurRadius: 12,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Icon(
-                                    Icons.graphic_eq_rounded,
-                                    color: Color(0xFF1DB954),
-                                    size: 24,
-                                  ),
+                        SizedBox(height: 12),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            VibraSpacing.radiusMedium,
+                          ),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                            child: Container(
+                              padding: EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: context.vibraTokens.surfaceElevated
+                                    .withValues(alpha: 0.8),
+                                borderRadius: BorderRadius.circular(
+                                  VibraSpacing.radiusMedium,
                                 ),
-                                SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Spotify',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      SizedBox(height: 2),
-                                      Text(
-                                        hasSpotify
-                                            ? 'Account connesso'
-                                            : 'Collega il tuo account per suggerimenti migliori',
-                                        style: TextStyle(
-                                          color:
-                                              context.vibraTokens.textSecondary,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                border: Border.all(
+                                  color: context.vibraTokens.borderDefault,
                                 ),
-                                SizedBox(width: 12),
-                                if (hasSpotify)
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.check_circle_rounded,
-                                        color: Color(0xFF1DB954),
-                                        size: 20,
-                                      ),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'Attivo',
-                                        style: TextStyle(
-                                          color: Color(0xFF1DB954),
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: VibraPalette.spotifyGreen
+                                          .withValues(alpha: 0.15),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.graphic_eq_rounded,
+                                      color: VibraPalette.spotifyGreen,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Spotify',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        SizedBox(height: 2),
+                                        Text(
+                                          hasSpotify
+                                              ? AppLocalizations.of(
+                                                  context,
+                                                )!.profileAccountConnected
+                                              : AppLocalizations.of(
+                                                  context,
+                                                )!.profileConnectSuggestions,
+                                          style: TextStyle(
+                                            color: context
+                                                .vibraTokens
+                                                .textSecondary,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(width: 12),
+                                  if (hasSpotify)
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.check_circle_rounded,
+                                          color: VibraPalette.spotifyGreen,
+                                          size: 20,
+                                        ),
+                                        SizedBox(width: 4),
+                                        Text(
+                                          AppLocalizations.of(
+                                            context,
+                                          )!.commonActive,
+                                          style: TextStyle(
+                                            color: VibraPalette.spotifyGreen,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  else
+                                    ElevatedButton(
+                                      onPressed: () =>
+                                          context.push('/spotify-connect'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            VibraPalette.spotifyGreen,
+                                        foregroundColor:
+                                            VibraPalette.onSpotifyGreen,
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 8,
                                         ),
                                       ),
-                                    ],
-                                  )
-                                else
-                                  ElevatedButton(
-                                    onPressed: () =>
-                                        context.push('/spotify-connect'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xFF1DB954),
-                                      foregroundColor: Colors.white,
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
+                                      child: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.commonConnect,
                                       ),
                                     ),
-                                    child: Text('Collega'),
-                                  ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  )
-                  .animate()
-                  .fadeIn(delay: 200.ms, duration: 400.ms)
-                  .slideY(begin: 0.03),
+                      ],
+                    )
+                    .animate()
+                    .fadeIn(delay: 200.ms, duration: 400.ms)
+                    .slideY(begin: 0.03),
 
               SizedBox(height: 36),
 
               // ─── Pulsante Salvataggio Principale ───────────────────
-              GestureDetector(
-                    onTap: canSave ? _saveProfile : null,
-                    child: Container(
-                      width: double.infinity,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        gradient: canSave
-                            ? context.vibraTokens.primaryGradient
-                            : null,
-                        color: canSave
-                            ? null
-                            : context.vibraTokens.surfaceMuted,
-                        borderRadius: BorderRadius.circular(
-                          VibraSpacing.radiusMedium,
-                        ),
-                        boxShadow: canSave
-                            ? [
-                                BoxShadow(
-                                  color: context.vibraTokens.accentPrimary
-                                      .withValues(alpha: 0.4),
-                                  blurRadius: 16,
-                                  spreadRadius: 1,
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Center(
-                        child: _isSaving
-                            ? SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.save_rounded,
-                                    size: 20,
-                                    color: canSave
-                                        ? Colors.white
-                                        : context.vibraTokens.textDisabled,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Salva Modifiche',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: canSave
-                                          ? Colors.white
-                                          : context.vibraTokens.textDisabled,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                      ),
-                    ),
-                  )
-                  .animate()
-                  .fadeIn(delay: 300.ms, duration: 400.ms)
-                  .slideY(begin: 0.05),
+              VibraButton(
+                label: AppLocalizations.of(context)!.profileSaveChanges,
+                onPressed: canSave ? _saveProfile : null,
+                loading: _isSaving,
+                expanded: true,
+                tone: VibraButtonTone.signal,
+                leadingIcon: Icons.save_rounded,
+              ),
               SizedBox(height: 40),
             ],
           ),
@@ -895,12 +925,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      label,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: context.vibraTokens.textSecondary,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
+                    Flexible(
+                      child: Text(
+                        label,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: context.vibraTokens.textSecondary,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
                       ),
                     ),
                     if (isRequired) ...[

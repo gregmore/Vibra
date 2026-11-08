@@ -20,6 +20,8 @@ class Event {
     this.description,
     this.status,
     this.createdAt,
+    this.genres = const [],
+    this.priceCurrency,
   });
 
   final String id;
@@ -41,6 +43,13 @@ class Event {
   final String? description;
   final String? status;
   final DateTime? createdAt;
+
+  /// Published classification genres (Ticketmaster), as given.
+  final List<String> genres;
+
+  /// ISO 4217 currency of [priceMin]/[priceMax]; prices are shown only
+  /// when it is known.
+  final String? priceCurrency;
   Map<String, dynamic> toJson() => {
     'id': id,
     'externalId': externalId,
@@ -61,6 +70,8 @@ class Event {
     'description': description,
     'status': status,
     'createdAt': createdAt?.toIso8601String(),
+    'genres': genres,
+    'priceCurrency': priceCurrency,
   };
 
   factory Event.fromJson(Map<String, dynamic> json) => Event(
@@ -85,6 +96,10 @@ class Event {
     createdAt: json['createdAt'] != null
         ? DateTime.parse(json['createdAt'] as String)
         : null,
+    genres: json['genres'] is List
+        ? (json['genres'] as List).whereType<String>().toList()
+        : const [],
+    priceCurrency: json['priceCurrency'] as String?,
   );
 }
 

@@ -6,7 +6,16 @@ class AppConstants {
   static const String appName = 'Vibra';
   static const String appSlogan = 'Non ascoltare la musica. Vivila.';
   static const String appVersion = '1.0.0';
-  static const String appBuildNumber = '2';
+  static const String appBuildNumber = '3';
+
+  /// Spotify features (statistics, musical affinity, "For you") are part of
+  /// the public app. `--dart-define=SPOTIFY_ENABLED=false` remains as an
+  /// emergency off-switch, mirrored by the Edge secret and
+  /// `launch_features.spotify` on the backend.
+  static const bool spotifyEnabled = bool.fromEnvironment(
+    'SPOTIFY_ENABLED',
+    defaultValue: true,
+  );
   static const String androidPackageName = 'com.vibra.app';
   static const String iOSBundleId = 'com.vibra.app';
   static const String supportEmail = 'vibra7341@gmail.com';

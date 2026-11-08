@@ -14,9 +14,24 @@ import '../../domain/repositories/social_repository.dart';
 import '../../core/router/app_router.dart';
 import '../../data/datasources/bandsintown_datasource.dart';
 import '../../data/datasources/events_aggregator_datasource.dart';
+import '../../data/datasources/supabase_daily_vibe_datasource.dart';
+import '../../data/datasources/supabase_artist_discovery_datasource.dart';
+import '../../data/datasources/supabase_feed_datasource.dart';
+import '../../data/datasources/supabase_profile_identity_datasource.dart';
+import '../../data/datasources/supabase_notification_center_datasource.dart';
+import '../../data/datasources/supabase_safety_datasource.dart';
+import '../../data/datasources/supabase_vibra_ai_datasource.dart';
+import '../../data/datasources/supabase_music_stories_datasource.dart';
 import '../../data/datasources/supabase_datasource.dart';
+import '../../data/datasources/supabase_circles_datasource.dart';
+import '../../data/datasources/supabase_communities_datasource.dart';
+import '../../data/datasources/supabase_concerts_datasource.dart';
+import '../../data/datasources/supabase_event_social_datasource.dart';
 import '../../data/datasources/supabase_events_datasource.dart';
 import '../../data/datasources/supabase_live_datasource.dart';
+import '../../data/datasources/supabase_music_radar_datasource.dart';
+import '../../data/datasources/supabase_musical_dna_datasource.dart';
+import '../../data/datasources/supabase_same_frequency_datasource.dart';
 import '../../data/datasources/supabase_notifications_datasource.dart';
 import '../../data/datasources/supabase_profile_datasource.dart';
 import '../../data/datasources/supabase_social_datasource.dart';
@@ -30,7 +45,11 @@ import '../../data/repositories/spotify_auth_repository_impl.dart';
 import '../../domain/repositories/spotify_auth_repository.dart';
 import '../../core/utils/logger.dart';
 
-final routerProvider = Provider<GoRouter>((ref) => AppRouter.createRouter(ref));
+final routerProvider = Provider<GoRouter>((ref) {
+  final router = AppRouter.createRouter(ref);
+  ref.onDispose(router.dispose);
+  return router;
+});
 
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
@@ -92,6 +111,9 @@ final eventsAggregatorDatasourceProvider = Provider<EventsAggregatorDatasource>(
   (ref) {
     return EventsAggregatorDatasource(
       bandsintown: ref.watch(bandsintownDatasourceProvider),
+      nearbySearch: ref
+          .watch(supabaseEventsDatasourceProvider)
+          .searchNearbyEvents,
     );
   },
 );
@@ -113,6 +135,102 @@ final supabaseSocialDatasourceProvider = Provider<SupabaseSocialDatasource>((
 ) {
   return SupabaseSocialDatasource(ref.watch(supabaseDatasourceProvider));
 });
+
+final supabaseMusicalDnaDatasourceProvider =
+    Provider<SupabaseMusicalDnaDatasource>((ref) {
+      return SupabaseMusicalDnaDatasource(
+        ref.watch(supabaseDatasourceProvider),
+      );
+    });
+
+final supabaseSameFrequencyDatasourceProvider =
+    Provider<SupabaseSameFrequencyDatasource>((ref) {
+      return SupabaseSameFrequencyDatasource(
+        ref.watch(supabaseDatasourceProvider),
+      );
+    });
+
+final supabaseMusicRadarDatasourceProvider =
+    Provider<SupabaseMusicRadarDatasource>((ref) {
+      return SupabaseMusicRadarDatasource(
+        ref.watch(supabaseDatasourceProvider),
+      );
+    });
+
+final supabaseCommunitiesDatasourceProvider =
+    Provider<SupabaseCommunitiesDatasource>((ref) {
+      return SupabaseCommunitiesDatasource(
+        ref.watch(supabaseDatasourceProvider),
+      );
+    });
+
+final supabaseCirclesDatasourceProvider = Provider<SupabaseCirclesDatasource>((
+  ref,
+) {
+  return SupabaseCirclesDatasource(ref.watch(supabaseDatasourceProvider));
+});
+
+final supabaseConcertsDatasourceProvider = Provider<SupabaseConcertsDatasource>(
+  (ref) {
+    return SupabaseConcertsDatasource(ref.watch(supabaseDatasourceProvider));
+  },
+);
+
+final supabaseEventSocialDatasourceProvider =
+    Provider<SupabaseEventSocialDatasource>((ref) {
+      return SupabaseEventSocialDatasource(
+        ref.watch(supabaseDatasourceProvider),
+      );
+    });
+
+final supabaseNotificationCenterDatasourceProvider =
+    Provider<SupabaseNotificationCenterDatasource>((ref) {
+      return SupabaseNotificationCenterDatasource(
+        ref.watch(supabaseDatasourceProvider),
+      );
+    });
+
+final supabaseSafetyDatasourceProvider = Provider<SupabaseSafetyDatasource>((
+  ref,
+) {
+  return SupabaseSafetyDatasource(ref.watch(supabaseDatasourceProvider));
+});
+
+final supabaseProfileIdentityDatasourceProvider =
+    Provider<SupabaseProfileIdentityDatasource>((ref) {
+      return SupabaseProfileIdentityDatasource(
+        ref.watch(supabaseDatasourceProvider),
+      );
+    });
+
+final supabaseArtistDiscoveryDatasourceProvider =
+    Provider<SupabaseArtistDiscoveryDatasource>((ref) {
+      return SupabaseArtistDiscoveryDatasource(
+        ref.watch(supabaseDatasourceProvider),
+      );
+    });
+
+final supabaseVibraAiDatasourceProvider = Provider<SupabaseVibraAiDatasource>((
+  ref,
+) {
+  return SupabaseVibraAiDatasource(ref.watch(supabaseDatasourceProvider));
+});
+
+final supabaseFeedDatasourceProvider = Provider<SupabaseFeedDatasource>((ref) {
+  return SupabaseFeedDatasource(ref.watch(supabaseDatasourceProvider));
+});
+
+final supabaseMusicStoriesDatasourceProvider =
+    Provider<SupabaseMusicStoriesDatasource>((ref) {
+      return SupabaseMusicStoriesDatasource(
+        ref.watch(supabaseDatasourceProvider),
+      );
+    });
+
+final supabaseDailyVibeDatasourceProvider =
+    Provider<SupabaseDailyVibeDatasource>((ref) {
+      return SupabaseDailyVibeDatasource(ref.watch(supabaseDatasourceProvider));
+    });
 
 final supabaseLiveDatasourceProvider = Provider<SupabaseLiveDatasource>((ref) {
   return SupabaseLiveDatasource(ref.watch(supabaseDatasourceProvider));

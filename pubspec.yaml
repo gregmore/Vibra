@@ -1,7 +1,7 @@
 name: vibra
 description: "Non ascoltare la musica. Vivila. — Collega streaming musicale ed eventi dal vivo."
 publish_to: 'none'
-version: 1.0.0+2
+version: 1.0.0+3
 
 environment:
   sdk: ^3.12.2
@@ -87,7 +87,7 @@ flutter:
   assets:
     - .env.public
     - assets/fonts/inter-OFL.txt
-    - assets/fonts/syne-OFL.txt
+    - assets/branding/logo/vibra_mark.png
 
   fonts:
     - family: Inter
@@ -102,12 +102,6 @@ flutter:
           weight: 700
         - asset: assets/fonts/Inter-ExtraBold.ttf
           weight: 800
-    - family: Syne
-      fonts:
-        - asset: assets/fonts/Syne-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Syne-Bold.ttf
-          weight: 700
 
 dependency_overrides:
   flutter_map_marker_cluster:

@@ -1,4 +1,5 @@
 import 'app_user.dart';
+import 'music_affinity.dart';
 
 class MatchedUserPreview {
   const MatchedUserPreview({
@@ -8,6 +9,7 @@ class MatchedUserPreview {
     required this.city,
     required this.attendingEvents,
     this.isFriend = false,
+    this.affinity,
   });
 
   final AppUser user;
@@ -16,4 +18,8 @@ class MatchedUserPreview {
   final String city;
   final int attendingEvents;
   final bool isFriend;
+
+  /// Server-side explanation for this compatibility (null outside the
+  /// affinity feed, e.g. plain people search).
+  final AffinityDetails? affinity;
 }

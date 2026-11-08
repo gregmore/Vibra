@@ -1,5 +1,5 @@
-import 'dart:ui';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:vibra/presentation/localization/user_facing_error.dart';
+import '../../../core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,39 +7,25 @@ import 'package:vibra/l10n/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/theme/vibra_theme_tokens.dart';
+import '../../../core/theme/vibra_colors.dart';
 import '../../../core/theme/vibra_spacing.dart';
 import '../../../core/theme/vibra_text_styles.dart';
 import '../../providers/app_state_providers.dart';
 import '../../providers/spotify_auth_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/common/vibra_avatar.dart';
+import '../../widgets/common/vibra_bottom_sheet.dart';
+import '../../widgets/common/vibra_logo.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
-import '../../widgets/common/vibra_section_header.dart';
+import '../../widgets/common/vibra_settings.dart';
+import '../../widgets/common/vibra_surface.dart';
 import 'theme_appearance_selector.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
-  String _getOptionLabel(BuildContext context, int index) {
-    final l10n = AppLocalizations.of(context)!;
-    switch (index) {
-      case 0:
-        return l10n.settingsOptionCompatibleEvents;
-      case 1:
-        return l10n.settingsOptionHighMatchAlerts;
-      case 2:
-        return l10n.settingsOptionLiveChat;
-      case 3:
-        return 'Messaggi e richieste private';
-      case 4:
-        return 'Aggiornamenti personalizzati e ritorno su Vibra';
-      default:
-        return '';
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsStateProvider);
     final l10n = AppLocalizations.of(context)!;
     final currentLocale = ref.watch(localeStateProvider);
     final profile = ref.watch(myProfileProvider);
@@ -177,1000 +163,468 @@ class SettingsScreen extends ConsumerWidget {
       }
     }
 
-    return VibraPageScaffold(
-      appBar: AppBar(title: Text(l10n.settingsTitle)),
-      child: ListView(
-        padding: EdgeInsets.only(bottom: 24, left: 16, right: 16),
-        children: [
-          SizedBox(height: 8),
-          VibraSectionHeader(
-            title: l10n.settingsHeaderNotificationsPrivacy,
-            subtitle: l10n.settingsSubtitleNotificationsPrivacy,
-          ),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: context.vibraTokens.surfaceElevated.withValues(
-                    alpha: 0.75,
-                  ),
-                  borderRadius: BorderRadius.circular(
-                    VibraSpacing.radiusMedium,
-                  ),
-                  border: Border.all(color: context.vibraTokens.borderDefault),
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(
-                    VibraSpacing.radiusMedium,
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    children: settings.asMap().entries.map((entry) {
-                      return SwitchListTile(
-                        value: entry.value.enabled,
-                        activeThumbColor: context.vibraTokens.accentPrimary,
-                        activeTrackColor: context.vibraTokens.accentPrimary
-                            .withValues(alpha: 0.5),
-                        inactiveThumbColor: context.vibraTokens.textSecondary,
-                        inactiveTrackColor: context.vibraTokens.surfaceMuted,
-                        title: Text(
-                          _getOptionLabel(context, entry.key),
-                          style: VibraTextStyles.bodyMedium,
-                        ),
-                        onChanged: (value) {
-                          ref
-                              .read(settingsStateProvider.notifier)
-                              .toggle(entry.key, value);
-                        },
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-            ),
-          ).animate().fadeIn(delay: 0.ms, duration: 400.ms).slideY(begin: 0.03),
-          SizedBox(height: 10),
-          Container(
-            decoration: BoxDecoration(
-              color: context.vibraTokens.surfaceElevated.withValues(
-                alpha: 0.75,
-              ),
-              borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-              border: Border.all(color: context.vibraTokens.borderDefault),
-            ),
-            child: ListTile(
-              leading: Icon(
-                Icons.auto_awesome_outlined,
-                color: context.vibraTokens.accentPrimary,
-              ),
-              title: Text(
-                'La tua settimana musicale',
-                style: VibraTextStyles.bodyMedium,
-              ),
-              subtitle: Text(
-                'Eventi e affinità selezionati per te',
-                style: VibraTextStyles.bodySmall.copyWith(
-                  color: context.vibraTokens.textSecondary,
-                ),
-              ),
-              trailing: DropdownButton<String>(
-                value: digestFrequency,
-                underline: SizedBox.shrink(),
-                items: [
-                  DropdownMenuItem(value: 'weekly', child: Text('Settimanale')),
-                  DropdownMenuItem(value: 'monthly', child: Text('Mensile')),
-                  DropdownMenuItem(value: 'never', child: Text('Mai')),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    ref
-                        .read(digestFrequencyProvider.notifier)
-                        .setFrequency(value);
-                  }
-                },
-              ),
-            ),
-          ),
-          SizedBox(height: VibraSpacing.xl),
+    final t = context.vibraTokens;
+    final displayName = profile.displayName ?? profile.username;
+    final digestLabel = switch (digestFrequency) {
+      'monthly' => l10n.settingsMonthly,
+      'never' => l10n.settingsNever,
+      _ => l10n.settingsWeekly,
+    };
 
-          // Lingua / Language Selection Setting
-          ClipRRect(
-            borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: context.vibraTokens.surfaceElevated.withValues(
-                    alpha: 0.75,
-                  ),
-                  borderRadius: BorderRadius.circular(
-                    VibraSpacing.radiusMedium,
-                  ),
-                  border: Border.all(color: context.vibraTokens.borderDefault),
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(
-                    VibraSpacing.radiusMedium,
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Color(0xFF8B5CF6).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            Icons.shield_outlined,
-                            color: Color(0xFF8B5CF6),
-                            size: 20,
-                          ),
-                        ),
-                        title: Text(
-                          'Privacy e dati personali',
-                          style: VibraTextStyles.bodyMedium,
-                        ),
-                        subtitle: Text(
-                          'Consensi, esportazione e cancellazione dati',
-                          style: VibraTextStyles.bodySmall.copyWith(
-                            color: context.vibraTokens.textSecondary,
-                          ),
-                        ),
-                        onTap: () => context.push('/privacy-controls'),
-                      ),
-                      Divider(
-                        height: 1,
-                        color: context.vibraTokens.borderDefault,
-                      ),
-                      ListTile(
-                        leading: Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: context.vibraTokens.accentPrimary.withValues(
-                              alpha: 0.15,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            Icons.language_rounded,
-                            color: context.vibraTokens.accentPrimary,
-                            size: 20,
-                          ),
-                        ),
-                        title: Text(
-                          l10n.settingsLanguage,
-                          style: VibraTextStyles.bodyMedium,
-                        ),
-                        subtitle: Text(
-                          langName,
-                          style: VibraTextStyles.bodySmall.copyWith(
-                            color: context.vibraTokens.textSecondary,
-                          ),
-                        ),
-                        onTap: () async {
-                          final String?
-                          selectedLanguage = await showDialog<String?>(
-                            context: context,
-                            builder: (context) => Dialog(
-                              backgroundColor:
-                                  context.vibraTokens.surfaceElevated,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  VibraSpacing.radiusMedium,
-                                ),
-                                side: BorderSide(
-                                  color: context.vibraTokens.borderDefault,
-                                ),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(VibraSpacing.md),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      l10n.settingsLanguage,
-                                      style: VibraTextStyles.titleMedium,
-                                    ),
-                                    SizedBox(height: VibraSpacing.md),
-                                    Flexible(
-                                      child: SingleChildScrollView(
-                                        child: Column(
-                                          children: [
-                                            ListTile(
-                                              title: Text(
-                                                l10n.settingsLanguageSystem,
-                                                style:
-                                                    VibraTextStyles.bodyMedium,
-                                              ),
-                                              onTap: () =>
-                                                  Navigator.pop(context, ''),
-                                            ),
-                                            ListTile(
-                                              title: Text(
-                                                l10n.langEnglish,
-                                                style:
-                                                    VibraTextStyles.bodyMedium,
-                                              ),
-                                              onTap: () =>
-                                                  Navigator.pop(context, 'en'),
-                                            ),
-                                            ListTile(
-                                              title: Text(
-                                                l10n.langItalian,
-                                                style:
-                                                    VibraTextStyles.bodyMedium,
-                                              ),
-                                              onTap: () =>
-                                                  Navigator.pop(context, 'it'),
-                                            ),
-                                            ListTile(
-                                              title: Text(
-                                                l10n.langSpanish,
-                                                style:
-                                                    VibraTextStyles.bodyMedium,
-                                              ),
-                                              onTap: () =>
-                                                  Navigator.pop(context, 'es'),
-                                            ),
-                                            ListTile(
-                                              title: Text(
-                                                l10n.langFrench,
-                                                style:
-                                                    VibraTextStyles.bodyMedium,
-                                              ),
-                                              onTap: () =>
-                                                  Navigator.pop(context, 'fr'),
-                                            ),
-                                            ListTile(
-                                              title: Text(
-                                                l10n.langGerman,
-                                                style:
-                                                    VibraTextStyles.bodyMedium,
-                                              ),
-                                              onTap: () =>
-                                                  Navigator.pop(context, 'de'),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                          if (selectedLanguage != null) {
-                            await ref
-                                .read(localeStateProvider.notifier)
-                                .setLocale(
-                                  selectedLanguage.isEmpty
-                                      ? null
-                                      : selectedLanguage,
-                                );
-                          }
-                        },
-                      ),
-                      Divider(
-                        height: 1,
-                        color: context.vibraTokens.borderDefault,
-                      ),
-                      ListTile(
-                        leading: Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Color(0xFF1DB954).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            Icons.graphic_eq_rounded,
-                            color: Color(0xFF1DB954),
-                            size: 20,
-                          ),
-                        ),
-                        title: Text(
-                          l10n.settingsSpotifyAccount,
-                          style: VibraTextStyles.bodyMedium,
-                        ),
-                        subtitle: Text(
-                          hasSpotify
-                              ? l10n.settingsSpotifyConnected(
-                                  profile.spotifyId ?? '',
-                                )
-                              : l10n.settingsSpotifyDisconnected,
-                          style: VibraTextStyles.bodySmall.copyWith(
-                            color: context.vibraTokens.textSecondary,
-                          ),
-                        ),
-                        trailing: hasSpotify
-                            ? Text(
-                                l10n.settingsSpotifyDisconnect,
-                                style: VibraTextStyles.labelLarge.copyWith(
-                                  color: Colors.redAccent,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              )
-                            : Icon(
-                                Icons.chevron_right_rounded,
-                                color: context.vibraTokens.textSecondary,
-                              ),
-                        onTap: () async {
-                          if (hasSpotify) {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                backgroundColor:
-                                    context.vibraTokens.surfaceElevated,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    VibraSpacing.radiusMedium,
-                                  ),
-                                  side: BorderSide(
-                                    color: context.vibraTokens.borderDefault,
-                                  ),
-                                ),
-                                title: Text(
-                                  l10n.settingsSpotifyDisconnectConfirmTitle,
-                                  style: VibraTextStyles.titleMedium,
-                                ),
-                                content: Text(
-                                  l10n.settingsSpotifyDisconnectConfirmBody,
-                                  style: VibraTextStyles.bodyMedium.copyWith(
-                                    color: context.vibraTokens.textSecondary,
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(false),
-                                    child: Text(
-                                      l10n.settingsCancel,
-                                      style: VibraTextStyles.labelLarge
-                                          .copyWith(
-                                            color:
-                                                context.vibraTokens.textPrimary,
-                                          ),
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(true),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Colors.redAccent,
-                                    ),
-                                    child: Text(
-                                      l10n.settingsSpotifyDisconnect,
-                                      style: VibraTextStyles.labelLarge
-                                          .copyWith(color: Colors.redAccent),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                            if (confirm == true) {
-                              await ref
-                                  .read(spotifyAuthProvider.notifier)
-                                  .disconnectSpotify();
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      l10n.settingsSpotifyDisconnectedSuccess,
-                                    ),
-                                  ),
-                                );
-                              }
-                            }
-                          } else {
-                            context.push('/spotify-connect');
-                          }
-                        },
-                      ),
-                      Divider(
-                        height: 1,
-                        color: context.vibraTokens.borderDefault,
-                      ),
-                      Consumer(
-                        builder: (context, ref, child) {
-                          final pushEnabled = ref.watch(pushEnabledProvider);
-                          return SwitchListTile(
-                            secondary: Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: context.vibraTokens.accentPrimary
-                                    .withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                Icons.notifications_active_outlined,
-                                color: context.vibraTokens.accentPrimary,
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(
-                              l10n.settingsNotifications,
-                              style: VibraTextStyles.bodyMedium,
-                            ),
-                            subtitle: Text(
-                              l10n.settingsNotificationsSub,
-                              style: VibraTextStyles.bodySmall.copyWith(
-                                color: context.vibraTokens.textSecondary,
-                              ),
-                            ),
-                            value: pushEnabled,
-                            onChanged: (val) {
-                              ref
-                                  .read(pushEnabledProvider.notifier)
-                                  .toggle(val);
-                            },
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideY(begin: 0.03),
-          SizedBox(height: VibraSpacing.xl),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-            child: Container(
-              decoration: BoxDecoration(
-                color: context.vibraTokens.surfaceElevated.withValues(
-                  alpha: 0.75,
-                ),
-                borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-                border: Border.all(color: context.vibraTokens.borderDefault),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-                clipBehavior: Clip.antiAlias,
-                child: Column(
+    return VibraPageScaffold(
+      useGradient: false,
+      appBar: AppBar(titleSpacing: 0, title: Text(l10n.settingsTitle)),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(
+          VibraSpacing.pagePadding,
+          VibraSpacing.sm,
+          VibraSpacing.pagePadding,
+          VibraSpacing.huge,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ── Account card ─────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.only(bottom: VibraSpacing.xxl),
+              child: VibraSurface(
+                onTap: () => context.push('/edit-profile'),
+                semanticLabel: l10n.profileEditTitle,
+                padding: const EdgeInsets.all(VibraSpacing.lg),
+                child: Row(
                   children: [
-                    ListTile(
-                      leading: Icon(
-                        Icons.help_outline_rounded,
-                        color: context.vibraTokens.accentPrimary,
-                      ),
-                      title: Text(
-                        'Centro assistenza',
-                        style: VibraTextStyles.bodyMedium,
-                      ),
-                      subtitle: Text(
-                        'FAQ su account, eventi, chat e Spotify',
-                        style: VibraTextStyles.bodySmall.copyWith(
-                          color: context.vibraTokens.textSecondary,
-                        ),
-                      ),
-                      trailing: Icon(Icons.chevron_right_rounded),
-                      onTap: () => context.push('/help-center'),
+                    VibraAvatar(
+                      imageUrl: profile.avatarUrl,
+                      name: displayName,
+                      radius: 28,
+                      signalRing: hasSpotify,
                     ),
-                    Divider(
-                      height: 1,
-                      color: context.vibraTokens.borderDefault,
+                    const SizedBox(width: VibraSpacing.lg),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            displayName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: VibraTextStyles.titleMedium.copyWith(
+                              color: t.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            l10n.settingsEditProfileSub,
+                            style: VibraTextStyles.caption.copyWith(
+                              color: t.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    ListTile(
-                      leading: Icon(
-                        Icons.bug_report_outlined,
-                        color: context.vibraTokens.error,
-                      ),
-                      title: Text(
-                        'Segnala un problema',
-                        style: VibraTextStyles.bodyMedium,
-                      ),
-                      subtitle: Text(
-                        'Invia dettagli tecnici anonimizzati e uno screenshot',
-                        style: VibraTextStyles.bodySmall.copyWith(
-                          color: context.vibraTokens.textSecondary,
-                        ),
-                      ),
-                      trailing: Icon(Icons.chevron_right_rounded),
-                      onTap: () => context.push('/report-problem'),
-                    ),
+                    Icon(Icons.chevron_right_rounded, color: t.textMuted),
                   ],
                 ),
               ),
             ),
-          ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
-          SizedBox(height: VibraSpacing.xl),
-          ClipRRect(
-                borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: context.vibraTokens.surfaceElevated.withValues(
-                        alpha: 0.75,
-                      ),
-                      borderRadius: BorderRadius.circular(
-                        VibraSpacing.radiusMedium,
-                      ),
-                      border: Border.all(
-                        color: context.vibraTokens.borderDefault,
-                      ),
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(
-                        VibraSpacing.radiusMedium,
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Column(
-                        children: [
-                          ListTile(
-                            leading: Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Color(
-                                  0xFF60A5FA,
-                                ).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                Icons.policy_outlined,
-                                color: Color(0xFF60A5FA),
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(
-                              l10n.settingsPrivacyPolicy,
-                              style: VibraTextStyles.bodyMedium,
-                            ),
-                            subtitle: Text(
-                              l10n.settingsPrivacyPolicySub,
-                              style: VibraTextStyles.bodySmall.copyWith(
-                                color: context.vibraTokens.textSecondary,
-                              ),
-                            ),
-                            onTap: () => context.push('/privacy-policy'),
-                          ),
-                          Divider(
-                            height: 1,
-                            color: context.vibraTokens.borderDefault,
-                          ),
-                          ListTile(
-                            leading: Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Color(
-                                  0xFFF59E0B,
-                                ).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                Icons.gavel_rounded,
-                                color: Color(0xFFF59E0B),
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(
-                              l10n.settingsTermsOfService,
-                              style: VibraTextStyles.bodyMedium,
-                            ),
-                            subtitle: Text(
-                              l10n.settingsTermsOfServiceSub,
-                              style: VibraTextStyles.bodySmall.copyWith(
-                                color: context.vibraTokens.textSecondary,
-                              ),
-                            ),
-                            onTap: () => context.push('/terms-of-service'),
-                          ),
-                          Divider(
-                            height: 1,
-                            color: context.vibraTokens.borderDefault,
-                          ),
-                          ListTile(
-                            leading: Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Color(
-                                  0xFF14B8A6,
-                                ).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                Icons.support_agent_rounded,
-                                color: Color(0xFF14B8A6),
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(
-                              l10n.settingsSupport,
-                              style: VibraTextStyles.bodyMedium,
-                            ),
-                            subtitle: Text(
-                              l10n.settingsSupportSub,
-                              style: VibraTextStyles.bodySmall.copyWith(
-                                color: context.vibraTokens.textSecondary,
-                              ),
-                            ),
-                            onTap: () => context.push('/support'),
-                          ),
-                          Divider(
-                            height: 1,
-                            color: context.vibraTokens.borderDefault,
-                          ),
-                          ListTile(
-                            leading: Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Color(
-                                  0xFF06B6D4,
-                                ).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                Icons.info_outline_rounded,
-                                color: Color(0xFF06B6D4),
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(
-                              l10n.settingsAbout,
-                              style: VibraTextStyles.bodyMedium,
-                            ),
-                            subtitle: Text(
-                              l10n.settingsAboutSub,
-                              style: VibraTextStyles.bodySmall.copyWith(
-                                color: context.vibraTokens.textSecondary,
-                              ),
-                            ),
-                            onTap: () => context.push('/about'),
-                          ),
-                        ],
-                      ),
-                    ),
+
+            // ── Notifications ────────────────────────────────────
+            VibraSettingsSection(
+              label: l10n.settingsNotifications,
+              children: [
+                Consumer(
+                  builder: (context, ref, child) => VibraSettingsSwitch(
+                    icon: Icons.notifications_active_outlined,
+                    title: l10n.settingsNotifications,
+                    subtitle: l10n.settingsNotificationsSub,
+                    value: ref.watch(pushEnabledProvider),
+                    onChanged: (val) =>
+                        ref.read(pushEnabledProvider.notifier).toggle(val),
                   ),
                 ),
-              )
-              .animate()
-              .fadeIn(delay: 200.ms, duration: 400.ms)
-              .slideY(begin: 0.03),
-          SizedBox(height: VibraSpacing.xl),
-          ClipRRect(
-                borderRadius: BorderRadius.circular(VibraSpacing.radiusMedium),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: context.vibraTokens.surfaceElevated.withValues(
-                        alpha: 0.75,
-                      ),
-                      borderRadius: BorderRadius.circular(
-                        VibraSpacing.radiusMedium,
-                      ),
-                      border: Border.all(
-                        color: context.vibraTokens.borderDefault,
-                      ),
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(
-                        VibraSpacing.radiusMedium,
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Column(
-                        children: [
-                          ListTile(
-                            leading: Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Color(
-                                  0xFFF97316,
-                                ).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                Icons.logout_rounded,
-                                color: Color(0xFFF97316),
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(
-                              l10n.settingsLogout,
-                              style: VibraTextStyles.bodyMedium,
-                            ),
-                            onTap: () async {
-                              final confirm = await showDialog<bool>(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  backgroundColor:
-                                      context.vibraTokens.surfaceElevated,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      VibraSpacing.radiusMedium,
-                                    ),
-                                    side: BorderSide(
-                                      color: context.vibraTokens.borderDefault,
-                                    ),
-                                  ),
-                                  title: Text(
-                                    l10n.settingsLogoutConfirmTitle,
-                                    style: VibraTextStyles.titleMedium,
-                                  ),
-                                  content: Text(
-                                    l10n.settingsLogoutConfirmBody,
-                                    style: VibraTextStyles.bodyMedium.copyWith(
-                                      color: context.vibraTokens.textSecondary,
-                                    ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(false),
-                                      child: Text(
-                                        l10n.settingsCancel,
-                                        style: VibraTextStyles.labelLarge
-                                            .copyWith(
-                                              color: context
-                                                  .vibraTokens
-                                                  .textPrimary,
-                                            ),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(true),
-                                      child: Text(
-                                        l10n.settingsLogout,
-                                        style: VibraTextStyles.labelLarge
-                                            .copyWith(
-                                              color: context
-                                                  .vibraTokens
-                                                  .accentPrimary,
-                                            ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              if (confirm == true && context.mounted) {
-                                try {
-                                  await ref
-                                      .read(generalAuthProvider.notifier)
-                                      .signOut();
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          l10n.settingsLogoutError(
-                                            e.toString(),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                }
-                              }
-                            },
-                          ),
-                          Divider(
-                            height: 1,
-                            color: context.vibraTokens.borderDefault,
-                          ),
-                          ListTile(
-                            leading: Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Color(
-                                  0xFFEF4444,
-                                ).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                Icons.phonelink_erase_rounded,
-                                color: Color(0xFFEF4444),
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(
-                              l10n.settingsLogoutAll,
-                              style: VibraTextStyles.bodyMedium,
-                            ),
-                            onTap: () async {
-                              final confirm = await showDialog<bool>(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  backgroundColor:
-                                      context.vibraTokens.surfaceElevated,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      VibraSpacing.radiusMedium,
-                                    ),
-                                    side: BorderSide(
-                                      color: context.vibraTokens.borderDefault,
-                                    ),
-                                  ),
-                                  title: Text(
-                                    l10n.settingsLogoutAllConfirmTitle,
-                                    style: VibraTextStyles.titleMedium,
-                                  ),
-                                  content: Text(
-                                    l10n.settingsLogoutAllConfirmBody,
-                                    style: VibraTextStyles.bodyMedium.copyWith(
-                                      color: context.vibraTokens.textSecondary,
-                                    ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(false),
-                                      child: Text(
-                                        l10n.settingsCancel,
-                                        style: VibraTextStyles.labelLarge
-                                            .copyWith(
-                                              color: context
-                                                  .vibraTokens
-                                                  .textPrimary,
-                                            ),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(true),
-                                      child: Text(
-                                        l10n.settingsLogoutAll,
-                                        style: VibraTextStyles.labelLarge
-                                            .copyWith(
-                                              color: context
-                                                  .vibraTokens
-                                                  .accentPrimary,
-                                            ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              if (confirm == true && context.mounted) {
-                                try {
-                                  await ref
-                                      .read(generalAuthProvider.notifier)
-                                      .signOut(scope: SignOutScope.global);
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          l10n.settingsLogoutError(
-                                            e.toString(),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                }
-                              }
-                            },
-                          ),
-                          Divider(
-                            height: 1,
-                            color: context.vibraTokens.borderDefault,
-                          ),
-                          ListTile(
-                            leading: Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: context.vibraTokens.error.withValues(
-                                  alpha: 0.15,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                Icons.delete_forever_rounded,
-                                color: context.vibraTokens.error,
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(
-                              l10n.settingsDeleteAccount,
-                              style: VibraTextStyles.bodyMedium.copyWith(
-                                color: Colors.redAccent,
-                              ),
-                            ),
-                            subtitle: Text(
-                              l10n.settingsDeleteAccountConfirmBody,
-                              style: VibraTextStyles.bodySmall.copyWith(
-                                color: context.vibraTokens.textSecondary,
-                              ),
-                            ),
-                            onTap: () async {
-                              final confirm = await showDialog<bool>(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  backgroundColor:
-                                      context.vibraTokens.surfaceElevated,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      VibraSpacing.radiusMedium,
-                                    ),
-                                    side: BorderSide(
-                                      color: context.vibraTokens.borderDefault,
-                                    ),
-                                  ),
-                                  title: Text(
-                                    l10n.settingsDeleteAccountConfirmTitle,
-                                    style: VibraTextStyles.titleMedium,
-                                  ),
-                                  content: Text(
-                                    l10n.settingsDeleteAccountConfirmBody,
-                                    style: VibraTextStyles.bodyMedium.copyWith(
-                                      color: context.vibraTokens.textSecondary,
-                                    ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(false),
-                                      child: Text(
-                                        l10n.settingsCancel,
-                                        style: VibraTextStyles.labelLarge
-                                            .copyWith(
-                                              color: context
-                                                  .vibraTokens
-                                                  .textPrimary,
-                                            ),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(true),
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: Colors.red,
-                                      ),
-                                      child: Text(
-                                        l10n.settingsDelete,
-                                        style: VibraTextStyles.labelLarge
-                                            .copyWith(color: Colors.red),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              if (confirm == true && context.mounted) {
-                                try {
-                                  await ref
-                                      .read(generalAuthProvider.notifier)
-                                      .deleteAccount();
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          l10n.settingsDeleteAccountError,
-                                        ),
-                                        backgroundColor: Colors.redAccent,
-                                      ),
-                                    );
-                                  }
-                                }
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                // Every category, quiet hours and the daily limit
+                // (docs/notification-center.md).
+                VibraSettingsTile(
+                  icon: Icons.tune_rounded,
+                  title: l10n.notifSettingsTitle,
+                  subtitle: l10n.notifSettingsSubtitle,
+                  onTap: () => context.push('/notification-settings'),
                 ),
-              )
-              .animate()
-              .fadeIn(delay: 300.ms, duration: 400.ms)
-              .slideY(begin: 0.03),
-          SizedBox(height: VibraSpacing.xl),
-          AppearanceSelector(
-            value: themePreference,
-            onChanged: (value) =>
-                ref.read(themePreferenceProvider.notifier).setPreference(value),
-          ),
-        ],
+                VibraSettingsTile(
+                  icon: Icons.notifications_none_rounded,
+                  title: l10n.notifTitle,
+                  subtitle: l10n.notifCenterSubtitle,
+                  onTap: () => context.push('/notifications'),
+                ),
+                if (AppConstants.spotifyEnabled)
+                  VibraSettingsTile(
+                    icon: Icons.auto_awesome_outlined,
+                    title: l10n.settingsMusicWeek,
+                    subtitle: l10n.settingsMusicWeekBody,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          digestLabel,
+                          style: VibraTextStyles.labelMedium.copyWith(
+                            color: t.accentPrimary,
+                          ),
+                        ),
+                        Icon(Icons.unfold_more_rounded, color: t.textMuted),
+                      ],
+                    ),
+                    onTap: () => _pickDigest(context, ref, digestFrequency),
+                  ),
+              ],
+            ),
+
+            // ── Music ────────────────────────────────────────────
+            if (AppConstants.spotifyEnabled || hasSpotify)
+              VibraSettingsSection(
+                label: l10n.settingsSectionMusic,
+                children: [
+                  VibraSettingsTile(
+                    icon: Icons.graphic_eq_rounded,
+                    iconColor: VibraPalette.spotifyGreen,
+                    iconBackground: VibraPalette.spotifyGreen.withValues(
+                      alpha: .14,
+                    ),
+                    title: l10n.settingsSpotifyAccount,
+                    subtitle: !AppConstants.spotifyEnabled
+                        ? l10n.spotifyUnavailableBody
+                        : hasSpotify
+                        ? l10n.profileSpotifyConnected
+                        : l10n.settingsSpotifyDisconnected,
+                    trailing: hasSpotify
+                        ? Text(
+                            l10n.settingsSpotifyDisconnect,
+                            style: VibraTextStyles.labelMedium.copyWith(
+                              color: t.error,
+                            ),
+                          )
+                        : null,
+                    onTap: () => _onSpotifyTap(context, ref, hasSpotify),
+                  ),
+                  if (AppConstants.spotifyEnabled)
+                    VibraSettingsTile(
+                      icon: Icons.library_music_outlined,
+                      title: l10n.musicGenresEntry,
+                      subtitle: l10n.musicGenresEntrySub,
+                      onTap: () => context.push('/music-genres'),
+                    ),
+                  if (hasSpotify && AppConstants.spotifyEnabled)
+                    VibraSettingsTile(
+                      icon: Icons.insights_rounded,
+                      title: l10n.myProfileMusicStats,
+                      subtitle: l10n.myProfileMusicStatsSubtitle,
+                      onTap: () => context.push('/music-stats'),
+                    ),
+                ],
+              ),
+
+            // ── General ──────────────────────────────────────────
+            VibraSettingsSection(
+              label: l10n.settingsSectionGeneral,
+              children: [
+                VibraSettingsTile(
+                  icon: Icons.health_and_safety_outlined,
+                  title: l10n.safetyTitle,
+                  subtitle: l10n.safetySettingsSubtitle,
+                  onTap: () => context.push('/safety'),
+                ),
+                VibraSettingsTile(
+                  icon: Icons.shield_outlined,
+                  title: l10n.settingsPrivacyData,
+                  subtitle: l10n.settingsPrivacyDataBody,
+                  onTap: () => context.push('/privacy-controls'),
+                ),
+                VibraSettingsTile(
+                  icon: Icons.language_rounded,
+                  title: l10n.settingsLanguage,
+                  subtitle: langName,
+                  onTap: () => _pickLanguage(context, ref),
+                ),
+              ],
+            ),
+
+            // ── Appearance ───────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.only(bottom: VibraSpacing.xxl),
+              child: AppearanceSelector(
+                value: themePreference,
+                onChanged: (value) => ref
+                    .read(themePreferenceProvider.notifier)
+                    .setPreference(value),
+              ),
+            ),
+
+            // ── Help ─────────────────────────────────────────────
+            VibraSettingsSection(
+              label: l10n.settingsSectionHelp,
+              children: [
+                VibraSettingsTile(
+                  icon: Icons.help_outline_rounded,
+                  title: l10n.settingsHelpCenter,
+                  subtitle: AppConstants.spotifyEnabled
+                      ? l10n.settingsHelpCenterBody
+                      : '${l10n.navProfile} · ${l10n.navEvents} · ${l10n.navChat}',
+                  onTap: () => context.push('/help-center'),
+                ),
+                VibraSettingsTile(
+                  icon: Icons.bug_report_outlined,
+                  title: l10n.supportReportTitle,
+                  subtitle: l10n.settingsReportProblemBody,
+                  onTap: () => context.push('/report-problem'),
+                ),
+                VibraSettingsTile(
+                  icon: Icons.support_agent_rounded,
+                  title: l10n.settingsSupport,
+                  subtitle: l10n.settingsSupportSub,
+                  onTap: () => context.push('/support'),
+                ),
+              ],
+            ),
+
+            // ── Legal ────────────────────────────────────────────
+            VibraSettingsSection(
+              label: l10n.settingsSectionLegal,
+              children: [
+                VibraSettingsTile(
+                  icon: Icons.policy_outlined,
+                  title: l10n.settingsPrivacyPolicy,
+                  subtitle: l10n.settingsPrivacyPolicySub,
+                  onTap: () => context.push('/privacy-policy'),
+                ),
+                VibraSettingsTile(
+                  icon: Icons.gavel_rounded,
+                  title: l10n.settingsTermsOfService,
+                  subtitle: l10n.settingsTermsOfServiceSub,
+                  onTap: () => context.push('/terms-of-service'),
+                ),
+                VibraSettingsTile(
+                  icon: Icons.info_outline_rounded,
+                  title: l10n.settingsAbout,
+                  subtitle: l10n.settingsAboutSub,
+                  onTap: () => context.push('/about'),
+                ),
+              ],
+            ),
+
+            // ── Account (destructive actions last) ───────────────
+            VibraSettingsSection(
+              label: l10n.settingsSectionAccount,
+              children: [
+                VibraSettingsTile(
+                  icon: Icons.logout_rounded,
+                  title: l10n.settingsLogout,
+                  showChevron: false,
+                  onTap: () => _signOut(context, ref, everywhere: false),
+                ),
+                VibraSettingsTile(
+                  icon: Icons.phonelink_erase_rounded,
+                  title: l10n.settingsLogoutAll,
+                  showChevron: false,
+                  onTap: () => _signOut(context, ref, everywhere: true),
+                ),
+                VibraSettingsTile(
+                  icon: Icons.delete_forever_rounded,
+                  title: l10n.settingsDeleteAccount,
+                  subtitle: l10n.settingsDeleteAccountSub,
+                  tone: VibraSettingsTone.danger,
+                  showChevron: false,
+                  onTap: () => _deleteAccount(context, ref),
+                ),
+              ],
+            ),
+
+            // ── Footer ───────────────────────────────────────────
+            const SizedBox(height: VibraSpacing.sm),
+            Center(child: VibraWordmark(markSize: 16, color: t.textMuted)),
+            const SizedBox(height: VibraSpacing.sm),
+            Text(
+              l10n.settingsVersion(
+                AppConstants.appVersion,
+                AppConstants.appBuildNumber,
+              ),
+              textAlign: TextAlign.center,
+              style: VibraTextStyles.caption.copyWith(color: t.textMuted),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _pickDigest(
+    BuildContext context,
+    WidgetRef ref,
+    String current,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final t = context.vibraTokens;
+    final selected = await VibraBottomSheet.show<String>(
+      context,
+      builder: (sheetContext) => VibraBottomSheet(
+        title: l10n.settingsMusicWeek,
+        subtitle: l10n.settingsMusicWeekBody,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final (value, label) in [
+              ('weekly', l10n.settingsWeekly),
+              ('monthly', l10n.settingsMonthly),
+              ('never', l10n.settingsNever),
+            ])
+              ListTile(
+                title: Text(label),
+                trailing: value == current
+                    ? Icon(Icons.check_rounded, color: t.accentPrimary)
+                    : null,
+                onTap: () => Navigator.of(sheetContext).pop(value),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (selected != null) {
+      await ref.read(digestFrequencyProvider.notifier).setFrequency(selected);
+    }
+  }
+
+  Future<void> _pickLanguage(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final t = context.vibraTokens;
+    final current = ref.read(localeStateProvider)?.languageCode ?? '';
+    final selectedLanguage = await VibraBottomSheet.show<String>(
+      context,
+      builder: (sheetContext) => VibraBottomSheet(
+        title: l10n.settingsLanguage,
+        subtitle: l10n.settingsLanguageSub,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final (code, label) in [
+                ('', l10n.settingsLanguageSystem),
+                ('en', l10n.langEnglish),
+                ('it', l10n.langItalian),
+                ('es', l10n.langSpanish),
+                ('fr', l10n.langFrench),
+                ('de', l10n.langGerman),
+              ])
+                ListTile(
+                  title: Text(label),
+                  trailing: code == current
+                      ? Icon(Icons.check_rounded, color: t.accentPrimary)
+                      : null,
+                  onTap: () => Navigator.of(sheetContext).pop(code),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (selectedLanguage != null) {
+      await ref
+          .read(localeStateProvider.notifier)
+          .setLocale(selectedLanguage.isEmpty ? null : selectedLanguage);
+    }
+  }
+
+  Future<void> _onSpotifyTap(
+    BuildContext context,
+    WidgetRef ref,
+    bool hasSpotify,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    if (!hasSpotify) {
+      if (AppConstants.spotifyEnabled) context.push('/spotify-connect');
+      return;
+    }
+    final confirm = await confirmVibraAction(
+      context,
+      title: l10n.settingsSpotifyDisconnectConfirmTitle,
+      body: AppConstants.spotifyEnabled
+          ? l10n.settingsSpotifyDisconnectConfirmBody
+          : l10n.spotifyUnavailableBody,
+      confirmLabel: l10n.settingsSpotifyDisconnect,
+      cancelLabel: l10n.settingsCancel,
+      destructive: true,
+    );
+    if (!confirm) return;
+    var disconnected = true;
+    try {
+      await ref.read(spotifyAuthProvider.notifier).disconnectSpotify();
+    } catch (_) {
+      disconnected = false;
+    }
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            disconnected
+                ? l10n.settingsSpotifyDisconnectedSuccess
+                : l10n.settingsSpotifyDisconnectError,
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _signOut(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool everywhere,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirm = await confirmVibraAction(
+      context,
+      title: everywhere
+          ? l10n.settingsLogoutAllConfirmTitle
+          : l10n.settingsLogoutConfirmTitle,
+      body: everywhere
+          ? l10n.settingsLogoutAllConfirmBody
+          : l10n.settingsLogoutConfirmBody,
+      confirmLabel: everywhere ? l10n.settingsLogoutAll : l10n.settingsLogout,
+      cancelLabel: l10n.settingsCancel,
+    );
+    if (!confirm || !context.mounted) return;
+    try {
+      await ref
+          .read(generalAuthProvider.notifier)
+          .signOut(
+            scope: everywhere ? SignOutScope.global : SignOutScope.local,
+          );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.settingsLogoutError(userFacingError(l10n, e))),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteAccount(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirm = await confirmVibraAction(
+      context,
+      title: l10n.settingsDeleteAccountConfirmTitle,
+      body: l10n.settingsDeleteAccountConfirmBody,
+      confirmLabel: l10n.settingsDelete,
+      cancelLabel: l10n.settingsCancel,
+      destructive: true,
+    );
+    if (!confirm || !context.mounted) return;
+    try {
+      await ref.read(generalAuthProvider.notifier).deleteAccount();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.settingsDeleteAccountError)),
+        );
+      }
+    }
   }
 }

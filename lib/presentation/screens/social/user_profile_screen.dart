@@ -1,3 +1,5 @@
+import 'package:vibra/l10n/app_localizations.dart';
+import '../../../core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,10 +9,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../providers/app_state_providers.dart';
 import '../../providers/usecase_providers.dart';
+import '../../providers/profile_identity_providers.dart';
+import '../../widgets/music_story_widgets.dart';
+import '../../widgets/profile_identity_widgets.dart';
+import '../profile/safety_center_screen.dart';
+import '../../widgets/common/vibra_match_indicator.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
 import '../../widgets/common/vibra_state_views.dart';
-import '../../widgets/shared/user_avatar.dart';
 import '../../widgets/vibra_glassmorphic_card.dart';
+import '../../widgets/affinity_explanation_card.dart';
 
 class UserProfileScreen extends ConsumerWidget {
   final String? userId;
@@ -26,8 +33,8 @@ class UserProfileScreen extends ConsumerWidget {
       return VibraPageScaffold(
         appBar: null,
         child: VibraEmptyView(
-          title: 'Profilo non trovato',
-          message: 'Questo profilo utente non è al momento disponibile.',
+          title: AppLocalizations.of(context)!.userProfileNotAvailableTitle,
+          message: AppLocalizations.of(context)!.userProfileNotAvailableMessage,
         ),
       );
     }
@@ -38,11 +45,7 @@ class UserProfileScreen extends ConsumerWidget {
     if (userAsync.isLoading && resolvedUser == null) {
       return VibraPageScaffold(
         appBar: null,
-        child: Center(
-          child: CircularProgressIndicator(
-            color: context.vibraTokens.accentPrimary,
-          ),
-        ),
+        child: const Center(child: VibraLoadingIndicator()),
       );
     }
 
@@ -50,8 +53,8 @@ class UserProfileScreen extends ConsumerWidget {
       return VibraPageScaffold(
         appBar: null,
         child: VibraEmptyView(
-          title: 'Profilo non trovato',
-          message: 'Questo profilo utente non è al momento disponibile.',
+          title: AppLocalizations.of(context)!.userProfileNotAvailableTitle,
+          message: AppLocalizations.of(context)!.userProfileNotAvailableMessage,
         ),
       );
     }
@@ -62,10 +65,12 @@ class UserProfileScreen extends ConsumerWidget {
     final targetBio = resolvedUser.user.bio;
     final targetAvatarUrl = resolvedUser.user.avatarUrl;
     final compatibility = resolvedUser.compatibility;
-    final topArtists = resolvedUser.topArtists;
     final isFriend = resolvedUser.isFriend;
 
     final followStats = ref.watch(userFollowStatsProvider(targetUserId));
+    final identity = ref
+        .watch(profileIdentityProvider(targetUserId))
+        .valueOrNull;
     final pendingFriendships = ref.watch(pendingFriendshipsProvider);
     final currentUserId = Supabase.instance.client.auth.currentUser?.id ?? '';
     final isMe = currentUserId == targetUserId;
@@ -80,13 +85,40 @@ class UserProfileScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return VibraPageScaffold(
+      useGradient: false,
       appBar: AppBar(
-        title: Text(
-          targetDisplayName,
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        title: Text(targetDisplayName),
+        actions: [
+          if (!isMe)
+            PopupMenuButton<String>(
+              tooltip: AppLocalizations.of(context)!.storyMore,
+              onSelected: (action) async {
+                if (action == 'report') {
+                  await reportUserFlow(context, ref, targetUserId);
+                } else if (action == 'block') {
+                  final blocked = await blockUserFlow(
+                    context,
+                    ref,
+                    targetUserId,
+                    targetDisplayName,
+                  );
+                  if (blocked && context.mounted && context.canPop()) {
+                    context.pop();
+                  }
+                }
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'report',
+                  child: Text(AppLocalizations.of(context)!.safetyReportUser),
+                ),
+                PopupMenuItem(
+                  value: 'block',
+                  child: Text(AppLocalizations.of(context)!.socialBlockUser),
+                ),
+              ],
+            ),
+        ],
       ),
       child: ListView(
         padding: EdgeInsets.fromLTRB(20, 8, 20, 100),
@@ -96,9 +128,10 @@ class UserProfileScreen extends ConsumerWidget {
             padding: EdgeInsets.all(20),
             child: Column(
               children: [
-                UserAvatar(
-                  avatarUrl: targetAvatarUrl,
+                SoundSignatureAvatar(
+                  imageUrl: targetAvatarUrl,
                   name: targetDisplayName,
+                  dna: identity?.dna,
                   radius: 46,
                 ),
                 SizedBox(height: 14),
@@ -128,21 +161,27 @@ class UserProfileScreen extends ConsumerWidget {
                   ),
                 ],
                 SizedBox(height: 18),
+                if (AppConstants.spotifyEnabled &&
+                    !isMe &&
+                    compatibility > 0) ...[
+                  VibraMatchIndicator(
+                    percentage: compatibility,
+                    size: 104,
+                    showTierLabel: true,
+                    label: AppLocalizations.of(
+                      context,
+                    )!.socialAffinity.toUpperCase(),
+                  ),
+                  SizedBox(height: 20),
+                ],
 
-                // Stats Row: Affinità, Follower, Seguiti
+                // Stats Row: Follower, Seguiti
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildStatItem(
                       context: context,
-                      label: 'Affinità',
-                      value: '$compatibility%',
-                      icon: Icons.favorite_rounded,
-                      iconColor: context.vibraTokens.accentSecondary,
-                    ),
-                    _buildStatItem(
-                      context: context,
-                      label: 'Follower',
+                      label: AppLocalizations.of(context)!.profileFollowers,
                       value: '${followStats.followersCount}',
                       icon: Icons.people_outline_rounded,
                       iconColor: context.vibraTokens.accentPrimary,
@@ -159,7 +198,7 @@ class UserProfileScreen extends ConsumerWidget {
                     ),
                     _buildStatItem(
                       context: context,
-                      label: 'Seguiti',
+                      label: AppLocalizations.of(context)!.profileFollowing,
                       value: '${followStats.followingCount}',
                       icon: Icons.person_add_outlined,
                       iconColor: context.vibraTokens.accentPrimary,
@@ -186,28 +225,40 @@ class UserProfileScreen extends ConsumerWidget {
                       Expanded(
                         child: FilledButton.tonal(
                           onPressed: () async {
-                            await ref
-                                .read(
-                                  userFollowStatsProvider(
-                                    targetUserId,
-                                  ).notifier,
-                                )
-                                .toggleFollow();
+                            try {
+                              await ref
+                                  .read(
+                                    userFollowStatsProvider(
+                                      targetUserId,
+                                    ).notifier,
+                                  )
+                                  .toggleFollow();
+                            } catch (_) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.socialFollowUpdateError,
+                                  ),
+                                ),
+                              );
+                            }
                           },
                           style: FilledButton.styleFrom(
                             backgroundColor: followStats.isFollowing
                                 ? context.vibraTokens.surfaceMuted
-                                : context.vibraTokens.accentPrimary,
+                                : context.vibraTokens.accentFill,
                             foregroundColor: followStats.isFollowing
                                 ? context.vibraTokens.textPrimary
                                 : context.vibraTokens.onAccent,
                             padding: EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
                           ),
                           child: Text(
-                            followStats.isFollowing ? 'Seguito' : 'Segui',
+                            followStats.isFollowing
+                                ? AppLocalizations.of(context)!.socialFollowing
+                                : AppLocalizations.of(context)!.socialFollow,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
@@ -234,7 +285,11 @@ class UserProfileScreen extends ConsumerWidget {
                                   );
                                 },
                                 icon: Icon(Icons.chat_bubble_rounded, size: 16),
-                                label: Text('Messaggia'),
+                                label: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.socialMessageAction,
+                                ),
                                 style: OutlinedButton.styleFrom(
                                   padding: EdgeInsets.symmetric(vertical: 12),
                                   shape: RoundedRectangleBorder(
@@ -252,7 +307,9 @@ class UserProfileScreen extends ConsumerWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'Inviata',
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.socialFriendRequestSentShort,
                                   style: TextStyle(
                                     color: context.vibraTokens.textSecondary,
                                   ),
@@ -270,7 +327,9 @@ class UserProfileScreen extends ConsumerWidget {
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                 ),
-                                child: Text('Rispondi'),
+                                child: Text(
+                                  AppLocalizations.of(context)!.commonReply,
+                                ),
                               )
                             : ElevatedButton.icon(
                                 onPressed: () async {
@@ -285,7 +344,9 @@ class UserProfileScreen extends ConsumerWidget {
                                       ).showSnackBar(
                                         SnackBar(
                                           content: Text(
-                                            'Richiesta di amicizia inviata!',
+                                            AppLocalizations.of(
+                                              context,
+                                            )!.userProfileFriendRequestSent,
                                           ),
                                         ),
                                       );
@@ -295,21 +356,26 @@ class UserProfileScreen extends ConsumerWidget {
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
-                                        SnackBar(content: Text('Errore: $e')),
+                                        SnackBar(
+                                          content: Text(
+                                            AppLocalizations.of(
+                                              context,
+                                            )!.socialFriendRequestError,
+                                          ),
+                                        ),
                                       );
                                     }
                                   }
                                 },
                                 icon: Icon(Icons.person_add_rounded, size: 16),
-                                label: Text('Aggiungi'),
+                                label: Text(
+                                  AppLocalizations.of(context)!.socialAddFriend,
+                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor:
-                                      context.vibraTokens.accentPrimary,
-                                  foregroundColor: Colors.white,
+                                      context.vibraTokens.accentFill,
+                                  foregroundColor: context.vibraTokens.onAccent,
                                   padding: EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
                                 ),
                               ),
                       ),
@@ -317,6 +383,9 @@ class UserProfileScreen extends ConsumerWidget {
 
                       // Shortcut Chat
                       IconButton.filledTonal(
+                        tooltip: AppLocalizations.of(
+                          context,
+                        )!.socialMessageAction,
                         onPressed: () {
                           context.push(
                             '/chat',
@@ -338,34 +407,26 @@ class UserProfileScreen extends ConsumerWidget {
             ),
           ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0),
 
-          // Shared Artists
-          if (topArtists.isNotEmpty) ...[
-            SizedBox(height: 20),
-            Text(
-              'Artisti in comune',
-              style: TextStyle(
-                color: context.vibraTokens.textPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 17,
-              ),
+          // Why you match: the cached pair's explanation, when there is one.
+          if (AppConstants.spotifyEnabled &&
+              !isMe &&
+              compatibility > 0 &&
+              (resolvedUser.affinity?.hasExplanation ?? false)) ...[
+            const SizedBox(height: 20),
+            AffinityExplanationCard(
+              score: compatibility,
+              details: resolvedUser.affinity!,
             ),
-            SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: topArtists
-                  .map(
-                    (artist) => Chip(
-                      avatar: Icon(
-                        Icons.music_note_rounded,
-                        size: 14,
-                        color: context.vibraTokens.accentPrimary,
-                      ),
-                      label: Text(artist),
-                    ),
-                  )
-                  .toList(),
-            ),
+          ],
+
+          // Musical identity: each section as its owner allows (Musical
+          // DNA, genres, artists, stats, songs, playlists, events,
+          // communities, shared circles, activity).
+          const SizedBox(height: 20),
+          UserStoriesStrip(userId: targetUserId),
+          if (identity != null) ...[
+            const SizedBox(height: 20),
+            IdentitySections(identity: identity),
           ],
         ],
       ),

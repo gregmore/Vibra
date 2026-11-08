@@ -1,28 +1,14 @@
 import '../../domain/entities/spotify_session.dart';
 
+/// Response of `spotify-token-exchange` (no tokens; see [SpotifySession]).
 class SpotifyTokenModel extends SpotifySession {
-  const SpotifyTokenModel({
-    required super.accessToken,
-    required super.refreshToken,
-    required super.expiresIn,
-    super.scope,
-  });
+  const SpotifyTokenModel({required super.expiresIn, super.scope});
 
   factory SpotifyTokenModel.fromJson(Map<String, dynamic> json) {
+    final expires = json['expires_in'];
     return SpotifyTokenModel(
-      accessToken: json['access_token'] as String,
-      refreshToken: json['refresh_token'] as String,
-      expiresIn: json['expires_in'] as int,
+      expiresIn: expires is num ? expires.toInt() : 3600,
       scope: json['scope'] as String?,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'access_token': accessToken,
-      'refresh_token': refreshToken,
-      'expires_in': expiresIn,
-      'scope': scope,
-    };
   }
 }

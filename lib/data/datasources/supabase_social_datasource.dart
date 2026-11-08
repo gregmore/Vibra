@@ -3,9 +3,12 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 import '../../core/constants/db_tables.dart';
 import '../../core/errors/exceptions.dart';
 import '../../domain/entities/conversation_summary.dart';
+import '../../domain/entities/app_user.dart';
 import '../../domain/entities/follow_stats.dart';
+import '../../domain/entities/direct_message_permission.dart';
 import '../models/friendship_model.dart';
 import '../models/message_model.dart';
+import 'conversation_message_stream.dart';
 import 'supabase_datasource.dart';
 
 /// Datasource Supabase per social: amicizie e messaggi diretti.
@@ -13,6 +16,52 @@ class SupabaseSocialDatasource {
   SupabaseSocialDatasource(this._supabase);
 
   final SupabaseDatasource _supabase;
+
+  /// Public community search; the server enforces visibility and bilateral blocks.
+  Future<List<AppUser>> searchPublicUsers({
+    String query = '',
+    int limit = 30,
+  }) async {
+    final accountId = _supabase.currentUser?.id;
+    if (accountId == null) {
+      throw const AuthException(message: 'Utente non autenticato');
+    }
+    void requireCurrentAccount() {
+      if (_supabase.currentUser?.id != accountId) {
+        throw const AuthException(message: 'La sessione è cambiata.');
+      }
+    }
+
+    final literalQuery = String.fromCharCodes(query.trim().runes.take(100));
+    requireCurrentAccount();
+    try {
+      final rows = await _supabase.client.rpc(
+        'discover_public_users',
+        params: {'p_query': literalQuery, 'p_limit': limit.clamp(1, 30)},
+      );
+      requireCurrentAccount();
+      return List<Map<String, dynamic>>.from(rows as List)
+          .map(
+            (row) => AppUser(
+              id: row['id'] as String,
+              email:
+                  '', // Email is private and absent from the public projection.
+              username: row['username'] as String,
+              displayName: row['display_name'] as String?,
+              avatarUrl: row['avatar_url'] as String?,
+              bio: row['bio'] as String?,
+            ),
+          )
+          .toList(growable: false);
+    } catch (error) {
+      requireCurrentAccount();
+      if (error is AuthException) rethrow;
+      throw const ServerException(
+        message: 'Errore nel caricamento delle persone.',
+        endpoint: 'discover_public_users',
+      );
+    }
+  }
 
   Future<FriendshipModel> requestFriendship({
     required String receiverId,
@@ -119,14 +168,65 @@ class SupabaseSocialDatasource {
       throw const AuthException(message: 'Utente non autenticato');
     }
 
-    final row = await _supabase.insert(DbTables.messages, {
-      'sender_id': user.id,
-      'receiver_id': receiverId,
-      'content': content,
-      'message_type': messageType,
-      'metadata': ?metadata,
-    });
-    return MessageModel.fromJson(row);
+    if (receiverId.isEmpty || receiverId == user.id) {
+      throw const ServerException(message: 'Scegli un altro utente.');
+    }
+    final text = content.trim();
+    if (text.isEmpty || text.length > 2000) {
+      throw const ServerException(
+        message: 'Il messaggio deve contenere da 1 a 2000 caratteri.',
+      );
+    }
+
+    try {
+      final row = await _supabase.insert(DbTables.messages, {
+        'sender_id': user.id,
+        'receiver_id': receiverId,
+        'content': text,
+        'message_type': messageType,
+        'metadata': ?metadata,
+      });
+      if (_supabase.currentUser?.id != user.id) {
+        throw const AuthException(message: 'La sessione è cambiata.');
+      }
+      return MessageModel.fromJson(row);
+    } on ServerException catch (error) {
+      if (_supabase.currentUser?.id != user.id || error.errorCode == 'PT401') {
+        throw const AuthException(message: 'La sessione è cambiata.');
+      }
+      if (error.errorCode == 'PT429') {
+        throw const DirectMessageSendException(
+          DirectMessagePermission.rateLimited,
+        );
+      }
+      if (error.errorCode == '42501' || error.errorCode == 'P0001') {
+        // Permissions can change after the composer was opened. Ask the
+        // server for an actionable, privacy-preserving reason after rejection.
+        final permission = await getMessagePermission(receiverId: receiverId);
+        if (!permission.canSend) throw DirectMessageSendException(permission);
+      }
+      rethrow;
+    }
+  }
+
+  Future<DirectMessagePermission> getMessagePermission({
+    required String receiverId,
+  }) async {
+    final accountId = _supabase.currentUser?.id;
+    if (accountId == null) {
+      throw const AuthException(message: 'Utente non autenticato');
+    }
+    if (receiverId.isEmpty || receiverId == accountId) {
+      return DirectMessagePermission.unavailable;
+    }
+    final result = await _supabase.client.rpc(
+      'message_send_permission',
+      params: {'p_receiver_id': receiverId},
+    );
+    if (_supabase.currentUser?.id != accountId) {
+      throw const AuthException(message: 'La sessione è cambiata.');
+    }
+    return DirectMessagePermission.fromServer(result);
   }
 
   Future<void> blockUser({required String blockedId}) async {
@@ -134,10 +234,9 @@ class SupabaseSocialDatasource {
     if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
     }
-    await _supabase.insert('blocked_users', {
-      'blocker_id': user.id,
-      'blocked_id': blockedId,
-    });
+    // Server path: rate-limited, and removes follows, connections, pending
+    // circle invitations and saved profiles between the two (docs/safety.md).
+    await _supabase.rpc('block_user', params: {'p_user': blockedId});
   }
 
   Future<void> reportUser({
@@ -209,16 +308,107 @@ class SupabaseSocialDatasource {
           .or(
             'and(sender_id.eq.${user.id},receiver_id.eq.$otherUserId),and(sender_id.eq.$otherUserId,receiver_id.eq.${user.id})',
           )
-          .order('created_at', ascending: true)
-          .limit(limit);
+          .not('deleted_by', 'cs', '{${user.id}}')
+          .order('created_at', ascending: false)
+          .limit(limit.clamp(1, 200));
 
       return List<Map<String, dynamic>>.from(
         rows,
-      ).map(MessageModel.fromJson).toList(growable: false);
+      ).reversed.map(MessageModel.fromJson).toList(growable: false);
     } catch (e) {
       throw ServerException(
         message: 'Errore nel caricamento messaggi',
         endpoint: DbTables.messages,
+      );
+    }
+  }
+
+  /// Ranked affinity feed (get_affinity_feed): blocked, ignored, connected
+  /// and other-segment users are already excluded by the database.
+  Future<List<Map<String, dynamic>>> getAffinityFeed({
+    int limit = 30,
+    int offset = 0,
+  }) async {
+    if (_supabase.currentUser == null) {
+      throw const AuthException(message: 'Utente non autenticato');
+    }
+    try {
+      final rows = await _supabase.client.rpc(
+        'get_affinity_feed',
+        params: {'p_limit': limit, 'p_offset': offset},
+      );
+      return List<Map<String, dynamic>>.from(rows as List);
+    } catch (e) {
+      throw ServerException(
+        message: 'affinity_feed_failed',
+        endpoint: 'get_affinity_feed',
+      );
+    }
+  }
+
+  /// "Ignore": the profile does not come back in the affinity deck.
+  Future<void> dismissAffinity(String otherUserId) async {
+    final user = _supabase.currentUser;
+    if (user == null) {
+      throw const AuthException(message: 'Utente non autenticato');
+    }
+    await _supabase.client.from(DbTables.affinityDismissals).upsert({
+      'user_id': user.id,
+      'dismissed_user_id': otherUserId,
+    }, ignoreDuplicates: true);
+  }
+
+  /// The caller's hand-picked genres: key → intensity (1–100).
+  Future<Map<String, int>> getMyGenrePreferences() async {
+    final user = _supabase.currentUser;
+    if (user == null) {
+      throw const AuthException(message: 'Utente non autenticato');
+    }
+    final rows = await _supabase.client
+        .from(DbTables.userGenrePreferences)
+        .select('genre_key, intensity')
+        .eq('user_id', user.id);
+    return {
+      for (final row in List<Map<String, dynamic>>.from(rows))
+        if (row['genre_key'] is String)
+          row['genre_key'] as String: (row['intensity'] as num?)?.toInt() ?? 70,
+    };
+  }
+
+  /// Replaces the caller's picked genres, then asks the server to rebuild
+  /// their cached affinities (the score is never computed on the device).
+  Future<void> saveMyGenrePreferences(Map<String, int> genres) async {
+    final user = _supabase.currentUser;
+    if (user == null) {
+      throw const AuthException(message: 'Utente non autenticato');
+    }
+    final table = _supabase.client.from(DbTables.userGenrePreferences);
+    final keep = genres.keys.toList(growable: false);
+    if (keep.isEmpty) {
+      await table.delete().eq('user_id', user.id);
+    } else {
+      await table
+          .delete()
+          .eq('user_id', user.id)
+          .not('genre_key', 'in', '(${keep.join(',')})');
+      await table.upsert([
+        for (final entry in genres.entries)
+          {
+            'user_id': user.id,
+            'genre_key': entry.key,
+            'intensity': entry.value.clamp(1, 100),
+          },
+      ], onConflict: 'user_id,genre_key');
+    }
+  }
+
+  /// Server-side recompute of the caller's affinities (calculate-match).
+  Future<void> recomputeAffinity() async {
+    final response = await _supabase.client.functions.invoke('calculate-match');
+    if (response.status != 200) {
+      throw ServerException(
+        message: 'affinity_recompute_failed',
+        endpoint: 'calculate-match',
       );
     }
   }
@@ -247,14 +437,15 @@ class SupabaseSocialDatasource {
   }
 
   Future<List<Map<String, dynamic>>> getPublicUsersByIds(
-    List<String> ids,
-  ) async {
+    List<String> ids, {
+    String columns = '*',
+  }) async {
     if (ids.isEmpty) return const [];
 
     try {
       final rows = await _supabase.client
           .from(DbTables.usersPublic)
-          .select()
+          .select(columns)
           .inFilter('id', ids);
       return List<Map<String, dynamic>>.from(rows);
     } catch (e) {
@@ -271,21 +462,24 @@ class SupabaseSocialDatasource {
       throw const AuthException(message: 'Utente non autenticato');
     }
 
-    final stream = _supabase.client
+    final incoming = _supabase.client
         .from(DbTables.messages)
         .stream(primaryKey: ['id'])
+        .eq('sender_id', otherUserId)
+        .order('created_at', ascending: false)
+        .limit(200);
+    final outgoing = _supabase.client
+        .from(DbTables.messages)
+        .stream(primaryKey: ['id'])
+        .eq('receiver_id', otherUserId)
         .order('created_at', ascending: false)
         .limit(200);
 
-    return stream.map(
-      (rows) => rows
-          .map(MessageModel.fromJson)
-          .where(
-            (m) =>
-                (m.senderId == user.id && m.receiverId == otherUserId) ||
-                (m.senderId == otherUserId && m.receiverId == user.id),
-          )
-          .toList(growable: false),
+    return conversationMessageStream(
+      incoming: incoming,
+      outgoing: outgoing,
+      userId: user.id,
+      otherUserId: otherUserId,
     );
   }
 
@@ -364,14 +558,24 @@ class SupabaseSocialDatasource {
     if (user == null) {
       throw const AuthException(message: 'Utente non autenticato');
     }
+    if (userId.isEmpty || userId == user.id) {
+      throw const ServerException(
+        message: 'Scegli un altro utente da seguire.',
+      );
+    }
 
     try {
       await _supabase.client.from(DbTables.follows).insert({
         'follower_id': user.id,
         'following_id': userId,
       });
-    } catch (_) {
-      // Ignora errori (es. utente già seguito) per evitare crash nella UI
+    } on PostgrestException catch (error) {
+      // Repeating the same follow is successful; permission and network errors
+      // must reach the caller so its optimistic state can be reverted.
+      if (error.code == '23505') return;
+      throw const ServerException(
+        message: 'Impossibile seguire questo utente.',
+      );
     }
   }
 
@@ -381,15 +585,11 @@ class SupabaseSocialDatasource {
       throw const AuthException(message: 'Utente non autenticato');
     }
 
-    try {
-      await _supabase.client
-          .from(DbTables.follows)
-          .delete()
-          .eq('follower_id', user.id)
-          .eq('following_id', userId);
-    } catch (_) {
-      // Ignora errori
-    }
+    await _supabase.client
+        .from(DbTables.follows)
+        .delete()
+        .eq('follower_id', user.id)
+        .eq('following_id', userId);
   }
 
   Future<FollowStats> getFollowStats({required String userId}) async {
@@ -410,7 +610,7 @@ class SupabaseSocialDatasource {
       }
       return const FollowStats.empty();
     } catch (e) {
-      return const FollowStats.empty();
+      throw const ServerException(message: 'Impossibile caricare il seguito.');
     }
   }
 
@@ -426,7 +626,7 @@ class SupabaseSocialDatasource {
       );
       return List<Map<String, dynamic>>.from(rows ?? []);
     } catch (e) {
-      return const [];
+      throw const ServerException(message: 'Impossibile caricare i follower.');
     }
   }
 
@@ -442,7 +642,9 @@ class SupabaseSocialDatasource {
       );
       return List<Map<String, dynamic>>.from(rows ?? []);
     } catch (e) {
-      return const [];
+      throw const ServerException(
+        message: 'Impossibile caricare gli utenti seguiti.',
+      );
     }
   }
 }

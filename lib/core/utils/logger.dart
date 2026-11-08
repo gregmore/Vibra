@@ -1,5 +1,7 @@
 import 'dart:developer' as dev;
 
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
+
 /// Evento diagnostico locale, pensato esclusivamente per le segnalazioni.
 class SupportLogEntry {
   const SupportLogEntry({
@@ -99,6 +101,7 @@ class VibraLogger {
   /// Log di avviso — situazioni anomale ma non critiche.
   static void warning(String message, {String? tag}) {
     _record('warning', message);
+    if (kDebugMode) debugPrint('[$_tag WARN] ${_redact(message)}');
     dev.log(
       _redact(message),
       name: tag ?? _tag,
@@ -114,6 +117,14 @@ class VibraLogger {
     StackTrace? stackTrace,
   }) {
     _record('error', '$message${error == null ? '' : ': $error'}');
+    // Debug builds only: dev.log is invisible without DevTools, so errors
+    // also reach the `flutter run` console (redacted like everything else).
+    if (kDebugMode) {
+      debugPrint(
+        '[$_tag ERROR] ${_redact(message)}'
+        '${error == null ? '' : ': ${_redact(error.toString())}'}',
+      );
+    }
     dev.log(
       _redact(message),
       name: tag ?? _tag,

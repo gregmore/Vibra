@@ -1,15 +1,18 @@
+import 'package:vibra/presentation/localization/user_facing_error.dart';
 import 'dart:io' show Platform;
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 
+import '../../../core/theme/vibra_motion.dart';
 import '../../../core/theme/vibra_text_styles.dart';
 import '../../../core/theme/vibra_spacing.dart';
 import '../../../core/theme/vibra_theme_tokens.dart';
+import '../../widgets/common/vibra_auth_backdrop.dart';
+import '../../widgets/common/vibra_button.dart';
 import '../../widgets/common/vibra_logo.dart';
+import '../../widgets/common/vibra_state_views.dart';
 import '../../widgets/email_auth_sheet.dart';
 import '../../providers/auth_provider.dart';
 
@@ -21,7 +24,6 @@ class LoginScreen extends ConsumerWidget {
     final authState = ref.watch(generalAuthProvider);
     final isLoading = authState.status == GeneralAuthStatus.loading;
     final l10n = AppLocalizations.of(context)!;
-    final size = MediaQuery.sizeOf(context);
     final t = context.vibraTokens;
 
     // Se l'utente si è autenticato con successo tramite OAuth, il router si accorge
@@ -31,11 +33,10 @@ class LoginScreen extends ConsumerWidget {
       if (next.status == GeneralAuthStatus.authenticated) {
         context.go('/home');
       } else if (next.status == GeneralAuthStatus.error) {
-        final isSuccessInfo =
-            next.errorMessage?.contains('Registrazione completata') ?? false;
+        final isSuccessInfo = isRegistrationConfirmation(next.errorMessage);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(next.errorMessage ?? l10n.authFailed),
+            content: Text(userFacingError(l10n, next.errorMessage)),
             backgroundColor: isSuccessInfo ? t.success : t.error,
             duration: Duration(seconds: isSuccessInfo ? 6 : 4),
           ),
@@ -46,215 +47,144 @@ class LoginScreen extends ConsumerWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // ── Sfondo gradiente ──────────────────────────────────
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [t.backgroundPrimary, t.backgroundSecondary],
-              ),
-            ),
-            child: SizedBox.expand(),
-          ),
-
-          // ── Orbs decorativi ──────────────────────────────────
-          _BackgroundOrbs(size: size),
-
-          // ── Contenuto ────────────────────────────────────────
+          const Positioned.fill(child: VibraAuthBackdrop()),
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(VibraSpacing.pagePadding),
-              child: Column(
-                children: [
-                  // ── Back button ──────────────────────────────
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      tooltip: 'Torna alla schermata di benvenuto',
-                      onPressed: () {
-                        if (context.canPop()) {
-                          context.pop();
-                        } else {
-                          context.go('/welcome');
-                        }
-                      },
-                      icon: const Icon(
-                        Icons.arrow_back_rounded,
-                        color: Colors.white,
-                      ),
+            child: LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: VibraSpacing.pagePadding,
+                  vertical: VibraSpacing.sm,
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: (constraints.maxHeight - VibraSpacing.lg).clamp(
+                      0,
+                      double.infinity,
                     ),
-                  ).animate().fadeIn(duration: 400.ms),
-
-                  const Spacer(flex: 2),
-
-                  // ── Hero Logo ────────────────────────────────
-                  _HeroLogo()
-                      .animate()
-                      .fadeIn(duration: 600.ms)
-                      .scale(
-                        begin: const Offset(0.6, 0.6),
-                        end: const Offset(1.0, 1.0),
-                        duration: 700.ms,
-                        curve: Curves.easeOutBack,
-                      ),
-
-                  const SizedBox(height: 28),
-
-                  // ── Titolo con gradient shimmer ──────────────
-                  ShaderMask(
-                        shaderCallback: (bounds) =>
-                            t.primaryGradient.createShader(bounds),
-                        child: Text(
-                          l10n.loginTitle,
-                          textAlign: TextAlign.center,
-                          style: VibraTextStyles.displayLarge.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                      )
-                      .animate()
-                      .fadeIn(delay: 200.ms, duration: 500.ms)
-                      .slideY(
-                        begin: 0.2,
-                        end: 0,
-                        delay: 200.ms,
-                        duration: 500.ms,
-                      ),
-
-                  const SizedBox(height: VibraSpacing.sm),
-
-                  // ── Sottotitolo ──────────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(
-                      l10n.loginSubtitle,
-                      textAlign: TextAlign.center,
-                      style: VibraTextStyles.bodyMedium.copyWith(
-                        color: t.textSecondary,
-                      ),
-                    ),
-                  ).animate().fadeIn(delay: 350.ms, duration: 500.ms),
-
-                  const Spacer(flex: 2),
-
-                  // ── Auth Buttons ─────────────────────────────
-                  _AuthButtonGoogle(
-                        label: l10n.loginWithGoogle,
-                        onTap: () => ref
-                            .read(generalAuthProvider.notifier)
-                            .signInWithGoogle(),
-                      )
-                      .animate()
-                      .fadeIn(delay: 500.ms, duration: 400.ms)
-                      .slideY(
-                        begin: 0.3,
-                        end: 0,
-                        delay: 500.ms,
-                        duration: 400.ms,
-                        curve: Curves.easeOutCubic,
-                      ),
-
-                  const SizedBox(height: VibraSpacing.md),
-
-                  // Apple Sign In — solo su iOS
-                  if (Platform.isIOS) ...[
-                    _AuthButtonApple(
-                          label: l10n.loginWithApple,
-                          onTap: () => ref
-                              .read(generalAuthProvider.notifier)
-                              .signInWithApple(),
-                        )
-                        .animate()
-                        .fadeIn(delay: 620.ms, duration: 400.ms)
-                        .slideY(
-                          begin: 0.3,
-                          end: 0,
-                          delay: 620.ms,
-                          duration: 400.ms,
-                          curve: Curves.easeOutCubic,
-                        ),
-                    const SizedBox(height: VibraSpacing.md),
-                  ],
-
-                  // ── Divider "oppure" ─────────────────────────
-                  _OrDivider().animate().fadeIn(
-                    delay: 740.ms,
-                    duration: 400.ms,
                   ),
-
-                  const SizedBox(height: VibraSpacing.md),
-
-                  // ── Email ────────────────────────────────────
-                  _AuthButtonEmail(
-                        label: l10n.loginWithEmail,
-                        onTap: () => EmailAuthSheet.show(context),
-                      )
-                      .animate()
-                      .fadeIn(delay: 860.ms, duration: 400.ms)
-                      .slideY(
-                        begin: 0.3,
-                        end: 0,
-                        delay: 860.ms,
-                        duration: 400.ms,
-                        curve: Curves.easeOutCubic,
-                      ),
-
-                  const Spacer(),
-
-                  // ── Consent ──────────────────────────────────
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.lock_outline_rounded,
-                        size: 13,
-                        color: t.textSecondary,
-                      ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(
-                          l10n.loginConsent,
-                          textAlign: TextAlign.center,
-                          style: VibraTextStyles.bodySmall.copyWith(
-                            color: t.textSecondary,
-                            fontSize: 11,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 440),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: IconButton(
+                              tooltip: l10n.loginBackToWelcome,
+                              onPressed: () => context.canPop()
+                                  ? context.pop()
+                                  : context.go('/welcome'),
+                              icon: Icon(
+                                Icons.arrow_back_rounded,
+                                color: t.textPrimary,
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: VibraSpacing.xxl),
+                          const Center(
+                            child: VibraLogo(
+                              width: 88,
+                              height: 76,
+                              animate: true,
+                            ),
+                          ),
+                          const SizedBox(height: VibraSpacing.xxxl),
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              l10n.loginTitle,
+                              textAlign: TextAlign.center,
+                              style: VibraTextStyles.displaySmall.copyWith(
+                                color: t.textPrimary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: VibraSpacing.md),
+                          Text(
+                            l10n.loginSubtitle,
+                            textAlign: TextAlign.center,
+                            style: VibraTextStyles.bodyMedium.copyWith(
+                              color: t.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: VibraSpacing.huge),
+                          _ProviderButton(
+                            label: l10n.loginWithGoogle,
+                            leading: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CustomPaint(painter: _GoogleLogoPainter()),
+                            ),
+                            onTap: () => ref
+                                .read(generalAuthProvider.notifier)
+                                .signInWithGoogle(),
+                          ),
+                          if (Platform.isIOS) ...[
+                            const SizedBox(height: VibraSpacing.md),
+                            _ProviderButton(
+                              label: l10n.loginWithApple,
+                              leading: const Icon(
+                                Icons.apple,
+                                color: Colors.black,
+                                size: 22,
+                              ),
+                              onTap: () => ref
+                                  .read(generalAuthProvider.notifier)
+                                  .signInWithApple(),
+                            ),
+                          ],
+                          const SizedBox(height: VibraSpacing.lg),
+                          _OrDivider(),
+                          const SizedBox(height: VibraSpacing.lg),
+                          VibraButton(
+                            label: l10n.loginWithEmail,
+                            onPressed: () => EmailAuthSheet.show(context),
+                            tone: VibraButtonTone.outline,
+                            leadingIcon: Icons.alternate_email_rounded,
+                            expanded: true,
+                          ),
+                          const SizedBox(height: VibraSpacing.xxxl),
+                          Text(
+                            l10n.loginConsent,
+                            textAlign: TextAlign.center,
+                            style: VibraTextStyles.caption.copyWith(
+                              color: t.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: VibraSpacing.xs),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: VibraSpacing.xs,
+                            children: [
+                              TextButton(
+                                onPressed: () =>
+                                    context.push('/terms-of-service'),
+                                child: Text(l10n.legalTermsTitle),
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    context.push('/privacy-policy'),
+                                child: Text(l10n.legalPrivacyPolicyTitle),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: VibraSpacing.md),
+                        ],
                       ),
-                    ],
-                  ).animate().fadeIn(delay: 1000.ms, duration: 500.ms),
-
-                  const SizedBox(height: VibraSpacing.sm),
-                ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
-
-          // ── Loading overlay ──────────────────────────────────
           if (isLoading)
             Positioned.fill(
-              child: ClipRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                  child: Container(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: t.surfaceElevated,
-                          borderRadius: BorderRadius.circular(
-                            VibraSpacing.radiusMedium,
-                          ),
-                          boxShadow: [t.elevatedShadow],
-                        ),
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            t.accentPrimary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+              child: AbsorbPointer(
+                child: ColoredBox(
+                  color: t.backgroundPrimary.withValues(alpha: .88),
+                  child: const Center(child: VibraLoadingIndicator(size: 56)),
                 ),
               ),
             ),
@@ -264,274 +194,98 @@ class LoginScreen extends ConsumerWidget {
   }
 }
 
-// ── Hero Logo con glow pulsante ──────────────────────────────────
-class _HeroLogo extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final t = context.vibraTokens;
-    return Container(
-          width: 110,
-          height: 110,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: [
-                t.accentPrimary.withValues(alpha: 0.15),
-                t.accentSecondary.withValues(alpha: 0.06),
-                Colors.transparent,
-              ],
-              stops: const [0.0, 0.5, 1.0],
-            ),
-          ),
-          child: Center(
-            child: Container(
-              width: 90,
-              height: 90,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: t.surfaceElevated,
-                border: Border.all(color: t.borderDefault),
-                boxShadow: [t.elevatedShadow],
-              ),
-              child: const Center(
-                child: VibraLogo(width: 58, height: 58, strokeWidth: 4.5),
-              ),
-            ),
-          ),
-        )
-        .animate(onPlay: (c) => c.repeat(reverse: true))
-        .scale(
-          begin: const Offset(0.97, 0.97),
-          end: const Offset(1.03, 1.03),
-          duration: 2500.ms,
-          curve: Curves.easeInOut,
-        );
-  }
-}
-
-// ── Orbs decorativi di sfondo ────────────────────────────────────
-class _BackgroundOrbs extends StatelessWidget {
-  const _BackgroundOrbs({required this.size});
-  final Size size;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.vibraTokens;
-    return Stack(
-      children: [
-        Positioned(
-          top: size.height * 0.06,
-          right: -50,
-          child: _GlowOrb(
-            size: 200,
-            color: t.accentPrimary.withValues(alpha: 0.1),
-          ),
-        ),
-        Positioned(
-          bottom: size.height * 0.22,
-          left: -70,
-          child: _GlowOrb(
-            size: 240,
-            color: t.accentPrimary.withValues(alpha: 0.07),
-          ),
-        ),
-        Positioned(
-          top: size.height * 0.35,
-          left: size.width * 0.6,
-          child: _GlowOrb(
-            size: 100,
-            color: t.accentSecondary.withValues(alpha: 0.05),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({required this.size, required this.color});
-  final double size;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [color, color.withValues(alpha: 0)],
-          stops: const [0.0, 1.0],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Divider "oppure" ─────────────────────────────────────────────
+// ── Divider "or" ──────────────────────────────────────────────────
 class _OrDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.vibraTokens;
     return Row(
       children: [
-        Expanded(
-          child: Container(
-            height: 0.5,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.transparent, t.borderStrong],
-              ),
-            ),
-          ),
-        ),
+        Expanded(child: Divider(color: t.borderDefault)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: VibraSpacing.lg),
           child: Text(
-            'oppure',
-            style: VibraTextStyles.labelSmall.copyWith(color: t.textSecondary),
+            AppLocalizations.of(context)!.authOr.toUpperCase(),
+            style: VibraTextStyles.labelSmall.copyWith(color: t.textMuted),
           ),
         ),
-        Expanded(
-          child: Container(
-            height: 0.5,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [t.borderStrong, Colors.transparent],
-              ),
-            ),
-          ),
-        ),
+        Expanded(child: Divider(color: t.borderDefault)),
       ],
     );
   }
 }
 
-// ── Auth Button: Google ──────────────────────────────────────────
-class _AuthButtonGoogle extends StatelessWidget {
-  const _AuthButtonGoogle({required this.label, required this.onTap});
+/// Identity-provider button: white surface with the provider's own mark,
+/// as both Google and Apple guidelines require on dark backgrounds.
+class _ProviderButton extends StatefulWidget {
+  const _ProviderButton({
+    required this.label,
+    required this.leading,
+    required this.onTap,
+  });
+
   final String label;
+  final Widget leading;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: FilledButton(
-        style: FilledButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(VibraSpacing.radiusFull),
-          ),
-          elevation: 0,
-        ),
-        onPressed: onTap,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Icona Google con i colori brand
-            SizedBox(
-              width: 20,
-              height: 20,
-              child: CustomPaint(painter: _GoogleLogoPainter()),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: VibraTextStyles.labelLarge.copyWith(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  State<_ProviderButton> createState() => _ProviderButtonState();
 }
 
-// ── Auth Button: Apple ───────────────────────────────────────────
-class _AuthButtonApple extends StatelessWidget {
-  const _AuthButtonApple({required this.label, required this.onTap});
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: FilledButton(
-        style: FilledButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(VibraSpacing.radiusFull),
-          ),
-          elevation: 0,
-        ),
-        onPressed: onTap,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.apple, color: Colors.black87, size: 24),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: VibraTextStyles.labelLarge.copyWith(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Auth Button: Email ───────────────────────────────────────────
-class _AuthButtonEmail extends StatelessWidget {
-  const _AuthButtonEmail({required this.label, required this.onTap});
-  final String label;
-  final VoidCallback onTap;
+class _ProviderButtonState extends State<_ProviderButton> {
+  bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
     final t = context.vibraTokens;
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: t.textPrimary,
-          side: BorderSide(color: t.borderStrong),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(VibraSpacing.radiusFull),
-          ),
-          elevation: 0,
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final radius = BorderRadius.circular(VibraSpacing.radiusMedium);
+    return Listener(
+      onPointerDown: (_) => setState(() => _pressed = true),
+      onPointerUp: (_) => setState(() => _pressed = false),
+      onPointerCancel: (_) => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? VibraMotion.pressedScale : 1,
+        duration: VibraMotion.durationFor(
+          context,
+          _pressed ? VibraMotion.tapIn : VibraMotion.tapOut,
         ),
-        onPressed: onTap,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.alternate_email_rounded,
-              color: t.accentPrimary,
-              size: 20,
-            ),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: VibraTextStyles.labelLarge.copyWith(
-                color: t.textPrimary,
-                fontWeight: FontWeight.w600,
+        curve: VibraMotion.signalCurve,
+        child: SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              minimumSize: const Size.fromHeight(VibraSpacing.buttonHeight),
+              shape: RoundedRectangleBorder(
+                borderRadius: radius,
+                side: isLight
+                    ? BorderSide(color: t.borderStrong)
+                    : BorderSide.none,
               ),
+              overlayColor: Colors.black.withValues(alpha: .06),
+              elevation: 0,
             ),
-          ],
+            onPressed: widget.onTap,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                widget.leading,
+                const SizedBox(width: VibraSpacing.md),
+                Flexible(
+                  child: Text(
+                    widget.label,
+                    textAlign: TextAlign.center,
+                    style: VibraTextStyles.labelLarge.copyWith(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

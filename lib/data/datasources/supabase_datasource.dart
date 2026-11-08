@@ -68,6 +68,11 @@ class SupabaseDatasource {
     }
   }
 
+  /// Calls a database function. The server derives the caller from the
+  /// session, so identity is never taken from the parameters.
+  Future<dynamic> rpc(String function, {Map<String, dynamic>? params}) =>
+      client.rpc(function, params: params);
+
   /// Inserisce un record in una tabella.
   Future<Map<String, dynamic>> insert(
     String table,
@@ -83,6 +88,7 @@ class SupabaseDatasource {
       throw ServerException(
         message: 'Errore nel salvataggio dati in $table',
         endpoint: table,
+        errorCode: e is PostgrestException ? e.code : null,
       );
     }
   }
@@ -220,7 +226,13 @@ class SupabaseDatasource {
       VibraLogger.endpointFailure('$bucket/$path');
       VibraLogger.error('Errore upload file', error: e);
       throw ServerException(
-        message: e is StorageException
+        message: e is FunctionException && e.status == 415
+            ? 'La foto deve essere in formato JPG o PNG. Scegli un’altra immagine.'
+            : e is FunctionException && e.status == 413
+            ? 'La foto è troppo grande. Scegli un’immagine fino a ${bucket == 'chat-media' ? 10 : 5} MB.'
+            : e is FunctionException && e.status == 401
+            ? 'Sessione scaduta. Accedi di nuovo per caricare la foto.'
+            : e is StorageException
             ? e.message
             : 'Impossibile caricare il file. Controlla la connessione e riprova.',
         statusCode: e is StorageException

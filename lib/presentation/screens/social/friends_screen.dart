@@ -1,4 +1,6 @@
-import 'dart:ui';
+import '../../providers/public_friends_provider.dart';
+import '../../widgets/common/vibra_state_views.dart';
+import 'package:vibra/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +29,28 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  final Set<String> _updatingRequests = {};
+
+  Future<void> _updateRequest(String id, Future<void> Function() action) async {
+    if (_updatingRequests.contains(id)) return;
+    setState(() => _updatingRequests.add(id));
+    try {
+      await action();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.friendsRequestUpdateError,
+            ),
+          ),
+        );
+    } finally {
+      if (mounted) setState(() => _updatingRequests.remove(id));
+    }
+  }
 
   @override
   void initState() {
@@ -102,17 +126,19 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
       builder: (dialogContext) => AlertDialog(
         backgroundColor: context.vibraTokens.surfaceElevated,
         title: Text(
-          'Rimuovi dagli amici',
+          AppLocalizations.of(context)!.friendsRemoveTitle,
           style: TextStyle(color: context.vibraTokens.textPrimary),
         ),
         content: Text(
-          'Vuoi davvero rimuovere ${friend.user.displayName ?? friend.user.username} dai tuoi amici?',
+          AppLocalizations.of(
+            context,
+          )!.friendsRemoveBody(friend.user.displayName ?? friend.user.username),
           style: TextStyle(color: context.vibraTokens.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text('Annulla'),
+            child: Text(AppLocalizations.of(context)!.commonCancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -144,15 +170,26 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          '${friend.user.displayName ?? friend.user.username} rimosso dagli amici',
+                          AppLocalizations.of(context)!.friendsRemoved(
+                            friend.user.displayName ?? friend.user.username,
+                          ),
                         ),
                       ),
                     );
                   }
                 }
-              } catch (_) {}
+              } catch (_) {
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      AppLocalizations.of(context)!.friendsRemoveError,
+                    ),
+                  ),
+                );
+              }
             },
-            child: Text('Rimuovi'),
+            child: Text(AppLocalizations.of(context)!.commonRemove),
           ),
         ],
       ),
@@ -162,8 +199,15 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
   @override
   Widget build(BuildContext context) {
     final friends = ref.watch(friendsProvider);
+    final publicFriends = ref.watch(publicFriendsProvider);
+    final friendsLoading = publicFriends.isLoading;
+    final friendsFailed = publicFriends.hasError;
     final pending = ref.watch(pendingFriendshipsProvider);
-    final matchedUsers = ref.watch(matchedUsersProvider);
+    final publicConnections = ref.watch(publicConnectionProfilesProvider);
+    final matchedUsers =
+        publicConnections.isLoading || publicConnections.hasError
+        ? const <MatchedUserPreview>[]
+        : publicConnections.valueOrNull ?? const <MatchedUserPreview>[];
     final currentUserId = Supabase.instance.client.auth.currentUser?.id ?? '';
 
     final pendingReceived = pending
@@ -183,7 +227,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
     return VibraPageScaffold(
       appBar: AppBar(
         title: Text(
-          'Amici & Connessioni',
+          AppLocalizations.of(context)!.friendsConnectionsTitle,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -192,7 +236,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
         actions: [
           IconButton(
             icon: Icon(Icons.chat_outlined),
-            tooltip: 'Messaggi',
+            tooltip: AppLocalizations.of(context)!.inboxMessages,
             onPressed: () => context.push('/messages'),
           ),
         ],
@@ -202,60 +246,61 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
             margin: EdgeInsets.symmetric(horizontal: 16),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: context.vibraTokens.surfaceElevated.withValues(
-                      alpha: 0.6,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: context.vibraTokens.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: context.vibraTokens.borderDefault),
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorColor: context.vibraTokens.accentPrimary,
+                  indicatorWeight: 3,
+                  labelColor: context.vibraTokens.accentPrimary,
+                  unselectedLabelColor: context.vibraTokens.textSecondary,
+                  tabs: [
+                    Tab(
+                      text: friendsLoading || friendsFailed
+                          ? AppLocalizations.of(context)!.friendsTitle
+                          : AppLocalizations.of(
+                              context,
+                            )!.friendsCount(friends.length),
                     ),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: context.vibraTokens.borderDefault.withValues(
-                        alpha: 0.5,
-                      ),
-                    ),
-                  ),
-                  child: TabBar(
-                    controller: _tabController,
-                    indicatorColor: context.vibraTokens.accentPrimary,
-                    indicatorWeight: 3,
-                    labelColor: context.vibraTokens.accentPrimary,
-                    unselectedLabelColor: context.vibraTokens.textSecondary,
-                    tabs: [
-                      Tab(text: 'Amici (${friends.length})'),
-                      Tab(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('Ricevute'),
-                            if (pendingReceived.isNotEmpty) ...[
-                              SizedBox(width: 6),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: context.vibraTokens.accentSecondary,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  '${pendingReceived.length}',
-                                  style: TextStyle(
-                                    color: context.vibraTokens.onAccent,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                    Tab(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(AppLocalizations.of(context)!.friendsReceived),
+                          if (pendingReceived.isNotEmpty) ...[
+                            SizedBox(width: 6),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: context.vibraTokens.accentSecondary,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '${pendingReceived.length}',
+                                style: TextStyle(
+                                  color: context.vibraTokens.onAccent,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ],
+                            ),
                           ],
-                        ),
+                        ],
                       ),
-                      Tab(text: 'Inviate (${pendingSent.length})'),
-                    ],
-                  ),
+                    ),
+                    Tab(
+                      text: AppLocalizations.of(
+                        context,
+                      )!.friendsSentCount(pendingSent.length),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -272,51 +317,43 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                 padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (val) {
-                        setState(() {
-                          _searchQuery = val.trim().toLowerCase();
-                        });
-                      },
-                      style: TextStyle(color: context.vibraTokens.textPrimary),
-                      decoration: InputDecoration(
-                        hintText: 'Cerca tra i tuoi amici...',
-                        hintStyle: TextStyle(
-                          color: context.vibraTokens.textSecondary,
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (val) {
+                      setState(() {
+                        _searchQuery = val.trim().toLowerCase();
+                      });
+                    },
+                    style: TextStyle(color: context.vibraTokens.textPrimary),
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.friendsSearchHint,
+                      hintStyle: TextStyle(
+                        color: context.vibraTokens.textSecondary,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
+                        color: context.vibraTokens.textSecondary,
+                      ),
+                      filled: true,
+                      fillColor: context.vibraTokens.surface,
+                      contentPadding: EdgeInsets.symmetric(vertical: 0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: context.vibraTokens.borderDefault,
                         ),
-                        prefixIcon: Icon(
-                          Icons.search_rounded,
-                          color: context.vibraTokens.textSecondary,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: context.vibraTokens.borderDefault,
                         ),
-                        filled: true,
-                        fillColor: context.vibraTokens.surfaceElevated
-                            .withValues(alpha: 0.7),
-                        contentPadding: EdgeInsets.symmetric(vertical: 0),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: context.vibraTokens.borderDefault.withValues(
-                              alpha: 0.5,
-                            ),
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: context.vibraTokens.borderDefault.withValues(
-                              alpha: 0.5,
-                            ),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: context.vibraTokens.accentPrimary,
-                            width: 1.5,
-                          ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: context.vibraTokens.accentPrimary,
+                          width: 1.5,
                         ),
                       ),
                     ),
@@ -324,16 +361,37 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                 ),
               ),
               Expanded(
-                child: filteredFriends.isEmpty
+                child: friendsLoading
+                    ? const VibraLoadingView()
+                    : friendsFailed
+                    ? _buildEmptyState(
+                        icon: Icons.cloud_off_rounded,
+                        title: AppLocalizations.of(context)!.friendsTitle,
+                        subtitle: AppLocalizations.of(
+                          context,
+                        )!.friendsLoadError,
+                        action: FilledButton.tonalIcon(
+                          onPressed: () {
+                            ref.invalidate(publicConnectionProfilesProvider);
+                            ref.invalidate(publicFriendsProvider);
+                          },
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: Text(
+                            AppLocalizations.of(context)!.commonRetry,
+                          ),
+                        ),
+                      )
+                    : filteredFriends.isEmpty
                     ? _buildEmptyState(
                         icon: Icons.people_outline_rounded,
-                        title: 'Nessun amico trovato',
-                        subtitle:
-                            'Esplora i profili affini per inviare richieste di amicizia e condividere eventi!',
+                        title: AppLocalizations.of(context)!.friendsNoneFound,
+                        subtitle: AppLocalizations.of(context)!.friendsFindBody,
                         action: FilledButton.tonalIcon(
                           onPressed: () => context.push('/social'),
                           icon: Icon(Icons.explore_rounded),
-                          label: Text('Trova Persone'),
+                          label: Text(
+                            AppLocalizations.of(context)!.friendsFindPeople,
+                          ),
                         ),
                       )
                     : ListView.builder(
@@ -351,6 +409,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton.filledTonal(
+                                  tooltip: AppLocalizations.of(
+                                    context,
+                                  )!.socialMessageAction,
                                   onPressed: () {
                                     context.push(
                                       '/chat',
@@ -397,7 +458,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                                           ),
                                           SizedBox(width: 8),
                                           Text(
-                                            'Rimuovi dagli amici',
+                                            AppLocalizations.of(
+                                              context,
+                                            )!.friendsRemoveTitle,
                                             style: TextStyle(
                                               color: context.vibraTokens.error,
                                             ),
@@ -420,9 +483,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
           pendingReceived.isEmpty
               ? _buildEmptyState(
                   icon: Icons.inbox_rounded,
-                  title: 'Nessuna richiesta ricevuta',
-                  subtitle:
-                      'Quando qualcuno ti invierà una richiesta di amicizia la troverai qui.',
+                  title: AppLocalizations.of(context)!.friendsNoReceived,
+                  subtitle: AppLocalizations.of(context)!.friendsNoReceivedBody,
                 )
               : ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -439,7 +501,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                     final displayName =
                         senderUser?.user.displayName ??
                         senderUser?.user.username ??
-                        'Utente Vibra';
+                        AppLocalizations.of(context)!.friendsVibraUser;
 
                     return Container(
                       margin: EdgeInsets.only(bottom: 8),
@@ -475,7 +537,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                           ),
                         ),
                         subtitle: Text(
-                          'Vuole connettersi con te',
+                          AppLocalizations.of(context)!.friendsWantsToConnect,
                           style: TextStyle(
                             color: context.vibraTokens.textSecondary,
                             fontSize: 12,
@@ -485,45 +547,52 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton.filled(
+                              tooltip: AppLocalizations.of(
+                                context,
+                              )!.commonReject,
                               iconSize: 18,
                               style: IconButton.styleFrom(
                                 backgroundColor: context.vibraTokens.error
                                     .withValues(alpha: 0.15),
                               ),
-                              onPressed: () async {
-                                await ref
-                                    .read(pendingFriendshipsProvider.notifier)
-                                    .rejectFriendRequest(request.id);
-                              },
+                              onPressed: _updatingRequests.contains(request.id)
+                                  ? null
+                                  : () => _updateRequest(
+                                      request.id,
+                                      () => ref
+                                          .read(
+                                            pendingFriendshipsProvider.notifier,
+                                          )
+                                          .rejectFriendRequest(request.id),
+                                    ),
                               icon: Icon(
                                 Icons.close_rounded,
                                 color: context.vibraTokens.error,
                               ),
                             ),
                             SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: context.vibraTokens.accentPrimary
-                                        .withValues(alpha: 0.4),
-                                    blurRadius: 8,
-                                    spreadRadius: 1,
-                                  ),
-                                ],
-                              ),
+                            SizedBox(
                               child: IconButton.filled(
+                                tooltip: AppLocalizations.of(
+                                  context,
+                                )!.chatAcceptFriendship,
                                 iconSize: 18,
                                 style: IconButton.styleFrom(
                                   backgroundColor:
-                                      context.vibraTokens.accentPrimary,
+                                      context.vibraTokens.accentFill,
                                 ),
-                                onPressed: () async {
-                                  await ref
-                                      .read(pendingFriendshipsProvider.notifier)
-                                      .acceptFriendRequest(request.id);
-                                },
+                                onPressed:
+                                    _updatingRequests.contains(request.id)
+                                    ? null
+                                    : () => _updateRequest(
+                                        request.id,
+                                        () => ref
+                                            .read(
+                                              pendingFriendshipsProvider
+                                                  .notifier,
+                                            )
+                                            .acceptFriendRequest(request.id),
+                                      ),
                                 icon: Icon(
                                   Icons.check_rounded,
                                   color: context.vibraTokens.onAccent,
@@ -541,9 +610,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
           pendingSent.isEmpty
               ? _buildEmptyState(
                   icon: Icons.send_rounded,
-                  title: 'Nessuna richiesta inviata',
-                  subtitle:
-                      'Le richieste di amicizia che invierai agli altri utenti in attesa di risposta appariranno qui.',
+                  title: AppLocalizations.of(context)!.friendsNoSent,
+                  subtitle: AppLocalizations.of(context)!.friendsNoSentBody,
                 )
               : ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -560,7 +628,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                     final displayName =
                         targetUser?.user.displayName ??
                         targetUser?.user.username ??
-                        'Utente Vibra';
+                        AppLocalizations.of(context)!.friendsVibraUser;
 
                     return Container(
                       margin: EdgeInsets.only(bottom: 8),
@@ -596,18 +664,21 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                           ),
                         ),
                         subtitle: Text(
-                          'Richiesta in attesa di risposta',
+                          AppLocalizations.of(context)!.friendsWaitingForReply,
                           style: TextStyle(
                             color: context.vibraTokens.textSecondary,
                             fontSize: 12,
                           ),
                         ),
                         trailing: OutlinedButton(
-                          onPressed: () async {
-                            await ref
-                                .read(pendingFriendshipsProvider.notifier)
-                                .cancelFriendRequest(request.id);
-                          },
+                          onPressed: _updatingRequests.contains(request.id)
+                              ? null
+                              : () => _updateRequest(
+                                  request.id,
+                                  () => ref
+                                      .read(pendingFriendshipsProvider.notifier)
+                                      .cancelFriendRequest(request.id),
+                                ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: context.vibraTokens.textSecondary,
                             side: BorderSide(
@@ -620,7 +691,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                             minimumSize: Size(0, 32),
                           ),
                           child: Text(
-                            'Annulla',
+                            AppLocalizations.of(context)!.commonCancel,
                             style: TextStyle(fontSize: 12),
                           ),
                         ),

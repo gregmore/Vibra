@@ -1,18 +1,19 @@
+import '../../widgets/whos_going_section.dart';
+import '../../providers/event_social_providers.dart';
+import '../../../core/constants/app_constants.dart';
 import 'dart:async';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:translator/translator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/vibra_spacing.dart';
+import '../../../core/theme/vibra_text_styles.dart';
 import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../../domain/entities/event.dart';
 import '../../../domain/usecases/events_usecases.dart';
@@ -21,7 +22,12 @@ import '../../providers/app_synchronization_provider.dart';
 import '../../providers/usecase_providers.dart';
 import '../../providers/core_providers.dart';
 import 'package:vibra/l10n/app_localizations.dart';
+import '../../widgets/common/vibra_button.dart';
+import '../../widgets/common/vibra_event_meta.dart';
+import '../../widgets/common/vibra_image.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
+import '../../widgets/common/vibra_surface.dart';
+import '../../widgets/vibra_map_beacon.dart';
 import '../../widgets/common/vibra_openstreetmap_layer.dart';
 import '../../widgets/common/vibra_section_header.dart';
 import '../../widgets/common/vibra_state_views.dart';
@@ -160,8 +166,14 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       final message = switch (status) {
         'going' => l10n.eventDetailAttendanceConfirmed,
         'maybe' => l10n.eventDetailAttendanceMaybe,
+        'interested' => l10n.eventDetailAttendanceInterested,
+        'none' => l10n.eventDetailAttendanceRemoved,
         _ => l10n.eventDetailAttendanceNotGoing,
       };
+      // Own state and the visible list both changed.
+      ref.invalidate(myAttendanceProvider);
+      ref.invalidate(eventSocialProvider);
+      ref.invalidate(eventCatalogueIdProvider);
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(message)));
@@ -183,13 +195,14 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     final t = context.vibraTokens;
     final selected = _attendanceStatus == status;
     return OutlinedButton.styleFrom(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
-      minimumSize: const Size(0, 48),
-      backgroundColor: selected ? t.accentSoft : Colors.transparent,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      minimumSize: const Size(0, VibraSpacing.buttonHeightCompact + 4),
+      backgroundColor: selected ? t.accentSoft : t.surface,
       foregroundColor: t.textPrimary,
+      shape: RoundedRectangleBorder(borderRadius: VibraSpacing.borderMedium),
       side: BorderSide(
-        color: selected ? t.accentPrimary : t.borderStrong,
-        width: selected ? 2 : 1,
+        color: selected ? t.accentPrimary : t.borderDefault,
+        width: selected ? 1.5 : 1,
       ),
     );
   }
@@ -208,7 +221,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (selected) ...[
-          Icon(Icons.check_rounded, size: 16, color: t.textPrimary),
+          Icon(Icons.check_rounded, size: 16, color: t.accentPrimary),
           const SizedBox(width: 3),
         ],
         Flexible(
@@ -217,7 +230,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             maxLines: 2,
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            style: VibraTextStyles.labelMedium.copyWith(color: t.textPrimary),
           ),
         ),
       ],
@@ -235,7 +248,10 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         child: OutlinedButton(
           style: _attendanceButtonStyle(status),
           onPressed: !_loadingAttendance && _savingAttendanceStatus == null
-              ? () => _setAttendance(event, status)
+              ? () => _setAttendance(
+                  event,
+                  _attendanceStatus == status ? 'none' : status,
+                )
               : null,
           child: _attendanceButtonChild(label, status),
         ),
@@ -249,7 +265,6 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     final displayEvent =
         widget.event ?? (featured.isNotEmpty ? featured.first : null);
     final users = ref.watch(matchedUsersProvider);
-    final theme = Theme.of(context);
     final t = context.vibraTokens;
     final l10n = AppLocalizations.of(context)!;
 
@@ -268,331 +283,398 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     _ensureAttendanceLoaded(displayEvent);
     final coordinates = eventCoordinates(displayEvent);
 
+    final status = vibraEventStatus(displayEvent);
+    final date = VibraEventDate(context, displayEvent.eventDate);
+    final price = _priceRange(context, displayEvent);
+    final place = eventPlaceLabel(displayEvent);
+    final ticketsBlocked =
+        status == VibraEventStatus.cancelled ||
+        status == VibraEventStatus.offSale;
+    final heroHeight = (MediaQuery.sizeOf(context).height * .42).clamp(
+      260.0,
+      400.0,
+    );
+
     return VibraPageScaffold(
+      useGradient: false,
       child: ListView(
-        padding: const EdgeInsets.only(bottom: 32),
+        padding: const EdgeInsets.only(bottom: VibraSpacing.huge),
         children: [
-          Stack(
-            children: [
-              SizedBox(
-                height: 320,
-                width: double.infinity,
-                child: displayEvent.imageUrl?.trim().isNotEmpty == true
-                    ? CachedNetworkImage(
-                        imageUrl: displayEvent.imageUrl!,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Shimmer.fromColors(
-                          baseColor: t.shimmerBase,
-                          highlightColor: t.shimmerHighlight,
-                          child: Container(color: t.surfaceElevated),
-                        ),
-                        errorWidget: (context, url, error) =>
-                            Container(color: t.surfaceMuted),
-                      )
-                    : ColoredBox(
-                        color: t.surfaceMuted,
-                        child: Icon(
-                          Icons.music_note_rounded,
-                          size: 64,
-                          color: t.textSecondary,
-                        ),
-                      ),
-              ),
-              Positioned.fill(child: ColoredBox(color: t.imageScrim)),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  padding: EdgeInsets.fromLTRB(
-                    VibraSpacing.pagePadding,
-                    40,
-                    VibraSpacing.pagePadding,
-                    20,
-                  ),
-                  decoration: BoxDecoration(color: t.imageOverlay),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        displayEvent.name,
-                        style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: t.onImage,
-                            ),
-                      ),
-                      if (displayEvent.priceMin != null) ...[
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: t.accentPrimary,
-                            borderRadius: VibraSpacing.borderSmall,
-                            border: Border.all(color: t.onAccent),
-                          ),
-                          child: Text(
-                            displayEvent.priceMax != null &&
-                                    displayEvent.priceMax !=
-                                        displayEvent.priceMin
-                                ? '€${displayEvent.priceMin!.toStringAsFixed(2)} - €${displayEvent.priceMax!.toStringAsFixed(2)}'
-                                : '€${displayEvent.priceMin!.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              color: t.onAccent,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 8),
-                      Text(
-                        [
-                          if (eventPlaceLabel(displayEvent).isNotEmpty)
-                            eventPlaceLabel(displayEvent),
-                          DateFormat.yMMMd(
-                            Localizations.localeOf(context).toString(),
-                          ).format(displayEvent.eventDate.toLocal()),
-                        ].join(' · '),
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: t.onImageMuted,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 10,
-                left: 12,
-                child: IconButton.filledTonal(
-                  tooltip: 'Torna agli eventi',
-                  onPressed: () {
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      context.go('/explore');
-                    }
-                  },
-                  icon: const Icon(Icons.arrow_back_rounded),
-                ),
-              ),
-            ],
-          ).animate().fadeIn(duration: 400.ms),
-          if (displayEvent.priceMin != null || displayEvent.priceMax != null)
-            Padding(
-                  padding: EdgeInsets.all(VibraSpacing.pagePadding),
-                  child: Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: [
-                      _InfoPill(
-                        label: 'Prezzo',
-                        value:
-                            (displayEvent.priceMin != null &&
-                                displayEvent.priceMax != null)
-                            ? (displayEvent.priceMin == displayEvent.priceMax
-                                  ? '${displayEvent.priceMin!.toStringAsFixed(0)}€'
-                                  : '${displayEvent.priceMin!.toStringAsFixed(0)}€ - ${displayEvent.priceMax!.toStringAsFixed(0)}€')
-                            : '${(displayEvent.priceMin ?? displayEvent.priceMax)!.toStringAsFixed(0)}€',
-                      ),
-                    ],
-                  ),
-                )
-                .animate()
-                .fadeIn(delay: 100.ms, duration: 400.ms)
-                .slideY(begin: 0.05, end: 0),
-          if (_cleanDescription(displayEvent.description ?? '').isNotEmpty)
-            Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: VibraSpacing.pagePadding,
-                  ),
-                  child: _TranslatedDescription(
-                    text: _cleanDescription(displayEvent.description ?? ''),
-                  ),
-                )
-                .animate()
-                .fadeIn(delay: 200.ms, duration: 400.ms)
-                .slideY(begin: 0.05, end: 0),
-          const SizedBox(height: 20),
-          VibraSectionHeader(
-            title: AppLocalizations.of(context)!.eventDetailMapTitle,
-            subtitle: AppLocalizations.of(context)!.eventDetailMapSub,
-          ),
-          if (coordinates != null)
-            Container(
-                  height: 180,
-                  margin: EdgeInsets.fromLTRB(
-                    VibraSpacing.pagePadding,
-                    8,
-                    VibraSpacing.pagePadding,
-                    12,
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    borderRadius: VibraSpacing.borderMedium,
-                    border: Border.all(color: t.borderStrong),
-                  ),
-                  child: FlutterMap(
-                    options: MapOptions(
-                      initialCenter: LatLng(
-                        coordinates.latitude,
-                        coordinates.longitude,
-                      ),
-                      initialZoom: 14.0,
-                      interactionOptions: const InteractionOptions(
-                        flags: InteractiveFlag.none,
-                      ),
-                    ),
-                    children: [
-                      const VibraOpenStreetMapTileLayer(),
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: LatLng(
-                              coordinates.latitude,
-                              coordinates.longitude,
-                            ),
-                            width: 40,
-                            height: 40,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: t.accentPrimary,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: t.onAccent),
-                                boxShadow: [t.cardShadow],
-                              ),
-                              child: Icon(
-                                Icons.location_on_rounded,
-                                color: t.onAccent,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                )
-                .animate()
-                .fadeIn(delay: 300.ms, duration: 450.ms)
-                .scaleXY(begin: 0.98, end: 1.0),
-          if (coordinates == null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Text(
-                l10n.eventLocationUnknown,
-                style: TextStyle(color: t.textSecondary),
-              ),
-            ),
-          if (eventDirectionsUri(displayEvent) != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: OutlinedButton.icon(
-                onPressed: () => _openDirections(displayEvent),
-                icon: const Icon(Icons.directions_rounded),
-                label: Text(l10n.eventDirections),
-              ),
-            ),
-          if (users.isNotEmpty)
-            VibraSectionHeader(
-              title: l10n.socialDiscoverUsers,
-              subtitle: l10n.socialHighCompatibility,
-            ),
-          ...users.asMap().entries.map((entry) {
-            final index = entry.key;
-            final user = entry.value;
-            return VibraUserMatchCard(
-                  user: user,
-                  onTap: () =>
-                      context.push('/user-profile', extra: user.user.id),
-                  trailing: FilledButton.tonal(
-                    onPressed: () => context.push(
-                      '/chat',
-                      extra: {
-                        'otherUserId': user.user.id,
-                        'otherDisplayName':
-                            user.user.displayName ?? user.user.username,
-                      },
-                    ),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: t.accentPrimary,
-                      foregroundColor: t.onAccent,
-                    ),
-                    child: Text(l10n.eventDetailChat),
-                  ),
-                )
-                .animate()
-                .fadeIn(delay: (400 + index * 100).ms, duration: 400.ms)
-                .slideY(begin: 0.05, end: 0);
-          }),
-          Padding(
-            padding: EdgeInsets.all(VibraSpacing.pagePadding),
-            child: Row(
+          // ── Hero artwork ────────────────────────────────────
+          SizedBox(
+            height: heroHeight,
+            child: Stack(
+              fit: StackFit.expand,
               children: [
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: t.accentPrimary,
-                      foregroundColor: t.onAccent,
-                      elevation: 0,
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: VibraSpacing.md,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: VibraSpacing.borderXL,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        VibraNetworkImage(
+                          url: displayEvent.imageUrl,
+                          cacheWidth: 520,
+                        ),
+                        VibraImageScrim(color: t.imageOverlay, start: .45),
+                      ],
                     ),
-                    onPressed: _openingTickets
-                        ? null
-                        : () => _openTickets(displayEvent),
-                    child: _openingTickets
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(
-                            const {
-                                  'canceled',
-                                  'cancelled',
-                                }.contains(displayEvent.status)
-                                ? l10n.eventCancelled
-                                : displayEvent.status == 'offsale'
-                                ? l10n.eventTicketsOffsale
-                                : l10n.eventDetailBuyTickets,
-                          ),
+                  ),
+                ),
+                Positioned(
+                  top: VibraSpacing.sm,
+                  left: VibraSpacing.lg + VibraSpacing.xs,
+                  child: _HeroIconButton(
+                    tooltip: AppLocalizations.of(context)!.eventBackToEvents,
+                    icon: Icons.arrow_back_rounded,
+                    onPressed: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go('/explore');
+                      }
+                    },
+                  ),
+                ),
+                Positioned(
+                  top: VibraSpacing.sm,
+                  right: VibraSpacing.lg + VibraSpacing.xs,
+                  child: _HeroIconButton(
+                    tooltip: l10n.eventCopyDetails,
+                    icon: Icons.ios_share_rounded,
+                    onPressed: () => _copyDetails(displayEvent),
+                  ),
+                ),
+                Positioned(
+                  left: VibraSpacing.xxl + VibraSpacing.xs,
+                  right: VibraSpacing.xxl + VibraSpacing.xs,
+                  bottom: VibraSpacing.xl,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      _DateBlock(date: date),
+                      const Spacer(),
+                      if (status != VibraEventStatus.upcoming)
+                        VibraEventStatusBadge(status: status),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
+
+          // ── Title block ─────────────────────────────────────
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: VibraSpacing.pagePadding),
+            padding: const EdgeInsets.fromLTRB(
+              VibraSpacing.pagePadding,
+              VibraSpacing.xxl,
+              VibraSpacing.pagePadding,
+              0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (displayEvent.artistName?.trim().isNotEmpty == true &&
+                    displayEvent.artistName != displayEvent.name) ...[
+                  Text(
+                    displayEvent.artistName!.toUpperCase(),
+                    style: VibraTextStyles.labelSmall.copyWith(
+                      color: t.accentPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: VibraSpacing.sm),
+                ],
+                Semantics(
+                  header: true,
+                  child: Text(
+                    displayEvent.name,
+                    style: VibraTextStyles.headlineLarge.copyWith(
+                      color: t.textPrimary,
+                      decoration: status == VibraEventStatus.cancelled
+                          ? TextDecoration.lineThrough
+                          : null,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Key facts ───────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              VibraSpacing.pagePadding,
+              VibraSpacing.xl,
+              VibraSpacing.pagePadding,
+              0,
+            ),
+            child: VibraSurface(
+              padding: const EdgeInsets.symmetric(
+                horizontal: VibraSpacing.lg,
+                vertical: VibraSpacing.xs,
+              ),
+              child: Column(
+                children: [
+                  _FactRow(
+                    icon: Icons.calendar_today_rounded,
+                    title: DateFormat.yMMMMEEEEd(
+                      Localizations.localeOf(context).toString(),
+                    ).format(displayEvent.eventDate.toLocal()),
+                    subtitle: date.time,
+                  ),
+                  if (place.isNotEmpty || coordinates == null) ...[
+                    Divider(color: t.borderDefault, height: 1),
+                    _FactRow(
+                      icon: Icons.place_outlined,
+                      title:
+                          displayEvent.venueName ??
+                          (place.isNotEmpty ? place : l10n.eventVenueTBA),
+                      subtitle: coordinates == null
+                          ? l10n.eventLocationUnknown
+                          : [displayEvent.city, displayEvent.country]
+                                .whereType<String>()
+                                .where((s) => s.isNotEmpty)
+                                .join(', '),
+                    ),
+                  ],
+                  if (price != null) ...[
+                    Divider(color: t.borderDefault, height: 1),
+                    _FactRow(
+                      icon: Icons.confirmation_number_outlined,
+                      title: price,
+                      subtitle: l10n.eventPrice,
+                    ),
+                  ],
+                  // Published classification genres, exactly as given.
+                  if (displayEvent.genres.isNotEmpty) ...[
+                    Divider(color: t.borderDefault, height: 1),
+                    _FactRow(
+                      icon: Icons.graphic_eq_rounded,
+                      title: displayEvent.genres.take(3).join(' · '),
+                      subtitle: l10n.concertFilterGenre,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+
+          // ── Primary action ──────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              VibraSpacing.pagePadding,
+              VibraSpacing.xl,
+              VibraSpacing.pagePadding,
+              VibraSpacing.md,
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              height: VibraSpacing.buttonHeight,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ticketsBlocked
+                      ? t.surfaceMuted
+                      : t.accentFill,
+                  foregroundColor: ticketsBlocked
+                      ? t.textSecondary
+                      : t.onAccent,
+                ),
+                onPressed: _openingTickets
+                    ? null
+                    : () => _openTickets(displayEvent),
+                icon: _openingTickets
+                    ? const SizedBox.shrink()
+                    : Icon(
+                        ticketsBlocked
+                            ? Icons.block_rounded
+                            : Icons.confirmation_number_rounded,
+                        size: VibraSpacing.iconMd,
+                      ),
+                label: _openingTickets
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: t.onAccent,
+                        ),
+                      )
+                    : Text(
+                        const {
+                              'canceled',
+                              'cancelled',
+                            }.contains(displayEvent.status)
+                            ? l10n.eventCancelled
+                            : displayEvent.status == 'offsale'
+                            ? l10n.eventTicketsOffsale
+                            : l10n.eventDetailBuyTickets,
+                      ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: VibraSpacing.pageHorizontal,
             child: Row(
               children: [
+                _attendanceButton(
+                  displayEvent,
+                  l10n.eventDetailInterested,
+                  'interested',
+                ),
+                const SizedBox(width: VibraSpacing.sm),
+                _attendanceButton(displayEvent, l10n.eventDetailMaybe, 'maybe'),
+                const SizedBox(width: VibraSpacing.sm),
                 _attendanceButton(
                   displayEvent,
                   l10n.eventDetailAttend,
                   'going',
                 ),
-                const SizedBox(width: 6),
-                _attendanceButton(displayEvent, l10n.eventDetailMaybe, 'maybe'),
-                const SizedBox(width: 6),
-                _attendanceButton(
-                  displayEvent,
-                  l10n.eventDetailNotGoing,
-                  'not_going',
-                ),
-                const SizedBox(width: 4),
-                IconButton(
-                  tooltip: l10n.eventCopyDetails,
-                  onPressed: () => _copyDetails(displayEvent),
-                  icon: const Icon(Icons.share_rounded, size: 20),
-                ),
               ],
+            ),
+          ),
+
+          // ── Who's going? ────────────────────────────────────
+          if (AppConstants.spotifyEnabled)
+            WhosGoingSection(event: displayEvent),
+
+          // ── About ───────────────────────────────────────────
+          if (_cleanDescription(displayEvent.description ?? '').isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                VibraSpacing.pagePadding,
+                VibraSpacing.sectionGap,
+                VibraSpacing.pagePadding,
+                0,
+              ),
+              child: _TranslatedDescription(
+                text: _cleanDescription(displayEvent.description ?? ''),
+              ),
+            ),
+
+          // ── Location ────────────────────────────────────────
+          if (coordinates != null)
+            VibraSectionHeader(
+              title: AppLocalizations.of(context)!.eventDetailMapTitle,
+              subtitle: AppLocalizations.of(context)!.eventDetailMapSub,
+              padding: const EdgeInsets.fromLTRB(
+                VibraSpacing.pagePadding,
+                VibraSpacing.sectionGap,
+                VibraSpacing.pagePadding,
+                VibraSpacing.md,
+              ),
+            ),
+          if (coordinates != null)
+            Container(
+              height: 200,
+              margin: const EdgeInsets.fromLTRB(
+                VibraSpacing.pagePadding,
+                0,
+                VibraSpacing.pagePadding,
+                VibraSpacing.md,
+              ),
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                borderRadius: VibraSpacing.borderLarge,
+                border: Border.all(color: t.borderDefault),
+              ),
+              child: FlutterMap(
+                options: MapOptions(
+                  onTap: (_, _) => _openDirections(displayEvent),
+                  initialCenter: LatLng(
+                    coordinates.latitude,
+                    coordinates.longitude,
+                  ),
+                  initialZoom: 14.0,
+                  interactionOptions: const InteractionOptions(
+                    flags: InteractiveFlag.none,
+                  ),
+                ),
+                children: [
+                  const VibraOpenStreetMapTileLayer(),
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: LatLng(
+                          coordinates.latitude,
+                          coordinates.longitude,
+                        ),
+                        width: 58,
+                        height: 58,
+                        child: const IgnorePointer(
+                          child: VibraMapBeacon(selected: true, pulse: false),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const VibraOpenStreetMapAttribution(),
+                ],
+              ),
+            ),
+          if (coordinates == null && eventDirectionsUri(displayEvent) != null)
+            const SizedBox(height: VibraSpacing.xl),
+          if (eventDirectionsUri(displayEvent) != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: VibraSpacing.pagePadding,
+              ),
+              child: VibraButton(
+                label: l10n.eventDirections,
+                onPressed: () => _openDirections(displayEvent),
+                tone: VibraButtonTone.outline,
+                size: VibraButtonSize.compact,
+                leadingIcon: Icons.directions_rounded,
+                expanded: true,
+              ),
+            ),
+
+          // ── People ──────────────────────────────────────────
+          if (users.isNotEmpty)
+            VibraSectionHeader(
+              title: l10n.socialDiscoverUsers,
+              subtitle: AppConstants.spotifyEnabled
+                  ? l10n.socialHighCompatibility
+                  : l10n.launchCommunitySubtitle,
+              padding: const EdgeInsets.fromLTRB(
+                VibraSpacing.pagePadding,
+                VibraSpacing.sectionGap,
+                VibraSpacing.pagePadding,
+                VibraSpacing.sm,
+              ),
+            ),
+          ...users.map(
+            (user) => VibraUserMatchCard(
+              user: user,
+              onTap: () => context.push('/user-profile', extra: user.user.id),
+              trailing: VibraIconButton(
+                icon: Icons.chat_bubble_outline_rounded,
+                tooltip: l10n.eventDetailChat,
+                tone: VibraButtonTone.signal,
+                size: 44,
+                onPressed: () => context.push(
+                  '/chat',
+                  extra: {
+                    'otherUserId': user.user.id,
+                    'otherDisplayName':
+                        user.user.displayName ?? user.user.username,
+                  },
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  String? _priceRange(BuildContext context, Event event) {
+    final min = vibraFormatPrice(context, event, event.priceMin);
+    final max = vibraFormatPrice(context, event, event.priceMax);
+    if (min == null && max == null) return null;
+    if (min != null && max != null && min != max) return '$min – $max';
+    return min ?? max;
   }
 
   String _cleanDescription(String text) {
@@ -603,40 +685,108 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   }
 }
 
-class _InfoPill extends StatelessWidget {
-  const _InfoPill({required this.label, required this.value});
+class _HeroIconButton extends StatelessWidget {
+  const _HeroIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
 
-  final String label;
-  final String value;
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final t = context.vibraTokens;
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: VibraSpacing.pagePadding,
-        vertical: 12,
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      style: IconButton.styleFrom(
+        backgroundColor: t.imageOverlay,
+        foregroundColor: t.onImage,
       ),
-      decoration: BoxDecoration(
-        color: t.surfaceElevated,
-        borderRadius: VibraSpacing.borderMedium,
-        border: Border.all(color: t.borderDefault),
-        boxShadow: [t.cardShadow],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      icon: Icon(icon, size: VibraSpacing.iconMd),
+    );
+  }
+}
+
+class _DateBlock extends StatelessWidget {
+  const _DateBlock({required this.date});
+
+  final VibraEventDate date;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.vibraTokens;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          date.day,
+          style: VibraTextStyles.displayMedium.copyWith(
+            color: t.onImage,
+            height: 1,
+          ),
+        ),
+        Text(
+          '${date.month} · ${date.weekday.toUpperCase()}',
+          style: VibraTextStyles.labelSmall.copyWith(color: t.onImageMuted),
+        ),
+      ],
+    );
+  }
+}
+
+class _FactRow extends StatelessWidget {
+  const _FactRow({required this.icon, required this.title, this.subtitle});
+
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.vibraTokens;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: VibraSpacing.md),
+      child: Row(
         children: [
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: t.surfaceMuted,
+              borderRadius: VibraSpacing.borderSmall,
+            ),
+            child: Icon(
+              icon,
+              size: VibraSpacing.iconMd,
               color: t.accentPrimary,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: theme.textTheme.titleSmall?.copyWith(color: t.textPrimary),
+          const SizedBox(width: VibraSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: VibraTextStyles.titleSmall.copyWith(
+                    color: t.textPrimary,
+                  ),
+                ),
+                if (subtitle != null && subtitle!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    style: VibraTextStyles.bodySmall.copyWith(
+                      color: t.textSecondary,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ],
       ),
@@ -659,6 +809,7 @@ class _TranslatedDescriptionState
   bool _isLoading = true;
 
   String? _targetLang;
+  int _translationGeneration = 0;
 
   @override
   void didChangeDependencies() {
@@ -682,20 +833,23 @@ class _TranslatedDescriptionState
     if (_targetLang == null) return;
     setState(() => _isLoading = true);
 
+    final generation = ++_translationGeneration;
+    final sourceText = widget.text;
+    final targetLanguage = _targetLang!;
     try {
       final translator = GoogleTranslator();
       final translation = await translator.translate(
-        widget.text,
-        to: _targetLang!,
+        sourceText,
+        to: targetLanguage,
       );
-      if (mounted) {
+      if (mounted && generation == _translationGeneration) {
         setState(() {
           _translatedText = translation.text;
           _isLoading = false;
         });
       }
     } catch (e) {
-      if (mounted) {
+      if (mounted && generation == _translationGeneration) {
         setState(() {
           _translatedText = widget.text;
           _isLoading = false;
@@ -723,7 +877,10 @@ class _TranslatedDescriptionState
 
     return Text(
       _translatedText ?? widget.text,
-      style: theme.textTheme.bodyLarge?.copyWith(color: t.textPrimary),
+      style: theme.textTheme.bodyLarge?.copyWith(
+        color: t.textSecondary,
+        height: 1.6,
+      ),
     );
   }
 }

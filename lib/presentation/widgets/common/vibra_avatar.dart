@@ -1,3 +1,4 @@
+import 'package:vibra/l10n/app_localizations.dart';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -50,9 +51,12 @@ class VibraAvatar extends StatelessWidget {
       child: Text(
         _initials,
         style: VibraTextStyles.titleMedium.copyWith(
-          color: t.onAccent,
-          fontSize: radius * 0.62,
+          color: Colors.white,
+          fontSize: radius * 0.6,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0,
         ),
+        textScaler: TextScaler.noScaling,
       ),
     );
 
@@ -77,34 +81,39 @@ class VibraAvatar extends StatelessWidget {
 
     return Semantics(
       image: true,
-      label: name ?? 'Avatar Vibra',
+      label: name ?? AppLocalizations.of(context)!.commonAvatar,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           Container(
             width: diameter,
             height: diameter,
-            padding: const EdgeInsets.all(2),
+            padding: EdgeInsets.all(signalRing ? 2.5 : 0),
             decoration: BoxDecoration(
-              color: signalRing ? t.accentPrimary : t.surface,
               shape: BoxShape.circle,
-              border: Border.all(
-                color: signalRing ? t.accentPrimary : t.borderDefault,
-              ),
+              gradient: signalRing ? t.primaryGradient : null,
+              color: signalRing ? null : t.surfaceMuted,
             ),
-            child: ClipOval(child: content),
+            child: Container(
+              padding: EdgeInsets.all(signalRing ? 2 : 0),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: t.backgroundPrimary,
+              ),
+              child: ClipOval(child: content),
+            ),
           ),
           if (active)
             Positioned(
               right: 0,
               bottom: 0,
               child: Container(
-                width: radius * 0.42,
-                height: radius * 0.42,
+                width: (radius * 0.5).clamp(10, 16),
+                height: (radius * 0.5).clamp(10, 16),
                 decoration: BoxDecoration(
                   color: t.success,
                   shape: BoxShape.circle,
-                  border: Border.all(color: t.surface, width: 2),
+                  border: Border.all(color: t.backgroundPrimary, width: 2.5),
                 ),
               ),
             ),

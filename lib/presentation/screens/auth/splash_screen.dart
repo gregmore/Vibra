@@ -1,106 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/constants/app_constants.dart';
-import '../../../core/theme/vibra_text_styles.dart';
-import '../../../core/theme/vibra_theme_tokens.dart';
+import '../../../core/theme/vibra_colors.dart';
 import '../../widgets/common/vibra_logo.dart';
 
+/// Brand hand-off from the native launch screen.
+///
+/// Pixel-matches the native splash (pure ink canvas, white VIBRA mark at the
+/// same size and position) so the switch from native to Flutter is
+/// invisible. Routing starts on the first frame — there is no artificial
+/// delay; the mark's entrance continues on the Welcome screen.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  /// Logical size of the mark on the native launch screen
+  /// (768 px artwork at 4x with the mark occupying 300 px → 75 dp).
+  static const double nativeMarkWidth = 75;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..repeat(reverse: true);
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) context.go('/welcome');
     });
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final t = context.vibraTokens;
-    return Scaffold(
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [t.backgroundPrimary, t.backgroundSecondary],
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: 0.92 + (_controller.value * 0.12),
-                      child: Container(
-                        width: 110,
-                        height: 110,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: t.surfaceElevated,
-                          border: Border.all(color: t.borderDefault),
-                          boxShadow: [t.elevatedShadow],
-                        ),
-                        child: const Center(
-                          child: VibraLogo(width: 80, height: 80),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 28),
-                Text(
-                  AppConstants.appName,
-                  style: VibraTextStyles.displayMedium.copyWith(
-                    color: t.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  AppConstants.appSlogan,
-                  textAlign: TextAlign.center,
-                  style: VibraTextStyles.bodyLarge.copyWith(
-                    color: t.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 42),
-                SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.8,
-                    valueColor: AlwaysStoppedAnimation<Color>(t.accentPrimary),
-                  ),
-                ),
-              ],
-            ),
-          ),
+    return const Scaffold(
+      backgroundColor: VibraPalette.ink950,
+      body: Center(
+        child: VibraLogo(
+          width: SplashScreen.nativeMarkWidth,
+          height: SplashScreen.nativeMarkWidth / VibraLogo.aspectRatio,
+          color: VibraPalette.white,
         ),
       ),
     );

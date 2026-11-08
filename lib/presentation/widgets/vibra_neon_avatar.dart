@@ -1,3 +1,4 @@
+import 'package:vibra/l10n/app_localizations.dart';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -53,9 +54,12 @@ class VibraNeonAvatar extends StatelessWidget {
         child: Text(
           _initials(safeName),
           style: VibraTextStyles.titleMedium.copyWith(
-            color: t.onAccent,
-            fontSize: innerRadius * .8,
+            color: Colors.white,
+            fontSize: innerRadius * .7,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0,
           ),
+          textScaler: TextScaler.noScaling,
         ),
       ),
     );
@@ -104,12 +108,20 @@ class VibraNeonAvatar extends StatelessWidget {
         Container(
           width: radius * 2,
           height: radius * 2,
-          padding: const EdgeInsets.all(2),
+          padding: const EdgeInsets.all(2.5),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: ringColor, width: 2),
+            color: score >= .75 ? null : ringColor,
+            gradient: score >= .75 ? t.primaryGradient : null,
           ),
-          child: ClipOval(child: _content(context, innerRadius)),
+          child: Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: t.backgroundPrimary,
+            ),
+            child: ClipOval(child: _content(context, innerRadius)),
+          ),
         ),
         if (isOnline)
           Positioned(
@@ -121,7 +133,7 @@ class VibraNeonAvatar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: t.success,
                 shape: BoxShape.circle,
-                border: Border.all(color: t.surface, width: 2),
+                border: Border.all(color: t.backgroundPrimary, width: 2.5),
               ),
             ),
           ),
@@ -131,8 +143,13 @@ class VibraNeonAvatar extends StatelessWidget {
     return Semantics(
       image: true,
       button: onTap != null,
-      label:
-          '${displayName ?? 'Avatar'}, affinità ${(score * 100).round()} percento${isOnline ? ', online' : ''}',
+      label: [
+        AppLocalizations.of(context)!.commonAvatarAffinity(
+          displayName ?? AppLocalizations.of(context)!.commonAvatar,
+          (score * 100).round(),
+        ),
+        if (isOnline) AppLocalizations.of(context)!.commonOnline,
+      ].join(', '),
       child: Material(
         color: Colors.transparent,
         child: InkResponse(

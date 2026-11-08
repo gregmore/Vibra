@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 
 import '../../../core/constants/app_constants.dart';
-import '../../../core/theme/vibra_text_styles.dart';
+import '../../../core/theme/vibra_motion.dart';
 import '../../../core/theme/vibra_spacing.dart';
+import '../../../core/theme/vibra_text_styles.dart';
 import '../../../core/theme/vibra_theme_tokens.dart';
-import '../../widgets/vibra_pill_button.dart';
+import '../../widgets/common/vibra_auth_backdrop.dart';
+import '../../widgets/common/vibra_button.dart';
 import '../../widgets/common/vibra_logo.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -17,52 +18,44 @@ class WelcomeScreen extends StatefulWidget {
   State<WelcomeScreen> createState() => _WelcomeScreenState();
 }
 
-class _WelcomeScreenState extends State<WelcomeScreen>
-    with SingleTickerProviderStateMixin {
+class _WelcomeScreenState extends State<WelcomeScreen> {
   final PageController _controller = PageController();
   int _page = 0;
 
-  late final AnimationController _orbController;
-
-  List<({IconData icon, String title, String body, Color glowColor})>
-  _getSlides(BuildContext context) {
+  List<({IconData icon, String title, String body})> _getSlides(
+    BuildContext context,
+  ) {
     final l10n = AppLocalizations.of(context)!;
-    final t = context.vibraTokens;
     return [
       (
-        icon: Icons.library_music_rounded,
-        title: l10n.onboardingConnectTitle,
-        body: l10n.onboardingConnectBody,
-        glowColor: t.accentPrimary,
+        icon: Icons.graphic_eq_rounded,
+        title: AppConstants.spotifyEnabled
+            ? l10n.onboardingConnectTitle
+            : l10n.launchSavedTitle,
+        body: AppConstants.spotifyEnabled
+            ? l10n.onboardingConnectBody
+            : l10n.launchSavedBody,
       ),
       (
         icon: Icons.place_rounded,
         title: l10n.onboardingDiscoverTitle,
-        body: l10n.onboardingDiscoverBody,
-        glowColor: t.accentSecondary,
+        body: AppConstants.spotifyEnabled
+            ? l10n.onboardingDiscoverBody
+            : l10n.launchExploreBody,
       ),
       (
         icon: Icons.people_alt_rounded,
         title: l10n.onboardingCommunityTitle,
-        body: l10n.onboardingCommunityBody,
-        glowColor: t.success,
+        body: AppConstants.spotifyEnabled
+            ? l10n.onboardingCommunityBody
+            : l10n.launchCommunityBody,
       ),
     ];
   }
 
   @override
-  void initState() {
-    super.initState();
-    _orbController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 6),
-    )..repeat(reverse: true);
-  }
-
-  @override
   void dispose() {
     _controller.dispose();
-    _orbController.dispose();
     super.dispose();
   }
 
@@ -71,102 +64,48 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     final l10n = AppLocalizations.of(context)!;
     final t = context.vibraTokens;
     final slides = _getSlides(context);
-    final size = MediaQuery.sizeOf(context);
 
     return Scaffold(
       body: Stack(
         children: [
-          // ── Sfondo gradiente ──────────────────────────────────
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [t.backgroundPrimary, t.backgroundSecondary],
-              ),
-            ),
-            child: SizedBox.expand(),
+          const Positioned.fill(
+            child: VibraAuthBackdrop(alignment: Alignment(0, -.35)),
           ),
-
-          // ── Orbs decorativi ──────────────────────────────────
-          AnimatedBuilder(
-            animation: _orbController,
-            builder: (context, _) => Stack(
-              children: [
-                Positioned(
-                  top: size.height * 0.08 + (_orbController.value * 20),
-                  right: -40 + (_orbController.value * 15),
-                  child: _GlowOrb(
-                    size: 180,
-                    color: t.accentPrimary.withValues(alpha: 0.12),
-                  ),
-                ),
-                Positioned(
-                  bottom: size.height * 0.18 - (_orbController.value * 25),
-                  left: -60 + (_orbController.value * 10),
-                  child: _GlowOrb(
-                    size: 220,
-                    color: t.accentSecondary.withValues(alpha: 0.08),
-                  ),
-                ),
-                Positioned(
-                  top: size.height * 0.45,
-                  right: -30 - (_orbController.value * 12),
-                  child: _GlowOrb(
-                    size: 120,
-                    color: t.success.withValues(alpha: 0.06),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ── Contenuto principale ─────────────────────────────
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              padding: const EdgeInsets.fromLTRB(
+                VibraSpacing.pagePadding,
+                VibraSpacing.sm,
+                VibraSpacing.pagePadding,
+                VibraSpacing.xl,
+              ),
               child: Column(
                 children: [
-                  // ── Header ─────────────────────────────────────
                   Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              const VibraLogo(
-                                width: 28,
-                                height: 28,
-                                strokeWidth: 3,
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                AppConstants.appName,
-                                style: VibraTextStyles.headlineMedium.copyWith(
-                                  color: t.textPrimary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          TextButton(
+                    children: [
+                      const VibraWordmark(markSize: 22),
+                      const SizedBox(width: VibraSpacing.md),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
                             onPressed: () => context.push('/login'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: t.textPrimary,
+                            ),
                             child: Text(
                               l10n.onboardingGoToLogin,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: VibraTextStyles.labelMedium.copyWith(
-                                color: t.accentPrimary,
-                                fontWeight: FontWeight.w600,
+                                color: t.textPrimary,
                               ),
                             ),
                           ),
-                        ],
-                      )
-                      .animate()
-                      .fadeIn(duration: 500.ms)
-                      .slideY(begin: -0.3, end: 0, duration: 500.ms),
-
-                  const SizedBox(height: 18),
-
-                  // ── Slides ─────────────────────────────────────
+                        ),
+                      ),
+                    ],
+                  ),
                   Expanded(
                     child: PageView.builder(
                       controller: _controller,
@@ -175,63 +114,49 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       itemBuilder: (context, index) {
                         final item = slides[index];
                         return _OnboardingSlide(
+                          index: index,
+                          total: slides.length,
                           icon: item.icon,
                           title: item.title,
                           body: item.body,
-                          glowColor: item.glowColor,
                         );
                       },
                     ),
                   ),
-
-                  // ── Dots indicator ─────────────────────────────
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      slides.length,
-                      (index) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOutCubic,
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: _page == index ? 32 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          gradient: _page == index ? t.primaryGradient : null,
-                          color: _page == index ? null : t.borderStrong,
-                          borderRadius: BorderRadius.circular(
-                            VibraSpacing.radiusFull,
+                  Semantics(
+                    label: '${_page + 1} / ${slides.length}',
+                    excludeSemantics: true,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        slides.length,
+                        (index) => AnimatedContainer(
+                          duration: VibraMotion.durationFor(
+                            context,
+                            VibraMotion.medium,
                           ),
-                          border: Border.all(
+                          curve: VibraMotion.signalCurve,
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          width: _page == index ? 28 : 6,
+                          height: 6,
+                          decoration: BoxDecoration(
                             color: _page == index
                                 ? t.accentPrimary
-                                : t.borderDefault,
+                                : t.borderStrong,
+                            borderRadius: VibraSpacing.borderFull,
                           ),
                         ),
                       ),
                     ),
-                  ).animate().fadeIn(delay: 600.ms, duration: 400.ms),
-
-                  const SizedBox(height: 28),
-
-                  // ── CTA Button ─────────────────────────────────
-                  SizedBox(
-                        width: double.infinity,
-                        child: VibraPillButton(
-                          onPressed: () => context.push('/login'),
-                          text: _page == slides.length - 1
-                              ? l10n.onboardingContinue
-                              : l10n.onboardingGoToLogin,
-                        ),
-                      )
-                      .animate()
-                      .fadeIn(delay: 700.ms, duration: 500.ms)
-                      .slideY(
-                        begin: 0.3,
-                        end: 0,
-                        delay: 700.ms,
-                        duration: 500.ms,
-                        curve: Curves.easeOutCubic,
-                      ),
+                  ),
+                  const SizedBox(height: VibraSpacing.xxl),
+                  VibraPrimaryButton(
+                    onPressed: () => context.push('/login'),
+                    label: _page == slides.length - 1
+                        ? l10n.onboardingContinue
+                        : l10n.onboardingGoToLogin,
+                    trailingIcon: Icons.arrow_forward_rounded,
+                  ),
                 ],
               ),
             ),
@@ -242,105 +167,106 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   }
 }
 
-// ── Slide del singolo onboarding ─────────────────────────────────
 class _OnboardingSlide extends StatelessWidget {
   const _OnboardingSlide({
+    required this.index,
+    required this.total,
     required this.icon,
     required this.title,
     required this.body,
-    required this.glowColor,
   });
 
+  final int index;
+  final int total;
   final IconData icon;
   final String title;
   final String body;
-  final Color glowColor;
 
   @override
   Widget build(BuildContext context) {
     final t = context.vibraTokens;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Icona con cerchio gradient glow
-        Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: t.surfaceElevated,
-                border: Border.all(color: glowColor, width: 2),
-                boxShadow: [t.elevatedShadow],
-              ),
-              child: Icon(icon, size: 56, color: glowColor),
-            )
-            .animate()
-            .fadeIn(duration: 500.ms)
-            .scale(
-              begin: const Offset(0.7, 0.7),
-              end: const Offset(1.0, 1.0),
-              duration: 600.ms,
-              curve: Curves.easeOutBack,
+    final hero = index == 0
+        ? const VibraLogo(width: 132, height: 114, animate: true)
+        : _EchoIcon(icon: icon);
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: VibraSpacing.xxl),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: SizedBox(height: 180, child: Center(child: hero)),
+                ),
+                const SizedBox(height: VibraSpacing.huge),
+                Text(
+                  '${(index + 1).toString().padLeft(2, '0')} — ${total.toString().padLeft(2, '0')}',
+                  style: VibraTextStyles.labelSmall.copyWith(
+                    color: t.accentPrimary,
+                  ),
+                ),
+                const SizedBox(height: VibraSpacing.md),
+                Text(
+                  title,
+                  style: VibraTextStyles.displaySmall.copyWith(
+                    color: t.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: VibraSpacing.md),
+                Text(
+                  body,
+                  style: VibraTextStyles.bodyLarge.copyWith(
+                    color: t.textSecondary,
+                  ),
+                ),
+              ],
             ),
-
-        const SizedBox(height: 36),
-
-        // Card con glassmorphism migliorato
-        Container(
-          padding: const EdgeInsets.all(VibraSpacing.xl),
-          decoration: BoxDecoration(
-            color: t.surfaceElevated,
-            borderRadius: VibraSpacing.borderMedium,
-            border: Border.all(color: t.borderDefault),
-            boxShadow: [t.cardShadow],
-          ),
-          child: Column(
-            children: [
-              Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: VibraTextStyles.displaySmall,
-                  )
-                  .animate()
-                  .fadeIn(delay: 200.ms, duration: 400.ms)
-                  .slideY(begin: 0.15, end: 0, delay: 200.ms, duration: 400.ms),
-              const SizedBox(height: 12),
-              Text(
-                    body,
-                    textAlign: TextAlign.center,
-                    style: VibraTextStyles.bodyLarge.copyWith(
-                      color: t.textSecondary,
-                    ),
-                  )
-                  .animate()
-                  .fadeIn(delay: 350.ms, duration: 400.ms)
-                  .slideY(begin: 0.15, end: 0, delay: 350.ms, duration: 400.ms),
-            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }
 
-// ── Cerchio sfumato decorativo ────────────────────────────────────
-class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({required this.size, required this.color});
+/// Icon inside concentric hairline rings — the "vibration" motif.
+class _EchoIcon extends StatelessWidget {
+  const _EchoIcon({required this.icon});
 
-  final double size;
-  final Color color;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [color, color.withValues(alpha: 0)],
-          stops: const [0.0, 1.0],
-        ),
+    final t = context.vibraTokens;
+    return SizedBox.square(
+      dimension: 168,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          for (final (size, alpha) in const [(168.0, .10), (128.0, .18)])
+            Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: t.accentPrimary.withValues(alpha: alpha),
+                ),
+              ),
+            ),
+          Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: t.surfaceElevated,
+              border: Border.all(color: t.borderDefault),
+            ),
+            child: Icon(icon, size: 36, color: t.accentPrimary),
+          ),
+        ],
       ),
     );
   }

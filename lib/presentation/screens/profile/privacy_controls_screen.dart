@@ -1,25 +1,33 @@
+import '../../../core/constants/app_constants.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:vibra/l10n/app_localizations.dart';
 
 import '../../../core/theme/vibra_theme_tokens.dart';
 import '../../widgets/common/vibra_page_scaffold.dart';
+import '../../providers/app_state_providers.dart';
+import '../../providers/location_provider.dart';
 
 /// Controls for optional processing and Article 15/20 access requests.
-class PrivacyControlsScreen extends StatefulWidget {
+class PrivacyControlsScreen extends ConsumerStatefulWidget {
   const PrivacyControlsScreen({super.key});
 
   @override
-  State<PrivacyControlsScreen> createState() => _PrivacyControlsScreenState();
+  ConsumerState<PrivacyControlsScreen> createState() =>
+      _PrivacyControlsScreenState();
 }
 
-class _PrivacyControlsScreenState extends State<PrivacyControlsScreen> {
+class _PrivacyControlsScreenState extends ConsumerState<PrivacyControlsScreen> {
   final _client = Supabase.instance.client;
   bool _loading = true;
   bool _exporting = false;
+  bool _saving = false;
   bool _location = false;
   bool _spotifyMatching = false;
   bool _productNotifications = false;
@@ -52,7 +60,9 @@ class _PrivacyControlsScreenState extends State<PrivacyControlsScreen> {
     if (!mounted) return;
     setState(() {
       _location = row?['location_processing'] as bool? ?? false;
-      _spotifyMatching = row?['spotify_matching'] as bool? ?? false;
+      _spotifyMatching =
+          AppConstants.spotifyEnabled &&
+          (row?['spotify_matching'] as bool? ?? false);
       _productNotifications = row?['product_notifications'] as bool? ?? false;
       _marketing = row?['marketing_notifications'] as bool? ?? false;
       _loading = false;
@@ -61,7 +71,7 @@ class _PrivacyControlsScreenState extends State<PrivacyControlsScreen> {
 
   Future<void> _save() async {
     final user = _client.auth.currentUser;
-    if (user == null) return;
+    if (user == null) throw StateError('Authentication required');
     await _client.from('privacy_preferences').upsert({
       'user_id': user.id,
       'location_processing': _location,
@@ -71,20 +81,39 @@ class _PrivacyControlsScreenState extends State<PrivacyControlsScreen> {
       'policy_version': '2026-08-27',
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     });
+    ref.invalidate(userLocationProvider);
+    ref.invalidate(matchedUsersProvider);
   }
 
   Future<void> _toggle(void Function(bool value) update, bool value) async {
-    setState(() => update(value));
+    final previous = [
+      _location,
+      _spotifyMatching,
+      _productNotifications,
+      _marketing,
+    ];
+    setState(() {
+      update(value);
+      _saving = true;
+    });
     try {
       await _save();
     } catch (_) {
       if (mounted) {
+        setState(() {
+          _location = previous[0];
+          _spotifyMatching = previous[1];
+          _productNotifications = previous[2];
+          _marketing = previous[3];
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Impossibile salvare la preferenza. Riprova.'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.privacySaveError),
           ),
         );
       }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 
@@ -97,7 +126,7 @@ class _PrivacyControlsScreenState extends State<PrivacyControlsScreen> {
       await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('La tua esportazione dati'),
+          title: Text(AppLocalizations.of(context)!.privacyExportTitle),
           content: SizedBox(
             width: 560,
             child: SingleChildScrollView(child: SelectableText(json)),
@@ -105,24 +134,26 @@ class _PrivacyControlsScreenState extends State<PrivacyControlsScreen> {
           actions: [
             TextButton(
               onPressed: () => _saveExport(json),
-              child: const Text('Salva JSON'),
+              child: Text(AppLocalizations.of(context)!.privacySaveJSON),
             ),
             TextButton(
               onPressed: () async {
                 await Clipboard.setData(ClipboardData(text: json));
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('JSON copiato negli appunti.'),
+                    SnackBar(
+                      content: Text(
+                        AppLocalizations.of(context)!.privacyCopiedJSON,
+                      ),
                     ),
                   );
                 }
               },
-              child: const Text('Copia JSON'),
+              child: Text(AppLocalizations.of(context)!.privacyCopyJSON),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Chiudi'),
+              child: Text(AppLocalizations.of(context)!.commonClose),
             ),
           ],
         ),
@@ -130,8 +161,8 @@ class _PrivacyControlsScreenState extends State<PrivacyControlsScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Esportazione non disponibile. Riprova più tardi.'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.privacyExportError),
           ),
         );
       }
@@ -150,7 +181,11 @@ class _PrivacyControlsScreenState extends State<PrivacyControlsScreen> {
     await file.writeAsString(json, flush: true);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Esportazione salvata in ${file.path}')),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.privacyExportSaved(file.path),
+          ),
+        ),
       );
     }
   }
@@ -159,55 +194,115 @@ class _PrivacyControlsScreenState extends State<PrivacyControlsScreen> {
   Widget build(BuildContext context) {
     final t = context.vibraTokens;
     return VibraPageScaffold(
-      appBar: AppBar(title: const Text('Privacy e dati personali')),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.settingsPrivacyData),
+      ),
       child: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
                 Text(
-                  'Scegli separatamente i trattamenti opzionali. Puoi cambiare idea in qualunque momento.',
+                  AppLocalizations.of(context)!.privacyIntro,
                   style: TextStyle(color: t.textSecondary),
                 ),
                 const SizedBox(height: 16),
                 SwitchListTile(
                   value: _location,
-                  onChanged: (v) => _toggle((value) => _location = value, v),
-                  title: const Text('Posizione precisa'),
-                  subtitle: const Text(
-                    'Per eventi vicini e funzionalità Live. Conservata al massimo 30 giorni.',
+                  onChanged: _saving
+                      ? null
+                      : (v) => _toggle((value) => _location = value, v),
+                  title: Text(
+                    AppLocalizations.of(context)!.privacyPreciseLocation,
+                  ),
+                  subtitle: Text(
+                    AppLocalizations.of(context)!.privacyPreciseLocationBody,
                   ),
                 ),
-                SwitchListTile(
-                  value: _spotifyMatching,
-                  onChanged: (v) =>
-                      _toggle((value) => _spotifyMatching = value, v),
-                  title: const Text('Spotify per matching'),
-                  subtitle: const Text(
-                    'Usa artisti, generi e ascolti sincronizzati per suggerimenti e affinità.',
+                if (AppConstants.spotifyEnabled)
+                  SwitchListTile(
+                    value: _spotifyMatching,
+                    onChanged: _saving
+                        ? null
+                        : (v) =>
+                              _toggle((value) => _spotifyMatching = value, v),
+                    title: Text(
+                      AppLocalizations.of(context)!.privacyMusicAffinity,
+                    ),
+                    subtitle: Text(
+                      AppLocalizations.of(context)!.privacyMusicAffinityBody,
+                    ),
                   ),
-                ),
                 SwitchListTile(
                   value: _productNotifications,
-                  onChanged: (v) =>
-                      _toggle((value) => _productNotifications = value, v),
-                  title: const Text('Notifiche di servizio'),
-                  subtitle: const Text('Match, messaggi ed eventi salvati.'),
+                  onChanged: _saving
+                      ? null
+                      : (v) => _toggle(
+                          (value) => _productNotifications = value,
+                          v,
+                        ),
+                  title: Text(
+                    AppLocalizations.of(context)!.privacyServiceNotifications,
+                  ),
+                  subtitle: Text(
+                    AppConstants.spotifyEnabled
+                        ? AppLocalizations.of(
+                            context,
+                          )!.privacyServiceNotificationsBody
+                        : '${AppLocalizations.of(context)!.navChat} · ${AppLocalizations.of(context)!.myProfileMyEvents}',
+                  ),
                 ),
                 SwitchListTile(
                   value: _marketing,
-                  onChanged: (v) => _toggle((value) => _marketing = value, v),
-                  title: const Text('Comunicazioni marketing'),
-                  subtitle: const Text(
-                    'Sempre opzionali; non condizionano l’uso dell’app.',
+                  onChanged: _saving
+                      ? null
+                      : (v) => _toggle((value) => _marketing = value, v),
+                  title: Text(AppLocalizations.of(context)!.privacyMarketing),
+                  subtitle: Text(
+                    AppLocalizations.of(context)!.privacyMarketingBody,
                   ),
+                ),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  leading: Icon(Icons.block_rounded, color: t.accentPrimary),
+                  title: Text(AppLocalizations.of(context)!.safetyBlockedTitle),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/blocked-users'),
+                ),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  leading: Icon(
+                    Icons.person_outline_rounded,
+                    color: t.accentPrimary,
+                  ),
+                  title: Text(
+                    AppLocalizations.of(context)!.profilePrivacyTitle,
+                  ),
+                  subtitle: Text(
+                    AppLocalizations.of(context)!.profilePrivacyTile,
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/profile-privacy'),
+                ),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  leading: Icon(
+                    Icons.auto_awesome_outlined,
+                    color: t.accentPrimary,
+                  ),
+                  title: Text(AppLocalizations.of(context)!.aiTitle),
+                  subtitle: Text(AppLocalizations.of(context)!.aiPrivacyTile),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/assistant'),
                 ),
                 const Divider(height: 32),
                 ListTile(
                   leading: Icon(Icons.download_rounded, color: t.accentPrimary),
-                  title: const Text('Esporta i miei dati'),
-                  subtitle: const Text(
-                    'Genera subito una copia JSON leggibile di profilo, chat, Spotify, eventi e interazioni.',
+                  title: Text(
+                    AppLocalizations.of(context)!.privacyExportAction,
+                  ),
+                  subtitle: Text(
+                    AppLocalizations.of(context)!.privacyExportBody,
                   ),
                   trailing: _exporting
                       ? const SizedBox.square(
@@ -219,7 +314,7 @@ class _PrivacyControlsScreenState extends State<PrivacyControlsScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Cancellazione account: i dati dell’account vengono eliminati; i messaggi inviati diventano anonimi e il loro contenuto/media viene rimosso. Le copie di backup seguono la retention operativa indicata nella privacy policy.',
+                  AppLocalizations.of(context)!.privacyDeletionBody,
                   style: TextStyle(color: t.textSecondary),
                 ),
               ],

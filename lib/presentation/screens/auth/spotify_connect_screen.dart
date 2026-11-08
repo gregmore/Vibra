@@ -1,15 +1,19 @@
+import 'package:vibra/presentation/localization/user_facing_error.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/vibra_colors.dart';
 import '../../../core/theme/vibra_theme_tokens.dart';
+import 'spotify_unavailable_screen.dart';
 import '../../widgets/vibra_glassmorphic_card.dart';
 import '../../providers/spotify_auth_provider.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 
-const _spotifyGreen = Color(0xFF1ED760);
+const _spotifyGreen = VibraPalette.spotifyGreen;
 
 class SpotifyConnectScreen extends ConsumerStatefulWidget {
   const SpotifyConnectScreen({super.key});
@@ -22,6 +26,7 @@ class SpotifyConnectScreen extends ConsumerStatefulWidget {
 class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
   @override
   Widget build(BuildContext context) {
+    if (!AppConstants.spotifyEnabled) return const SpotifyUnavailableScreen();
     final theme = Theme.of(context);
     final t = context.vibraTokens;
     final authState = ref.watch(spotifyAuthProvider);
@@ -50,171 +55,209 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
 
     return Scaffold(
       body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [t.backgroundPrimary, t.backgroundSecondary],
-          ),
-        ),
+        decoration: BoxDecoration(color: t.backgroundPrimary),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Navigazione / Back
-                if (!isProcessing && status != SpotifyAuthStatus.success)
-                  IconButton(
-                    tooltip: 'Torna al login',
-                    onPressed: () {
-                      if (context.canPop()) {
-                        context.pop();
-                      } else {
-                        context.go('/login');
-                      }
-                    },
-                    icon: Icon(Icons.arrow_back_rounded, color: t.textPrimary),
-                  )
-                else
-                  const SizedBox(
-                    height: 48,
-                  ), // Spazio placeholder per mantenere il layout
-
-                const SizedBox(height: 16),
-
-                // Titolo e sottotitolo principali
-                Text(
-                  AppLocalizations.of(context)!.spotifyConnectTitle,
-                  style: theme.textTheme.headlineLarge?.copyWith(
-                    color: t.textPrimary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ).animate().fade(duration: 400.ms).slideX(begin: -0.1, end: 0),
-                const SizedBox(height: 12),
-                Text(
-                  AppLocalizations.of(context)!.spotifyConnectSubtitle,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: t.textSecondary,
-                    height: 1.5,
-                  ),
-                ).animate().fade(delay: 100.ms, duration: 400.ms),
-
-                const SizedBox(height: 32),
-
-                Text(
-                  'Collegando Spotify autorizzi Vibra a leggere il tuo profilo, artisti, brani e generi principali. Li usiamo solo per suggerire eventi e affinità musicali; puoi scollegare Spotify e cancellare questi dati in Impostazioni.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: t.textSecondary,
-                    height: 1.45,
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Banner di errore o annullamento
-                if (status == SpotifyAuthStatus.userCancelled)
-                  _buildStatusBanner(
-                    icon: Icons.info_outline_rounded,
-                    color: t.warning,
-                    message:
-                        '${AppLocalizations.of(context)!.spotifyAuthCancelledTitle}\n${AppLocalizations.of(context)!.spotifyAuthCancelled}',
-                  ).animate().shake(duration: 400.ms)
-                else if (status == SpotifyAuthStatus.error)
-                  _buildStatusBanner(
-                    icon: Icons.error_outline_rounded,
-                    color: t.error,
-                    message:
-                        '${AppLocalizations.of(context)!.errorTitle}\n${AppLocalizations.of(context)!.spotifyAuthError(authState.errorMessage ?? "Riprova più tardi.")}',
-                  ).animate().shake(duration: 400.ms),
-
-                if (status == SpotifyAuthStatus.userCancelled ||
-                    status == SpotifyAuthStatus.error)
-                  const SizedBox(height: 20),
-
-                // Card principale degli step
+                // Everything above the actions scrolls, so long consent text
+                // or an error banner never pushes the buttons off screen.
                 Expanded(
                   child: SingleChildScrollView(
-                    child: VibraGlassmorphicCard(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              AppLocalizations.of(
-                                context,
-                              )!.spotifyConnectOnboarding,
-                              style: theme.textTheme.titleMedium?.copyWith(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Navigazione / Back
+                        if (!isProcessing &&
+                            status != SpotifyAuthStatus.success)
+                          IconButton(
+                            tooltip: AppLocalizations.of(
+                              context,
+                            )!.spotifyBackToLogin,
+                            onPressed: () {
+                              if (context.canPop()) {
+                                context.pop();
+                              } else {
+                                context.go('/login');
+                              }
+                            },
+                            icon: Icon(
+                              Icons.arrow_back_rounded,
+                              color: t.textPrimary,
+                            ),
+                          )
+                        else
+                          const SizedBox(
+                            height: 48,
+                          ), // Spazio placeholder per mantenere il layout
+
+                        const SizedBox(height: 16),
+
+                        // Titolo e sottotitolo principali
+                        Text(
+                              AppLocalizations.of(context)!.spotifyConnectTitle,
+                              style: theme.textTheme.headlineLarge?.copyWith(
                                 color: t.textPrimary,
                                 fontWeight: FontWeight.bold,
                               ),
-                            ),
-                            const SizedBox(height: 24),
-                            _SyncStep(
-                              title: AppLocalizations.of(
-                                context,
-                              )!.spotifyAuthStep1Title,
-                              subtitle: AppLocalizations.of(
-                                context,
-                              )!.spotifyAuthStep1Sub,
-                              isActive: step1Active,
-                              isDone: step1Done,
-                            ),
-                            const SizedBox(height: 20),
-                            _SyncStep(
-                              title: AppLocalizations.of(
-                                context,
-                              )!.spotifyAuthStep2Title,
-                              subtitle: AppLocalizations.of(
-                                context,
-                              )!.spotifyAuthStep2Sub,
-                              isActive: step2Active,
-                              isDone: step2Done,
-                            ),
-                            const SizedBox(height: 20),
-                            _SyncStep(
-                              title: AppLocalizations.of(
-                                context,
-                              )!.spotifyAuthStep3Title,
-                              subtitle: AppLocalizations.of(
-                                context,
-                              )!.spotifyAuthStep3Sub,
-                              isActive: step3Active,
-                              isDone: step3Done,
-                              showMusicAnimation: step3Active,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ).animate().fade(delay: 200.ms, duration: 400.ms),
-                ),
+                            )
+                            .animate()
+                            .fade(duration: 400.ms)
+                            .slideX(begin: -0.1, end: 0),
+                        const SizedBox(height: 12),
+                        Text(
+                          AppLocalizations.of(context)!.spotifyConnectSubtitle,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: t.textSecondary,
+                            height: 1.5,
+                          ),
+                        ).animate().fade(delay: 100.ms, duration: 400.ms),
 
-                const SizedBox(height: 24),
+                        const SizedBox(height: 32),
 
-                // Disclaimer sulla privacy
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.lock_outline_rounded,
-                          size: 14,
-                          color: t.textSecondary,
-                        ),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            AppLocalizations.of(
-                              context,
-                            )!.spotifyConnectPrivacyDesc,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: t.textSecondary,
-                            ),
-                            textAlign: TextAlign.center,
+                        Text(
+                          AppLocalizations.of(context)!.spotifyConsentBody,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: t.textSecondary,
+                            height: 1.45,
                           ),
                         ),
+                        const SizedBox(height: 8),
+                        Text(
+                          AppLocalizations.of(context)!.spotifyConsentSharing,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: t.textSecondary,
+                            height: 1.45,
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Banner di errore o annullamento
+                        if (status == SpotifyAuthStatus.userCancelled)
+                          _buildStatusBanner(
+                            icon: Icons.info_outline_rounded,
+                            color: t.warning,
+                            message:
+                                '${AppLocalizations.of(context)!.spotifyAuthCancelledTitle}\n${AppLocalizations.of(context)!.spotifyAuthCancelled}',
+                          ).animate().shake(duration: 400.ms)
+                        else if (status == SpotifyAuthStatus.syncFailed)
+                          _buildStatusBanner(
+                            icon: Icons.sync_problem_rounded,
+                            color: t.warning,
+                            message:
+                                '${AppLocalizations.of(context)!.spotifySyncFailedTitle}\n${userFacingError(AppLocalizations.of(context)!, authState.errorMessage)}',
+                          )
+                        else if (status == SpotifyAuthStatus.disconnected)
+                          _buildStatusBanner(
+                            icon: Icons.link_off_rounded,
+                            color: t.warning,
+                            message: AppLocalizations.of(
+                              context,
+                            )!.spotifyRevokedBody,
+                          )
+                        else if (status == SpotifyAuthStatus.error)
+                          _buildStatusBanner(
+                            icon: Icons.error_outline_rounded,
+                            color: t.error,
+                            message:
+                                '${AppLocalizations.of(context)!.errorTitle}\n${userFacingError(AppLocalizations.of(context)!, authState.errorMessage)}',
+                          ).animate().shake(duration: 400.ms),
+
+                        if (status == SpotifyAuthStatus.userCancelled ||
+                            status == SpotifyAuthStatus.error ||
+                            status == SpotifyAuthStatus.syncFailed ||
+                            status == SpotifyAuthStatus.disconnected)
+                          const SizedBox(height: 20),
+
+                        // Card principale degli step
+                        VibraGlassmorphicCard(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.spotifyConnectOnboarding,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    color: t.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                _SyncStep(
+                                  title: AppLocalizations.of(
+                                    context,
+                                  )!.spotifyAuthStep1Title,
+                                  subtitle: AppLocalizations.of(
+                                    context,
+                                  )!.spotifyAuthStep1Sub,
+                                  isActive: step1Active,
+                                  isDone: step1Done,
+                                ),
+                                const SizedBox(height: 20),
+                                _SyncStep(
+                                  title: AppLocalizations.of(
+                                    context,
+                                  )!.spotifyAuthStep2Title,
+                                  subtitle: AppLocalizations.of(
+                                    context,
+                                  )!.spotifyAuthStep2Sub,
+                                  isActive: step2Active,
+                                  isDone: step2Done,
+                                ),
+                                const SizedBox(height: 20),
+                                _SyncStep(
+                                  title: AppLocalizations.of(
+                                    context,
+                                  )!.spotifyAuthStep3Title,
+                                  subtitle: AppLocalizations.of(
+                                    context,
+                                  )!.spotifyAuthStep3Sub,
+                                  isActive: step3Active,
+                                  isDone: step3Done,
+                                  showMusicAnimation: step3Active,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ).animate().fade(delay: 200.ms, duration: 400.ms),
+
+                        const SizedBox(height: 24),
+
+                        // Disclaimer sulla privacy
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.lock_outline_rounded,
+                                  size: 14,
+                                  color: t.textSecondary,
+                                ),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.spotifyConnectPrivacyDesc,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: t.textSecondary,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
                       ],
                     ),
                   ),
@@ -236,7 +279,7 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _spotifyGreen,
-                            foregroundColor: Colors.black,
+                            foregroundColor: VibraPalette.onSpotifyGreen,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -258,12 +301,17 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
                       : ElevatedButton(
                           onPressed: isProcessing
                               ? null
+                              : status == SpotifyAuthStatus.syncFailed
+                              // Already connected: retry the data sync only.
+                              ? () => ref
+                                    .read(spotifyAuthProvider.notifier)
+                                    .syncSpotify()
                               : () => ref
                                     .read(spotifyAuthProvider.notifier)
                                     .connectSpotify(),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _spotifyGreen,
-                            foregroundColor: Colors.black,
+                            foregroundColor: VibraPalette.onSpotifyGreen,
                             disabledBackgroundColor: t.surfaceMuted,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -281,9 +329,16 @@ class _SpotifyConnectScreenState extends ConsumerState<SpotifyConnectScreen> {
                                   ),
                                 )
                               : Text(
-                                  status == SpotifyAuthStatus.error ||
-                                          status ==
-                                              SpotifyAuthStatus.userCancelled
+                                  status == SpotifyAuthStatus.syncFailed
+                                      ? AppLocalizations.of(
+                                          context,
+                                        )!.spotifySyncRetry
+                                      : status == SpotifyAuthStatus.error ||
+                                            status ==
+                                                SpotifyAuthStatus
+                                                    .disconnected ||
+                                            status ==
+                                                SpotifyAuthStatus.userCancelled
                                       ? AppLocalizations.of(
                                           context,
                                         )!.spotifyConnectRetry

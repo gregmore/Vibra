@@ -1,102 +1,155 @@
 import 'package:flutter/material.dart';
+
+import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/vibra_motion.dart';
 import '../../../core/theme/vibra_theme_tokens.dart';
 
+/// The original VIBRA mark, rendered from the supplied artwork.
+///
+/// `assets/branding/logo/vibra_mark.png` is derived pixel-for-pixel from
+/// `assets/branding/source/vibra_logo_white_on_black_1024.jpg` by
+/// `script/branding/generate_brand_assets_test.dart`: the geometry is never
+/// redrawn. The asset is a white alpha mask, so the mark can be tinted to
+/// follow the theme (white on dark, ink on light) without changing shape.
 class VibraLogo extends StatelessWidget {
   const VibraLogo({
     super.key,
     this.width = 100,
     this.height = 100,
-    this.strokeWidth = 6.0,
+    @Deprecated('The original mark has fixed proportions; ignored.')
+    this.strokeWidth = 0,
+    this.color,
     this.gradient,
     this.animate = false,
+    this.semanticLabel,
   });
+
+  static const String assetPath = 'assets/branding/logo/vibra_mark.png';
+
+  /// Intrinsic aspect ratio (width / height) of the original mark.
+  static const double aspectRatio = 614 / 527;
 
   final double width;
   final double height;
   final double strokeWidth;
+
+  /// Solid tint. Defaults to the theme's primary ink (white in dark mode).
+  final Color? color;
+
+  /// Optional gradient fill; takes precedence over [color].
   final Gradient? gradient;
+
+  /// Plays the brand entrance (scale + fade) once when first built.
   final bool animate;
+
+  /// When null the mark is decorative and excluded from semantics.
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    final t = context.vibraTokens;
-    return SizedBox(
+    final tint = color ?? context.vibraTokens.textPrimary;
+    final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 3;
+    Widget mark = Image.asset(
+      assetPath,
       width: width,
       height: height,
-      child: CustomPaint(
-        painter: _VibraLogoPainter(
-          strokeWidth: strokeWidth,
-          gradient:
-              gradient ??
-              LinearGradient(
-                colors: t.primaryGradient.colors,
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-        ),
-      ),
+      fit: BoxFit.contain,
+      color: gradient == null ? tint : Colors.white,
+      colorBlendMode: BlendMode.srcIn,
+      filterQuality: FilterQuality.medium,
+      cacheWidth: (width * dpr).ceil().clamp(1, 614),
+      gaplessPlayback: true,
+      excludeFromSemantics: true,
+    );
+    if (gradient != null) {
+      mark = ShaderMask(
+        blendMode: BlendMode.srcIn,
+        shaderCallback: gradient!.createShader,
+        child: mark,
+      );
+    }
+    if (animate) mark = VibraLogoEntrance(child: mark);
+    final sized = SizedBox(width: width, height: height, child: mark);
+    if (semanticLabel == null) return ExcludeSemantics(child: sized);
+    return Semantics(image: true, label: semanticLabel, child: sized);
+  }
+}
+
+/// Brand entrance: the mark settles in from 86% scale while fading up.
+/// Collapses to the final frame under reduced motion.
+class VibraLogoEntrance extends StatelessWidget {
+  const VibraLogoEntrance({
+    required this.child,
+    super.key,
+    this.duration = VibraMotion.logo,
+    this.delay = Duration.zero,
+  });
+
+  final Widget child;
+  final Duration duration;
+  final Duration delay;
+
+  @override
+  Widget build(BuildContext context) {
+    final effective = VibraMotion.durationFor(context, duration + delay);
+    if (effective == Duration.zero) return child;
+    final start = delay.inMilliseconds / effective.inMilliseconds;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: effective,
+      builder: (context, value, child) {
+        final t = Interval(
+          start,
+          1,
+          curve: VibraMotion.signalCurve,
+        ).transform(value);
+        return Opacity(
+          opacity: Interval(0, .6).transform(t),
+          child: Transform.scale(scale: .86 + .14 * t, child: child),
+        );
+      },
+      child: child,
     );
   }
 }
 
-class _VibraLogoPainter extends CustomPainter {
-  _VibraLogoPainter({required this.strokeWidth, required this.gradient});
+/// Horizontal lockup: mark + "VIBRA" wordmark in Inter ExtraBold.
+class VibraWordmark extends StatelessWidget {
+  const VibraWordmark({super.key, this.markSize = 28, this.color});
 
-  final double strokeWidth;
-  final Gradient gradient;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    final paint = Paint()
-      ..shader = gradient.createShader(rect)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final path = Path();
-
-    // Funzione helper per mappare le coordinate 0-100 alla dimensione effettiva
-    Offset pt(double x, double y) {
-      return Offset(x / 100.0 * size.width, y / 100.0 * size.height);
-    }
-
-    // 1. Battito esterno (sinistra)
-    path.moveTo(pt(5, 50).dx, pt(5, 50).dy);
-    path.lineTo(pt(15, 50).dx, pt(15, 50).dy);
-    path.lineTo(pt(21, 40).dx, pt(21, 40).dy);
-    path.lineTo(pt(28, 62).dx, pt(28, 62).dy);
-    path.lineTo(pt(38, 22).dx, pt(38, 22).dy); // Picco alto
-    path.lineTo(pt(52, 78).dx, pt(52, 78).dy); // Valle profonda
-    path.lineTo(pt(58, 53).dx, pt(58, 53).dy); // Si unisce al cuore
-
-    // 2. Contorno del Cuore Geometrico (destra)
-    // Partiamo dal punto di intersezione o da un vertice
-    path.moveTo(pt(55, 50).dx, pt(55, 50).dy);
-    path.lineTo(pt(55, 40).dx, pt(55, 40).dy); // Bordo sinistro
-    path.lineTo(pt(65, 30).dx, pt(65, 30).dy); // Tetto sinistro
-    path.lineTo(pt(75, 40).dx, pt(75, 40).dy); // Avvallamento centrale
-    path.lineTo(pt(85, 30).dx, pt(85, 30).dy); // Tetto destro
-    path.lineTo(pt(95, 40).dx, pt(95, 40).dy); // Spigolo in alto a destra
-    path.lineTo(pt(95, 50).dx, pt(95, 50).dy); // Bordo destro
-    path.lineTo(pt(75, 70).dx, pt(75, 70).dy); // Punta inferiore
-    path.lineTo(pt(55, 50).dx, pt(55, 50).dy); // Ritorno al bordo sinistro
-
-    // 3. Battito interno (dentro il cuore)
-    path.moveTo(pt(55, 50).dx, pt(55, 50).dy);
-    path.lineTo(pt(62, 42).dx, pt(62, 42).dy);
-    path.lineTo(pt(70, 55).dx, pt(70, 55).dy);
-    path.lineTo(pt(78, 42).dx, pt(78, 42).dy);
-    path.lineTo(pt(85, 50).dx, pt(85, 50).dy);
-    path.lineTo(pt(95, 50).dx, pt(95, 50).dy);
-
-    canvas.drawPath(path, paint);
-  }
+  final double markSize;
+  final Color? color;
 
   @override
-  bool shouldRepaint(covariant _VibraLogoPainter oldDelegate) {
-    return oldDelegate.strokeWidth != strokeWidth ||
-        oldDelegate.gradient != gradient;
+  Widget build(BuildContext context) {
+    final tint = color ?? context.vibraTokens.textPrimary;
+    return Semantics(
+      label: AppConstants.appName.toUpperCase(),
+      header: true,
+      excludeSemantics: true,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          VibraLogo(
+            width: markSize * VibraLogo.aspectRatio,
+            height: markSize,
+            color: tint,
+          ),
+          SizedBox(width: markSize * .36),
+          Text(
+            AppConstants.appName.toUpperCase(),
+            textScaler: TextScaler.noScaling,
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w800,
+              fontSize: markSize * .72,
+              letterSpacing: markSize * .12,
+              height: 1,
+              color: tint,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

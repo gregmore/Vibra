@@ -1,125 +1,177 @@
 import 'package:flutter/material.dart';
 
-/// Due sole voci: Syne rende Vibra riconoscibile, Inter rende tutto leggibile.
+/// VIBRA typography: one geometric sans (Inter), tight at display sizes,
+/// open at reading sizes. Hierarchy comes from size and weight, never from
+/// a second decorative face.
+///
+/// Scale (logical px):
+/// * Display 32–40 · H1 28 · H2 24 · H3 20
+/// * Body 15–16 · Secondary 13–14 · Caption 11–12
+///
+/// Every style is resolved through the platform text scaler, so dynamic type
+/// is respected automatically.
 class VibraTextStyles {
   VibraTextStyles._();
 
+  static const String fontFamily = 'Inter';
+
   static const double minimumBodyFontSize = 12;
   static const double minimumLabelFontSize = 11;
-  static const double paragraphLineHeight = 1.5;
+  static const double paragraphLineHeight = 1.45;
 
-  static final TextStyle displayLarge = const TextStyle(
-    fontFamily: 'Syne',
-    fontSize: 48,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -2.0,
-    height: 0.96,
+  // ── Display ───────────────────────────────────────────────
+  static const TextStyle displayLarge = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 40,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -1.6,
+    height: 1.05,
   );
-  static final TextStyle displayMedium = const TextStyle(
-    fontFamily: 'Syne',
+  static const TextStyle displayMedium = TextStyle(
+    fontFamily: fontFamily,
     fontSize: 34,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w800,
     letterSpacing: -1.2,
-    height: 1.02,
+    height: 1.08,
   );
-  static final TextStyle displaySmall = const TextStyle(
-    fontFamily: 'Syne',
+  static const TextStyle displaySmall = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -1.0,
+    height: 1.1,
+  );
+
+  // ── Headings ──────────────────────────────────────────────
+  /// Heading 1 — 28 px.
+  static const TextStyle headlineLarge = TextStyle(
+    fontFamily: fontFamily,
     fontSize: 28,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.8,
-    height: 1.08,
+    height: 1.15,
   );
 
-  static final TextStyle headlineLarge = const TextStyle(
-    fontFamily: 'Syne',
+  /// Heading 2 — 24 px.
+  static const TextStyle headlineMedium = TextStyle(
+    fontFamily: fontFamily,
     fontSize: 24,
     fontWeight: FontWeight.w700,
-    letterSpacing: -0.5,
-    height: 1.12,
-  );
-  static final TextStyle headlineMedium = const TextStyle(
-    fontFamily: 'Syne',
-    fontSize: 20,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.35,
-    height: 1.18,
-  );
-  static final TextStyle headlineSmall = const TextStyle(
-    fontFamily: 'Syne',
-    fontSize: 18,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.25,
-    height: 1.22,
+    letterSpacing: -0.6,
+    height: 1.2,
   );
 
-  static final TextStyle titleLarge = const TextStyle(
-    fontFamily: 'Syne',
+  /// Heading 3 — 20 px.
+  static const TextStyle headlineSmall = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.4,
+    height: 1.25,
+  );
+
+  // ── Titles (cards, list rows) ─────────────────────────────
+  static const TextStyle titleLarge = TextStyle(
+    fontFamily: fontFamily,
     fontSize: 18,
     fontWeight: FontWeight.w700,
-    height: 1.22,
+    letterSpacing: -0.3,
+    height: 1.25,
   );
-  static final TextStyle titleMedium = const TextStyle(
-    fontFamily: 'Syne',
+  static const TextStyle titleMedium = TextStyle(
+    fontFamily: fontFamily,
     fontSize: 16,
     fontWeight: FontWeight.w600,
-    height: 1.28,
+    letterSpacing: -0.2,
+    height: 1.3,
   );
-  static final TextStyle titleSmall = const TextStyle(
-    fontFamily: 'Inter',
+  static const TextStyle titleSmall = TextStyle(
+    fontFamily: fontFamily,
     fontSize: 14,
     fontWeight: FontWeight.w600,
+    letterSpacing: -0.1,
     height: 1.3,
   );
 
-  static final TextStyle bodyLarge = const TextStyle(
-    fontFamily: 'Inter',
+  // ── Body ──────────────────────────────────────────────────
+  static const TextStyle bodyLarge = TextStyle(
+    fontFamily: fontFamily,
     fontSize: 16,
     fontWeight: FontWeight.w400,
+    letterSpacing: -0.1,
     height: paragraphLineHeight,
   );
-  static final TextStyle bodyMedium = const TextStyle(
-    fontFamily: 'Inter',
-    fontSize: 14,
+  static const TextStyle bodyMedium = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 15,
     fontWeight: FontWeight.w400,
+    letterSpacing: -0.05,
     height: paragraphLineHeight,
   );
-  static final TextStyle bodySmall = const TextStyle(
-    fontFamily: 'Inter',
-    fontSize: minimumBodyFontSize,
+
+  /// Secondary copy — 13 px.
+  static const TextStyle bodySmall = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 13,
     fontWeight: FontWeight.w400,
     height: 1.4,
   );
 
-  static final TextStyle labelLarge = const TextStyle(
-    fontFamily: 'Inter',
-    fontSize: 14,
+  // ── Labels ────────────────────────────────────────────────
+  static const TextStyle labelLarge = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 15,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.1,
+    height: 1.25,
+  );
+  static const TextStyle labelMedium = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 13,
     fontWeight: FontWeight.w600,
     height: 1.25,
   );
-  static final TextStyle labelMedium = const TextStyle(
-    fontFamily: 'Inter',
-    fontSize: 12,
-    fontWeight: FontWeight.w600,
-    height: 1.25,
-  );
-  static final TextStyle labelSmall = const TextStyle(
-    fontFamily: 'Inter',
+
+  /// Caption / eyebrow — 11 px, tracked.
+  static const TextStyle labelSmall = TextStyle(
+    fontFamily: fontFamily,
     fontSize: minimumLabelFontSize,
     fontWeight: FontWeight.w700,
-    letterSpacing: 0.7,
+    letterSpacing: 0.9,
     height: 1.25,
   );
 
-  // Gli score usano il display del brand, non un font tecnico separato.
-  static final TextStyle scoreXL = displayLarge.copyWith(
-    fontSize: 64,
-    letterSpacing: -3,
+  /// Caption — 12 px, untracked.
+  static const TextStyle caption = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: minimumBodyFontSize,
+    fontWeight: FontWeight.w500,
+    height: 1.35,
   );
-  static final TextStyle scoreLarge = displayMedium.copyWith(fontSize: 30);
-  static final TextStyle scoreMedium = displaySmall.copyWith(fontSize: 20);
-  static final TextStyle scoreSmall = labelLarge;
 
-  static TextTheme get textTheme => TextTheme(
+  // ── Numerals (scores, stats) ──────────────────────────────
+  static const List<FontFeature> _tabular = [FontFeature.tabularFigures()];
+  static final TextStyle scoreXL = displayLarge.copyWith(
+    fontSize: 56,
+    letterSpacing: -2.4,
+    height: 1,
+    fontFeatures: _tabular,
+  );
+  static final TextStyle scoreLarge = displayMedium.copyWith(
+    fontSize: 30,
+    height: 1,
+    fontFeatures: _tabular,
+  );
+  static final TextStyle scoreMedium = headlineSmall.copyWith(
+    height: 1,
+    fontFeatures: _tabular,
+  );
+  static final TextStyle scoreSmall = labelLarge.copyWith(
+    fontWeight: FontWeight.w700,
+    fontFeatures: _tabular,
+  );
+
+  static TextTheme get textTheme => const TextTheme(
     displayLarge: displayLarge,
     displayMedium: displayMedium,
     displaySmall: displaySmall,
