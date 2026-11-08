@@ -135,14 +135,23 @@ void main() {
       // 2. Verifica che sia presente il titolo "Account Spotify"
       expect(find.text('Account Spotify'), findsOneWidget);
 
-      // 3. Tap su Privacy Policy e verifica navigazione
-      await tester.tap(find.text('Privacy Policy').first);
+      // 3. Apri l’informativa localizzata e verifica la navigazione.
+      final privacyRow = find
+          .text(
+            lookupAppLocalizations(const Locale('it')).settingsPrivacyPolicy,
+          )
+          .first;
+      await tester.ensureVisible(privacyRow);
+      await tester.pumpAndSettle();
+      await tester.tap(privacyRow);
       await tester.pumpAndSettle();
       expect(find.text('Quali dati raccoglie Vibra'), findsOneWidget);
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
 
       // 4. Tap su Termini di servizio e verifica navigazione
+      await tester.ensureVisible(find.text('Termini di servizio'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Termini di servizio'));
       await tester.pumpAndSettle();
       expect(find.text('Uso di Vibra'), findsOneWidget);
@@ -150,6 +159,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // 5. Tap su Supporto e verifica navigazione
+      await tester.ensureVisible(find.text('Supporto'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Supporto'));
       await tester.pumpAndSettle();
       expect(find.text('Email supporto'), findsOneWidget);
@@ -157,6 +168,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // 6. Tap su Informazioni su Vibra e verifica navigazione
+      await tester.ensureVisible(find.text('Informazioni su Vibra'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Informazioni su Vibra'));
       await tester.pumpAndSettle();
       expect(find.text('Versione'), findsOneWidget);
@@ -164,6 +177,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // 7. Tap su Account Spotify → apre dialog Scollega Spotify
+      await tester.ensureVisible(find.text('Account Spotify'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Account Spotify'));
       await tester.pumpAndSettle();
       expect(find.text('Scollega Spotify'), findsOneWidget);
@@ -171,6 +186,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // 8. Tap logout → apre dialog di conferma
+      await tester.ensureVisible(find.byIcon(Icons.logout_rounded));
+      await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.logout_rounded));
       await tester.pumpAndSettle();
       expect(find.text('Sei sicuro di voler uscire?'), findsOneWidget);

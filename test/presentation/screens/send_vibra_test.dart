@@ -1,3 +1,4 @@
+import 'package:vibra/core/constants/app_constants.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -46,11 +47,36 @@ class _Request implements RequestFriendshipUseCase {
 }
 
 void main() {
-  setUpAll(() => registerFallbackValue((PostgresChangePayload payload) {}));
+  // Exercise the retained integration with --dart-define=SPOTIFY_ENABLED=true.
+  if (!AppConstants.spotifyEnabled) return;
+  setUpAll(() {
+    registerFallbackValue((PostgresChangePayload payload) {});
+    registerFallbackValue(PostgresChangeEvent.all);
+  });
   late _Social social;
   late _Request request;
   late ProviderContainer container;
   List<FriendshipModel> pending = [];
+  // Rows as returned by get_affinity_feed (exclusions happen server-side).
+  List<Map<String, dynamic>> feed = [];
+  Map<String, dynamic> row(String id, String name, int score) => {
+    'user_id': id,
+    'username': id,
+    'display_name': name,
+    'compatibility': score,
+    'details': {
+      'v': 2,
+      'shared_families': ['hip-hop'],
+      'shared_artists': ['Travis Scott'],
+      'shared_artist_count': 1,
+      'reasons': [
+        {
+          'code': 'shared_families',
+          'families': ['hip-hop'],
+        },
+      ],
+    },
+  };
   const friendship = Friendship(
     id: 'request',
     requesterId: 'me',
@@ -62,6 +88,7 @@ void main() {
     social = _Social();
     request = _Request();
     pending = [];
+    feed = [row('laura', 'Laura', 90), row('marco', 'Marco', 85)];
     final datasource = _Datasource();
     final client = _Client();
     final channel = _Channel();
@@ -75,24 +102,27 @@ void main() {
       ),
     );
     when(() => datasource.client).thenReturn(client);
+    when(
+      () => datasource.authStateChanges,
+    ).thenAnswer((_) => const Stream<AuthState>.empty());
     when(() => client.channel(any())).thenReturn(channel);
     when(
       () => channel.onPostgresChanges(
-        event: PostgresChangeEvent.all,
-        schema: 'public',
-        table: 'user_matches',
+        event: any(named: 'event'),
+        schema: any(named: 'schema'),
+        table: any(named: 'table'),
         callback: any(named: 'callback'),
       ),
     ).thenReturn(channel);
     when(() => channel.subscribe()).thenReturn(channel);
     when(() => channel.unsubscribe()).thenAnswer((_) async => 'ok');
-    when(() => social.listMyMatches(limit: 20)).thenAnswer(
-      (_) async => [
-        {'user_id_a': 'me', 'user_id_b': 'laura', 'compatibility': 90},
-        {'user_id_a': 'me', 'user_id_b': 'marco', 'compatibility': 85},
-      ],
-    );
-    when(() => social.getPublicUsersByIds(any())).thenAnswer(
+    when(
+      () => social.getAffinityFeed(limit: 40),
+    ).thenAnswer((_) async => [...feed]);
+    when(() => social.dismissAffinity(any())).thenAnswer((_) async {});
+    when(
+      () => social.getPublicUsersByIds(any(), columns: any(named: 'columns')),
+    ).thenAnswer(
       (_) async => [
         {'id': 'laura', 'username': 'laura', 'display_name': 'Laura'},
         {'id': 'marco', 'username': 'marco', 'display_name': 'Marco'},
@@ -104,9 +134,6 @@ void main() {
     when(
       () => social.listMyFriendships(status: 'pending'),
     ).thenAnswer((_) async => pending);
-    when(
-      () => social.getMusicProfilesByUserIds(any()),
-    ).thenAnswer((_) async => []);
     container = ProviderContainer(
       overrides: [
         supabaseDatasourceProvider.overrideWithValue(datasource),
@@ -207,6 +234,24 @@ void main() {
     },
   );
 
+  testWidgets('The affinity card shows the server explanation', (tester) async {
+    await mount(tester);
+    final card = find.descendant(
+      of: find.byType(Dismissible),
+      matching: find.byType(Text),
+    );
+    String all() =>
+        tester.widgetList<Text>(card).map((t) => t.data ?? '').join('|');
+    expect(all(), contains('Affinità musicale eccezionale'));
+    expect(all(), contains('I VOSTRI GENERI IN COMUNE'));
+    expect(all(), contains('HIP-HOP'));
+    expect(all(), contains('ARTISTI IN COMUNE'));
+    expect(all(), contains('Travis Scott'));
+    expect(all(), contains('Entrambi ascoltate soprattutto Hip-Hop.'));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets('Swipe failures restore the card without dismissing it', (
     tester,
   ) async {
@@ -244,36 +289,23 @@ void main() {
     );
   });
 
-  testWidgets(
-    'Refresh excludes outgoing pending requests but retains incoming matches',
-    (tester) async {
-      pending = [
-        const FriendshipModel(
-          id: 'sent',
-          requesterId: 'me',
-          receiverId: 'laura',
-          status: 'pending',
-        ),
-        const FriendshipModel(
-          id: 'received',
-          requesterId: 'marco',
-          receiverId: 'me',
-          status: 'pending',
-        ),
-      ];
-      final controller = container.read(matchedUsersProvider.notifier);
-      await tester.pump();
-      expect(
-        container.read(matchedUsersProvider).map((match) => match.user.id),
-        ['marco'],
-      );
-      await controller.refresh();
-      expect(
-        container.read(matchedUsersProvider).map((match) => match.user.id),
-        ['marco'],
-      );
-    },
-  );
+  testWidgets('Ignore hides the card and is remembered server-side', (
+    tester,
+  ) async {
+    final controller = container.read(matchedUsersProvider.notifier);
+    await tester.pump();
+    controller.passMatch('laura');
+    expect(container.read(matchedUsersProvider).map((match) => match.user.id), [
+      'marco',
+    ]);
+    verify(() => social.dismissAffinity('laura')).called(1);
+    // The server feed no longer returns the ignored profile.
+    feed = [row('marco', 'Marco', 85)];
+    await controller.refresh();
+    expect(container.read(matchedUsersProvider).map((match) => match.user.id), [
+      'marco',
+    ]);
+  });
 
   testWidgets(
     'A stale feed response cannot restore a successfully sent match',
@@ -282,7 +314,7 @@ void main() {
       await tester.pump();
       final profiles = Completer<List<Map<String, dynamic>>>();
       when(
-        () => social.getMusicProfilesByUserIds(any()),
+        () => social.getAffinityFeed(limit: 40),
       ).thenAnswer((_) => profiles.future);
       final refresh = controller.refresh();
       await tester.pump();
@@ -290,7 +322,7 @@ void main() {
       request.result.complete(friendship);
       await tester.pump();
       await send;
-      profiles.complete([]);
+      profiles.complete([...feed]);
       await tester.pump();
       await refresh;
       expect(
@@ -329,7 +361,14 @@ void main() {
           ),
         ],
       );
+      // Connected people are excluded by get_affinity_feed.
+      feed = [row('marco', 'Marco', 85)];
       await mount(tester);
+      // Friends come from the public social graph, for every user.
+      container.listen(friendsProvider, (_, _) {});
+      for (var i = 0; i < 5; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
       expect(container.read(friendsProvider).single.user.id, 'laura');
       expect(find.byKey(const ValueKey('laura')), findsNothing);
       expect(find.byKey(const ValueKey('marco')), findsOneWidget);

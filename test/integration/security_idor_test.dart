@@ -114,26 +114,26 @@ void main() {
       },
     );
 
-    test('blockUser binds blocker_id to authenticated user id', () async {
-      when(() => mockDatasource.insert('blocked_users', any())).thenAnswer((
-        invocation,
-      ) async {
-        final payload =
-            invocation.positionalArguments[1] as Map<String, dynamic>;
-        expect(payload['blocker_id'], equals(currentUserId));
-        expect(payload['blocked_id'], equals(targetUserId));
-        return payload;
-      });
+    test(
+      'blockUser sends only the target; the server binds the blocker',
+      () async {
+        when(
+          () => mockDatasource.rpc('block_user', params: any(named: 'params')),
+        ).thenAnswer((_) async => null);
 
-      await socialDatasource.blockUser(blockedId: targetUserId);
+        await socialDatasource.blockUser(blockedId: targetUserId);
 
-      verify(
-        () => mockDatasource.insert('blocked_users', {
-          'blocker_id': currentUserId,
-          'blocked_id': targetUserId,
-        }),
-      ).called(1);
-    });
+        // block_user takes the blocker from auth.uid(): the client cannot
+        // name a different blocker.
+        verify(
+          () => mockDatasource.rpc(
+            'block_user',
+            params: {'p_user': targetUserId},
+          ),
+        ).called(1);
+        verifyNever(() => mockDatasource.insert('blocked_users', any()));
+      },
+    );
 
     test('reportUser binds reporter_id to authenticated user id', () async {
       when(() => mockDatasource.insert('reports', any())).thenAnswer((

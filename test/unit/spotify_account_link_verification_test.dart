@@ -1,3 +1,4 @@
+import 'package:vibra/core/constants/app_constants.dart';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,6 +14,8 @@ class MockSupabaseClient extends Mock implements SupabaseClient {}
 class MockFunctionsClient extends Mock implements FunctionsClient {}
 
 void main() {
+  // Exercise the retained integration with --dart-define=SPOTIFY_ENABLED=true.
+  if (!AppConstants.spotifyEnabled) return;
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() async {
@@ -54,9 +57,9 @@ void main() {
         ).thenAnswer(
           (_) async => FunctionResponse(
             status: 200,
+            // Tokens stay on the server: the response only confirms it.
             data: {
-              'access_token': 'mock_access_token',
-              'refresh_token': 'mock_refresh_token',
+              'connected': true,
               'expires_in': 3600,
               'scope': 'user-read-private user-top-read',
             },
@@ -69,8 +72,8 @@ void main() {
         );
 
         expect(result, isA<SpotifyTokenModel>());
-        expect(result.accessToken, equals('mock_access_token'));
-        expect(result.refreshToken, equals('mock_refresh_token'));
+        expect(result.expiresIn, 3600);
+        expect(result.scopes, contains('user-top-read'));
       },
     );
 

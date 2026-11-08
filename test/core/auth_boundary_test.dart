@@ -127,8 +127,19 @@ void main() {
       ),
       'valid',
     );
+    // iOS returns Spotify's callback with a trailing slash: same redirect.
+    expect(
+      SpotifyAuthDatasource.validateCallback(
+        '$redirect/?state=nonce&code=valid',
+        redirect,
+        'nonce',
+      ),
+      'valid',
+    );
     for (final callback in [
       'com.vibra.app://other?state=nonce&code=valid',
+      '$redirect/extra?state=nonce&code=valid',
+      'com.vibra.app://callback.evil/?state=nonce&code=valid',
       '$redirect?state=wrong&code=valid',
       '$redirect?code=valid',
       '$redirect?state=nonce&state=nonce&code=valid',

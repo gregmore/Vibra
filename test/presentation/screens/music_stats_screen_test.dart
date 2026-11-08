@@ -1,3 +1,4 @@
+import 'package:vibra/core/constants/app_constants.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -43,7 +44,8 @@ class FakeSpotifyAuthNotifier extends SpotifyAuthNotifier {
   Completer<void>? pending;
   void Function()? onSync;
   bool fail = false;
-  String errorMessage = 'Connessione non disponibile';
+  // A real transport failure; the screen localises it (errorNetwork).
+  String errorMessage = 'SocketException: Failed host lookup';
 
   @override
   Future<void> syncSpotify() async {
@@ -58,6 +60,8 @@ class FakeSpotifyAuthNotifier extends SpotifyAuthNotifier {
 }
 
 void main() {
+  // Exercise the retained integration with --dart-define=SPOTIFY_ENABLED=true.
+  if (!AppConstants.spotifyEnabled) return;
   Future<FakeSpotifyAuthNotifier> mount(
     WidgetTester tester, {
     required FakeMusicProfileController music,

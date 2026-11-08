@@ -8,8 +8,8 @@ void main() {
     const light = VibraThemeTokens.light;
     const dark = VibraThemeTokens.dark;
 
-    expect(light.backgroundPrimary, const Color(0xFFFAF9FC));
-    expect(dark.backgroundPrimary, const Color(0xFF0D0A14));
+    expect(light.backgroundPrimary, const Color(0xFFFAFAFA));
+    expect(dark.backgroundPrimary, const Color(0xFF000000));
     expect(light.surfaceElevated, isNot(dark.surfaceElevated));
     expect(light.mapTileUrl, 'https://tile.openstreetmap.org/{z}/{x}/{y}.png');
     expect(dark.mapTileUrl, light.mapTileUrl);

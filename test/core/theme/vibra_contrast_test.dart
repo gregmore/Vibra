@@ -60,9 +60,10 @@ void main() {
     });
   }
 
-  test('large app canvases avoid pure black and pure white', () {
+  test('canvases follow the brand palette', () {
+    // Light avoids pure white glare; dark is the brand's pure black (#000000).
     expect(VibraThemeTokens.light.backgroundPrimary, isNot(Colors.white));
-    expect(VibraThemeTokens.dark.backgroundPrimary, isNot(Colors.black));
+    expect(VibraThemeTokens.dark.backgroundPrimary, const Color(0xFF000000));
   });
 
   test('informational type never drops below the agreed floor', () {
