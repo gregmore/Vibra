@@ -1,6 +1,14 @@
+# Native launch screen: pure ink canvas with the original white VIBRA mark.
+# The Flutter SplashScreen renders the identical frame so the hand-off is
+# invisible. Regenerate with: dart run flutter_native_splash:create
 flutter_native_splash:
-  color: "#0D0D0D" # VibraColors.background
-  color_dark: "#0D0D0D"
+  color: "#000000"
+  image: assets/branding/logo/vibra_splash_mark.png
+  color_dark: "#000000"
+  image_dark: assets/branding/logo/vibra_splash_mark.png
   android_12:
-    color: "#0D0D0D"
-    color_dark: "#0D0D0D"
+    color: "#000000"
+    image: assets/branding/logo/vibra_splash_mark.png
+    color_dark: "#000000"
+    image_dark: assets/branding/logo/vibra_splash_mark.png
+  fullscreen: false
