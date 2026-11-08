@@ -1,295 +1,188 @@
 import { rejectRevokedSession } from "../_shared/session-guard.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
-import { clamp, proximityScore } from "../_shared/geo.ts";
-import { fetchSpotifyArtistsByIds } from "../_shared/spotify_app_token.ts";
+import { clamp } from "../_shared/geo.ts";
+import { rejectDisabledSpotify } from "../_shared/spotify-feature.ts";
+import { computeMusicalDna, type DnaInput } from "../_shared/musical_dna.ts";
+import {
+  eventGenres, passesFilters, type RecEvent, scoreEvent, type UserTaste,
+} from "../_shared/event_recommendation.ts";
 
-type RecommendEventsRequest = {
-  user_id: string;
+// Concert Intelligence (docs/concert-intelligence.md): events ranked by the
+// user's musical identity, previous interests, distance and date, each with
+// the reasons it was recommended. Only published event data is returned;
+// nothing about tickets is inferred.
+
+type Body = {
   limit?: number;
   latitude?: number;
   longitude?: number;
+  radius_km?: number;
+  family?: string;
+  artist?: string;
+  date_from?: string;
+  date_to?: string;
+  /** Maximum "from" price in EUR; only events with a published EUR price. */
+  price_max?: number;
 };
 
-type MusicProfileRow = {
-  user_id: string;
-  top_artists: Array<{ id: string; name: string; score: number }>;
-  top_genres: Array<{ genre: string; weight: number }>;
-};
+const EVENT_COLUMNS =
+  "id, external_id, source, name, artist_name, artist_spotify_id, venue_name, city, country, latitude, longitude, event_date, ticket_url, price_min, price_max, price_currency, image_url, description, status, genres";
 
-type EventRow = {
-  id: string;
-  external_id: string;
-  source: string;
-  name: string;
-  artist_name: string | null;
-  artist_spotify_id: string | null;
-  venue_name: string | null;
-  city: string | null;
-  country: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  event_date: string;
-  ticket_url: string | null;
-  price_min: number | null;
-  price_max: number | null;
-  image_url: string | null;
-  description: string | null;
-  is_test_data?: boolean;
-  distance_meters?: number;
-};
+const headers = { ...corsHeaders, "Content-Type": "application/json" };
+const reply = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers });
+const validLat = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v) && v >= -90 && v <= 90;
+const validLon = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v) && v >= -180 && v <= 180;
+const isoOrNull = (v: unknown) => typeof v === "string" && Number.isFinite(Date.parse(v)) ? new Date(v) : null;
 
 Deno.serve(async (req) => {
   const rejected = await rejectRevokedSession(req, "recommend-events");
   if (rejected) return rejected;
   const preflight = handleOptions(req);
   if (preflight) return preflight;
+  if (req.method.toUpperCase() !== "POST") return reply(405, { error: "Method not allowed" });
 
   try {
-    if (req.method.toUpperCase() !== "POST") {
-      return new Response(JSON.stringify({ error: "Method not allowed" }), {
-        status: 405,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
-    }
+    if (!authHeader) return reply(401, { error: "Unauthorized" });
     const userClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "", {
-      global: { headers: { Authorization: authHeader } }
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: authHeader } },
     });
     const { data: { user }, error: authError } = await userClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    if (authError || !user) return reply(401, { error: "Unauthorized" });
+    // Shared limiter: 30 requests a minute per user.
+    const { error: limitError } = await userClient.rpc("consume_action_limit", { p_action: "recommend-events" });
+    if (limitError?.code === "PT429") return reply(429, { error: "rate_limited" });
+
+    const unavailable = rejectDisabledSpotify();
+    if (unavailable) return unavailable;
+
+    let body: Body = {};
+    try {
+      body = (await req.json()) as Body;
+    } catch {
+      body = {};
     }
+    const limit = clamp(Math.trunc(Number(body.limit ?? 20)) || 20, 1, 50);
+    const radiusKm = typeof body.radius_km === "number" ? clamp(body.radius_km, 5, 500) : null;
+    const now = new Date();
+    const admin = createSupabaseServiceClient();
 
-    const body = (await req.json()) as RecommendEventsRequest;
-    // SECURITY: Use authenticated user's ID instead of trusting the body
-    body.user_id = user.id;
-
-    const limit = clamp(body.limit ?? 20, 1, 50);
-
-    const supabase = createSupabaseServiceClient();
-
-    const { data: targetUser, error: targetUserError } = await supabase
-      .from("users")
-      .select("is_test_user")
-      .eq("id", body.user_id)
-      .maybeSingle<{ is_test_user: boolean }>();
-    if (targetUserError) throw targetUserError;
-    const targetIsTestUser = targetUser?.is_test_user === true;
-
-    // ── Load user music profile ──────────────────────────────
-    const { data: profile, error: profileError } = await supabase
-      .from("music_profiles")
-      .select("user_id, top_artists, top_genres, embedding")
-      .eq("user_id", body.user_id)
-      .maybeSingle<MusicProfileRow & { embedding: string }>();
-
-    if (profileError) throw profileError;
-    if (!profile) {
-      return new Response(
-        JSON.stringify({
-          error: "music_profile_not_found",
-          message:
-            "Profilo musicale non trovato. Esegui prima la sync Spotify.",
-        }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    const artistScoreBySpotifyId = new Map<string, number>();
-    for (const a of (profile.top_artists ?? [])) {
-      if (a?.id) artistScoreBySpotifyId.set(a.id, clamp(Number(a.score ?? 0), 0, 100));
-    }
-
-    const genreWeight = new Map<string, number>();
-    for (const g of (profile.top_genres ?? [])) {
-      const key = (g?.genre ?? "").toString().trim().toLowerCase();
-      if (!key) continue;
-      genreWeight.set(key, clamp(Number(g.weight ?? 0), 0, 1));
-    }
-
-    // ── Load events ─────────────────────────────────────────
-    const now = new Date().toISOString();
-    let events: EventRow[] = [];
-    let eventsError = null;
-
-    if (typeof body.latitude === "number" && typeof body.longitude === "number") {
-      // Read-only PostGIS RPC: calculate distance in the database without
-      // persisting a caller location as a side effect.
-      const { data, error } = await supabase.rpc("find_events_in_radius", {
-        p_latitude: body.latitude,
-        p_longitude: body.longitude,
-        p_radius_meters: 100000, // default 100 km for recommendations
-        p_status: "onsale",
-        p_limit: 500,
+    // ── Musical identity (Spotify and/or picked genres) ─────────────────
+    const { data: inputRows, error: inputError } = await admin.rpc("get_musical_dna_input", { p_user_id: user.id });
+    if (inputError) throw inputError;
+    const input = (Array.isArray(inputRows) ? inputRows[0] : inputRows) as DnaInput | undefined;
+    const dna = input ? computeMusicalDna(input) : null;
+    if (!dna) {
+      return reply(404, {
+        error: "music_profile_not_found",
+        message: "Connect Spotify or pick genres to get recommendations.",
       });
-      eventsError = error;
-      events = (data ?? []).map((e: any) => ({
-        ...e,
-        latitude: e.location_lat,
-        longitude: e.location_lon,
-      }));
-    } else {
-      // Fallback
-      const { data, error } = await supabase
-        .from("events")
-        .select(
-          "id, external_id, source, name, artist_name, artist_spotify_id, venue_name, city, country, latitude, longitude, event_date, ticket_url, price_min, price_max, image_url, description, embedding"
-        )
-        .gte("event_date", now)
-        .order("event_date", { ascending: true })
-        .limit(600);
-      eventsError = error;
-      events = data as EventRow[] ?? [];
     }
 
+    // ── Previous interests: saved/going events and ticket clicks ────────
+    const [{ data: saved }, { data: clicks }] = await Promise.all([
+      admin.from("event_attendees").select("event_id").eq("user_id", user.id)
+        .in("status", ["interested", "going", "maybe"]).order("created_at", { ascending: false }).limit(100),
+      admin.from("ticket_clicks").select("event_id").eq("user_id", user.id)
+        .order("clicked_at", { ascending: false }).limit(100),
+    ]);
+    const interestIds = [...new Set([...(saved ?? []), ...(clicks ?? [])].map((r: { event_id: string }) => r.event_id))];
+    const savedIds = new Set((saved ?? []).map((r: { event_id: string }) => r.event_id));
+    const interestArtists: string[] = [];
+    const interestFamilies: string[] = [];
+    if (interestIds.length) {
+      const { data: past } = await admin.from("events").select("artist_name, genres").in("id", interestIds.slice(0, 200));
+      for (const e of past ?? []) {
+        if (e.artist_name) interestArtists.push(e.artist_name);
+        interestFamilies.push(...eventGenres(e.genres).families);
+      }
+    }
+
+    const taste: UserTaste = {
+      dna,
+      topArtists: (input?.top_artists ?? []).map((a) => ({ id: a?.id ?? null, name: a?.name ?? null })),
+      trackArtists: (input?.top_tracks ?? []).map((t) => t?.artist).filter((a): a is string => typeof a === "string"),
+      interestArtists: [...new Set(interestArtists)],
+      interestFamilies,
+    };
+
+    // ── Location: the request's (device) position, else the user's own
+    // consented server location. Never anyone else's.
+    const [{ data: me }, { data: prefs }] = await Promise.all([
+      admin.from("users").select("last_latitude, last_longitude, is_test_user").eq("id", user.id).maybeSingle(),
+      admin.from("privacy_preferences").select("location_processing").eq("user_id", user.id).maybeSingle(),
+    ]);
+    let origin: { lat: number; lon: number } | null = null;
+    let locationSource: "request" | "saved" | "none" = "none";
+    if (validLat(body.latitude) && validLon(body.longitude)) {
+      origin = { lat: body.latitude, lon: body.longitude };
+      locationSource = "request";
+    } else if (prefs?.location_processing && validLat(me?.last_latitude) && validLon(me?.last_longitude)) {
+      origin = { lat: me.last_latitude, lon: me.last_longitude };
+      locationSource = "saved";
+    }
+
+    // ── Candidate events (published data only) ──────────────────────────
+    const from = isoOrNull(body.date_from);
+    const to = isoOrNull(body.date_to);
+    const start = from && from > now ? from : now;
+    const end = to ?? new Date(now.getTime() + 365 * 86_400_000);
+    let query = admin.from("events").select(EVENT_COLUMNS)
+      .gte("event_date", start.toISOString())
+      .lte("event_date", end.toISOString())
+      .not("status", "eq", "canceled");
+    if (me?.is_test_user !== true) query = query.eq("is_test_data", false);
+    if (origin && radiusKm) {
+      const dLat = radiusKm / 111;
+      const dLon = radiusKm / (111 * Math.max(Math.cos((origin.lat * Math.PI) / 180), 0.05));
+      query = query
+        .gte("latitude", origin.lat - dLat).lte("latitude", origin.lat + dLat)
+        .gte("longitude", origin.lon - dLon).lte("longitude", origin.lon + dLon);
+    }
+    const priceMax = typeof body.price_max === "number" && body.price_max > 0 ? body.price_max : null;
+    if (priceMax !== null) {
+      query = query.eq("price_currency", "EUR").not("price_min", "is", null).lte("price_min", priceMax);
+    }
+    const { data: events, error: eventsError } = await query.order("event_date", { ascending: true }).limit(800);
     if (eventsError) throw eventsError;
 
-    // Service-role reads bypass RLS. Apply the same segmentation explicitly so
-    // synthetic staging events can never enter a real beta user's feed.
-    if (!targetIsTestUser && events.length > 0) {
-      const eventIds = events.map((event) => event.id);
-      const { data: syntheticRows, error: syntheticRowsError } = await supabase
-        .from("events")
-        .select("id")
-        .in("id", eventIds)
-        .eq("is_test_data", true);
-      if (syntheticRowsError) throw syntheticRowsError;
-      const syntheticIds = new Set((syntheticRows ?? []).map((row) => row.id));
-      events = events.filter((event) => !syntheticIds.has(event.id));
-    }
+    const filters = {
+      family: typeof body.family === "string" && /^[a-z0-9-]{2,40}$/.test(body.family) ? body.family : null,
+      artist: typeof body.artist === "string" ? body.artist.slice(0, 80) : null,
+      radiusKm,
+    };
+    const ranked = (events ?? [])
+      .map((event) => ({ event, rec: scoreEvent(event as RecEvent, taste, { now, origin }) }))
+      .filter(({ event, rec }) => rec.relevance > 0 && passesFilters(rec, event as RecEvent, filters))
+      .sort((a, b) => b.rec.total - a.rec.total || a.event.event_date.localeCompare(b.event.event_date))
+      .slice(0, limit);
 
-    const spotifyArtistIds = Array.from(
-      new Set(
-        (events ?? [])
-          .map((e) => e.artist_spotify_id)
-          .filter((x): x is string => !!x && x.length > 0),
-      ),
-    );
-
-    const spotifyArtists = await fetchSpotifyArtistsByIds(spotifyArtistIds);
-    const spotifyById = new Map<string, { genres: string[]; followers: number }>();
-    for (const a of spotifyArtists) {
-      const genres = (a.genres ?? []).map((g) => g.toLowerCase());
-      const followers = Number(a.followers?.total ?? 0);
-      spotifyById.set(a.id, { genres, followers });
-    }
-
-    const followerValues = Array.from(spotifyById.values()).map((v) => v.followers);
-    const maxFollowers = followerValues.length ? Math.max(...followerValues) : 0;
-    const minFollowers = followerValues.length ? Math.min(...followerValues) : 0;
-
-    function parseVector(v: any): number[] {
-      if (!v) return [];
-      if (Array.isArray(v)) return v;
-      if (typeof v === "string") {
-        try { return JSON.parse(v); } catch(e) { return []; }
-      }
-      return [];
-    }
-
-    function cosineSimilarity(vecA: number[], vecB: number[]) {
-      if (!vecA || !vecB || vecA.length === 0 || vecA.length !== vecB.length) return 0;
-      let dotProduct = 0, normA = 0, normB = 0;
-      for (let i = 0; i < vecA.length; i++) {
-        dotProduct += vecA[i] * vecB[i];
-        normA += vecA[i] * vecA[i];
-        normB += vecB[i] * vecB[i];
-      }
-      if (normA === 0 || normB === 0) return 0;
-      return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
-    }
-
-    const userVec = parseVector((profile as any).embedding);
-
-    const withScores = (events ?? []).map((event) => {
-      const artistId = event.artist_spotify_id ?? "";
-
-      // artist_match_score: 0..100
-      const artistMatchScore = clamp(artistScoreBySpotifyId.get(artistId) ?? 0, 0, 100);
-
-      // genre_match_score: media pesata dei generi dell'artista nel profilo utente
-      const artistGenres = spotifyById.get(artistId)?.genres ?? [];
-      const genreWeights = artistGenres
-        .map((g) => genreWeight.get(g))
-        .filter((w): w is number => typeof w === "number");
-      const avgGenreWeight = genreWeights.length
-        ? genreWeights.reduce((a, b) => a + b, 0) / genreWeights.length
-        : 0;
-      const genreMatchScore = clamp(avgGenreWeight * 100, 0, 100);
-
-      // Vector similarity (if available)
-      const eventVec = parseVector((event as any).embedding);
-      let vectorScore = 0;
-      if (userVec.length > 0 && eventVec.length > 0) {
-        vectorScore = clamp(cosineSimilarity(userVec, eventVec) * 100, 0, 100);
-      }
-
-      // proximity_score (S_geo)
-      const proximity = typeof event.distance_meters === "number"
-        ? proximityScore(event.distance_meters / 1000)
-        : 0;
-
-      // popularity_score (S_social): normalizzazione follower 0..100
-      const followers = spotifyById.get(artistId)?.followers ?? 0;
-      let popularity = 0;
-      if (maxFollowers > minFollowers) {
-        popularity = ((followers - minFollowers) / (maxFollowers - minFollowers)) * 100;
-      } else if (followers > 0) {
-        popularity = 50;
-      }
-      popularity = clamp(popularity, 0, 100);
-
-      // time_score (S_time): penalty per eventi più lontani. Max 100 per eventi odierni, 0 per eventi oltre i 6 mesi (~180 giorni)
-      const eventDate = new Date(event.event_date);
-      const daysDiff = (eventDate.getTime() - new Date(now).getTime()) / (1000 * 60 * 60 * 24);
-      const timeScore = clamp(100 - (daysDiff / 180) * 100, 0, 100);
-
-      // Se abbiamo il vectorScore usiamo quello, altrimenti il vecchio artistMatchScore
-      const s_music = vectorScore > 0 ? vectorScore : artistMatchScore;
-
-      // S_tot: Formula ibrida
-      const total = (s_music * 0.45) +
-        (proximity * 0.30) +
-        (popularity * 0.15) +
-        (timeScore * 0.10);
-
-      return {
+    return reply(200, {
+      user_id: user.id,
+      limit,
+      location_source: locationSource,
+      data: ranked.map(({ event, rec }) => ({
         event,
+        saved: savedIds.has(event.id),
+        distance_km: rec.distanceKm,
+        families: rec.families,
+        reasons: rec.reasons,
         score: {
-          total: Number(total.toFixed(2)),
-          artist_match_score: Number(artistMatchScore.toFixed(2)),
-          genre_match_score: Number(genreMatchScore.toFixed(2)),
-          vector_score: Number(vectorScore.toFixed(2)),
-          proximity_score: Number(proximity.toFixed(2)),
-          popularity_score: Number(popularity.toFixed(2)),
-          time_score: Number(timeScore.toFixed(2)),
+          total: rec.total,
+          compatibility: rec.relevance,
+          artist_match_score: rec.artist,
+          genre_match_score: rec.genre,
+          interest_score: rec.interest,
+          proximity_score: rec.proximity,
+          time_score: rec.soonness,
         },
-      };
+      })),
     });
-
-    withScores.sort((a, b) => b.score.total - a.score.total);
-
-    return new Response(
-      JSON.stringify({
-        user_id: body.user_id,
-        limit,
-        data: withScores.slice(0, limit),
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
-  } catch (e: any) {
-    return new Response(
-      JSON.stringify({
-        error: "internal_error",
-        message: String(e?.message ?? e),
-      }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+  } catch (e) {
+    console.error("recommend-events failed", e instanceof Error ? e.message : e);
+    return reply(500, { error: "internal_error" });
   }
 });

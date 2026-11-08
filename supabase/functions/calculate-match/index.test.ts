@@ -1,35 +1,43 @@
-import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { clamp } from "../_shared/geo.ts";
+import { assert, assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
+import {
+  eventCompatibility, rankWeight, weightedJaccard,
+} from "../_shared/music_match.ts";
+import { familiesOf, familyWeights } from "../_shared/genre_taxonomy.ts";
 
-// Abbiamo estratto la logica core della formula in una funzione pura
-// per poterla testare indipendentemente dai side-effects di Supabase e HTTP.
-export function calculateMatchScore(
-  sharedArtists: number
-): number {
-  const topArtistsDen = 50;
-  return clamp((sharedArtists / topArtistsDen) * 100, 0, 100);
-}
+const artists = (ids: string[]) => ids.map((id, i) => ({ id, name: `Artist ${id}`, score: 100 - i }));
+const genres = (pairs: Array<[string, number]>) => pairs.map(([genre, weight]) => ({ genre, weight }));
 
-Deno.test("Calculate Match - Caso limite 1: 50 artisti condivisi", () => {
-  const sharedArtists = 50;
-  const score = calculateMatchScore(sharedArtists);
-  
-  // (50/50)*100 = 100
-  assertEquals(Math.round(score), 100);
+Deno.test("rank weight: #1 counts 1.00, #50 counts 0.51", () => {
+  assertEquals(rankWeight(0), 1);
+  assertEquals(rankWeight(49), 0.51);
 });
 
-Deno.test("Calculate Match - Caso limite 2: 0 artisti in comune", () => {
-  const sharedArtists = 0;
-  const score = calculateMatchScore(sharedArtists);
-  
-  // (0/50)*100 = 0
-  assertEquals(Math.round(score), 0);
+Deno.test("weighted Jaccard is 1 for identical and 0 for disjoint profiles", () => {
+  const a = new Map([["x", 1], ["y", 0.5]]);
+  assertEquals(weightedJaccard(a, a), 1);
+  assertEquals(weightedJaccard(a, new Map([["z", 1]])), 0);
+  assertEquals(weightedJaccard(new Map(), new Map()), 0);
 });
 
-Deno.test("Calculate Match - Caso ibrido: 25 artisti condivisi", () => {
-  const sharedArtists = 25;
-  const score = calculateMatchScore(sharedArtists);
-  
-  // Artists: (25/50)*100 = 50
-  assertEquals(Math.round(score), 50);
+// People ↔ people affinity tests: _shared/music_affinity.test.ts.
+
+Deno.test("Spotify micro-genres and Ticketmaster classifications share families", () => {
+  assert(familiesOf("Hip-Hop/Rap").includes("hip-hop"));
+  assert(familiesOf("italian hip hop").includes("hip-hop"));
+  assert(familiesOf("Dance/Electronic").includes("electronic"));
+  assert(familiesOf("deep house").includes("house"));
+  assert(familiesOf("deep house").includes("electronic"));
+  assert(familiesOf("indie rock").includes("indie") && familiesOf("indie rock").includes("rock"));
+  assertEquals(familiesOf("Undefined"), []);
+  assertEquals(familyWeights(genres([["indie pop", 0.5], ["indie rock", 1]])).get("indie"), 1);
+});
+
+Deno.test("event compatibility: top artist → 100, genre fit → ≤ 80, unrelated → 0", () => {
+  const profile = { top_artists: artists(["sp1"]).map((a) => ({ ...a, name: "Calcutta" })), top_genres: genres([["italian indie pop", 1]]) };
+  assertEquals(eventCompatibility(profile, { artist_name: "Calcutta", genres: ["Rock"] }).compatibility, 100);
+  assertEquals(eventCompatibility(profile, { artist_spotify_id: "sp1" }).compatibility, 100);
+  assertEquals(eventCompatibility(profile, { artist_name: "Other band", genres: ["Pop"] }).compatibility, 80);
+  assertEquals(eventCompatibility(profile, { artist_name: "Metal band", genres: ["Metal"] }).compatibility, 0);
+  // Names match on word boundaries only.
+  assertEquals(eventCompatibility(profile, { name: "Calcuttarama festival", genres: [] }).compatibility, 0);
 });

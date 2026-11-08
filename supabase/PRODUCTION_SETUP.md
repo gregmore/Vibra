@@ -49,16 +49,19 @@ Le funzioni usano i secret gia' presenti nel progetto. Dopo un cambiamento:
 supabase functions deploy send-notifications
 supabase functions deploy retention-notifications
 supabase functions deploy event-reminders
+supabase functions deploy send-chat-notification
+supabase functions deploy send-social-notification
 supabase functions deploy spotify-token-exchange
 supabase functions deploy sync-music-profile
 supabase functions deploy spotify-disconnect
 supabase functions deploy delete-account
+supabase functions deploy search-events
 supabase functions deploy ticketmaster-sync --no-verify-jwt
 ```
 
-`ticketmaster-sync` accetta esclusivamente il bearer `SUPABASE_SERVICE_ROLE_KEY`:
-richiamarla da pg_cron/Vault o da un job esterno, mai dal client. Per generare
-la chiave cifrante: `openssl rand -base64 32`, poi
+`ticketmaster-sync` accetta esclusivamente la credenziale dedicata descritta
+nella sezione Catalogo eventi: richiamarla da pg_cron/Vault o da un job esterno,
+mai dal client. Per generare la chiave cifrante Spotify: `openssl rand -base64 32`, poi
 `supabase secrets set SPOTIFY_TOKEN_ENCRYPTION_KEY='...'`.
 
 Le email ospitate vanno personalizzate in **Authentication > Email Templates**
@@ -75,6 +78,30 @@ questi secret. Poi eseguire [`setup_notification_cron.sql`](setup_notification_c
 SQL Editor. La chiave verra' letta da Vault a ogni esecuzione, non salvata in
 chiaro nel job.
 
+Configurare inoltre nei **Secret Edge** `VIBRA_NOTIFICATION_WORKER_KEY`, con
+valore identico a `vibra_service_role_key` di Vault. È la stessa credenziale già
+usata dallo scheduler, senza creare una nuova identità. Il valore riservato
+`SUPABASE_SERVICE_ROLE_KEY` fornito automaticamente al runtime può differire
+dalla chiave API di progetto; non usarne l'uguaglianza come unica verifica del
+chiamante. Le cinque funzioni push leggono l'override esplicito e mantengono
+`verify_jwt = true`; non distribuire questi worker con `--no-verify-jwt`.
+Una variabile esplicita vuota o troppo corta fallisce chiusa.
+
+Impostare il valore dal gestore segreti o tramite un file temporaneo privato
+passato a `supabase secrets set --env-file`, eliminandolo subito dopo. Non
+inserire il valore nella riga di comando, nel repository, nei log o in
+`.env.public`. Quando si ruota la credenziale dello scheduler, aggiornare anche
+l'override Edge. Il preflight di pubblicazione ne richiede la presenza.
+
+Verificare le risposte HTTP effettive in `net._http_response`: un run cron
+`succeeded` dimostra soltanto l'accodamento della richiesta. Per una prova
+senza effetti, i webhook social/Live con operazione `UPDATE` devono rispondere
+200 `ignored`; i tre job con metodo GET devono rispondere 405, mentre
+credenziali assenti/errate restano 401. Non invocare un POST operativo di
+`event-reminders` per un semplice controllo. Il
+[report push del 18 ottobre](../docs/push-readiness-20261018.md) documenta
+diagnosi, prove e limiti del collaudo reale.
+
 Il medesimo script programma anche `retention-notifications`: registra le
 campagne in `notification_campaigns` e usa la view privata
 `notification_campaign_metrics` per open, return entro 72 ore e opt-out. Il
@@ -87,6 +114,50 @@ gli utenti reali da eventuali fixture residue.
 
 Le RPC esposte dall'app sono disponibili solo al ruolo `authenticated`; le
 funzioni trigger e le routine interne non sono invocabili tramite l'API.
+
+## Catalogo eventi
+
+Le migrazioni `20261014000001_events_catalogue.sql` e
+`20261015000000_catalogue_worker_auth.sql` configurano la cache delle ricerche e
+il job `invoke-ticketmaster-sync`, eseguito ogni sei ore con paesi `IT`.
+La funzione privata `vibra_private.enqueue_catalogue_sync()` legge endpoint e
+credenziale da Vault a ogni esecuzione; nessun segreto compare nel comando cron
+o nel codice della migrazione.
+
+Configurare dai gestori di segreti del backend, senza inserire valori nel
+repository o nell’asset pubblico dell’app:
+
+| Gestore | Nome | Contenuto |
+|---|---|---|
+| Secret Edge | `TICKETMASTER_API_KEY` | Chiave del fornitore eventi |
+| Secret Edge | `VIBRA_CATALOGUE_JOB_SECRET` | Credenziale casuale dedicata, da 32 a 256 caratteri |
+| Database Vault | `vibra_catalogue_job_secret` | La stessa credenziale dedicata del secret Edge |
+| Database Vault | `vibra_functions_url` | Base HTTPS `https://<project-ref>.supabase.co/functions/v1` |
+
+Il job usa l’header `x-vibra-job-secret`; non invia il bearer della service-role
+key. `verify_jwt = false` per questo solo worker consente il passaggio del job
+al suo controllo dedicato: la funzione verifica sempre la credenziale prima di
+leggere la richiesta o avviare l’importazione. Il suo confronto non ammette
+chiavi utente o service-role come alternativa. Configurazione assente o vuota
+non avvia alcun lavoro; una credenziale mancante o errata riceve HTTP 401.
+Per la rotazione aggiornare entrambi i gestori con lo stesso nuovo valore.
+
+`search-events` è invece una funzione per utenti autenticati, con sessione
+valida e limiti di richiesta. Aggiorna l’area richiesta e restituisce i risultati
+attraverso i permessi del chiamante. La cache condivisa conserva soltanto aree
+geografiche approssimate e tempi di aggiornamento; nessuna identità o cronologia
+della posizione dell’utente. I client non possono leggere o modificare la tabella
+`event_provider_search_cache` o invocare la sua funzione interna di acquisizione.
+
+Per verificare il worker senza scrivere dati, una richiesta con credenziale
+corretta e lista paesi volutamente invalida deve restituire HTTP 400; richieste
+anonime o con credenziale errata devono restituire 401. Una richiesta valida
+effettua invece un’importazione reale. Verificare poi codice HTTP, numero di
+eventi importati, pagine, indicatore di troncamento e conteggi geografici.
+Non stampare header o contenuti di Vault nei log di verifica.
+
+Il deploy e l’importazione del 15 ottobre sono documentati nel
+[rapporto corrente](../docs/bugfixes-20261015.md).
 
 ## Verifica
 
@@ -113,3 +184,27 @@ e non contiene dati utente.
 ## Aggiornamento hosted del 10 ottobre 2026
 
 Esiti e limiti della verifica: [report backend](../docs/backend-20261010.md).
+
+## Correzioni distribuite il 13 ottobre 2026
+
+Le migrazioni `20261013000000` e `20261013000001` correggono messaggi/blocchi,
+posizione con consenso e collegamento Spotify. Applicarle prima di distribuire
+le versioni aggiornate di `spotify-token-exchange`, `spotify-disconnect` e
+`sync-music-profile`, che usano le nuove RPC transazionali. Le due migrazioni e le tre funzioni sono state distribuite dopo backup e
+autorizzazione. Esiti hosted: [report backend](../docs/backend-20261013.md).
+Prove isolate di sicurezza: [report sicurezza](../docs/security/launch-20261013.md).
+
+## VIBRA AI (facoltativo)
+
+L'assistente musicale è facoltativo: senza configurazione la funzione
+`vibra-ai` risponde "non disponibile" e il resto dell'app non cambia. Per
+attivarlo, impostare nei **Secret Edge** (con `supabase secrets set --env-file`
+da un file temporaneo, mai nella riga di comando):
+
+- `ANTHROPIC_API_KEY`: chiave dell'API Anthropic.
+- `VIBRA_AI_MODEL` (opzionale): modello, predefinito `claude-opus-5-5`.
+- `VIBRA_AI_ENABLED=false` (opzionale): spegne l'assistente senza ridistribuire.
+
+Poi `supabase functions deploy vibra-ai`. Gli utenti devono comunque attivarlo
+esplicitamente nell'app (consenso registrato in `privacy_preferences`).
+Dettagli: [`docs/vibra-ai.md`](../docs/vibra-ai.md).

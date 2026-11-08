@@ -15,7 +15,9 @@ Deno.test('calendar reminders survive DST and the UTC date boundary', () => {
   assertEquals(reminderDays('2026-10-10T23:30:00Z', new Date('2026-10-11T00:15:00Z')), 0);
 });
 Deno.test('both global consent and event category can disable reminders', () => {
-  assertEquals(remindersEnabled({ push_enabled: false }), false);
+  // Push off only stops the push (record_notification); the reminder stays in-app.
+  assertEquals(remindersEnabled({ push_enabled: false }), true);
+  assertEquals(remindersEnabled({ push_settings: { reminders: false } }), false);
   assertEquals(remindersEnabled({ push_enabled: true, push_settings: { event_alert: false } }), false);
   assertEquals(remindersEnabled({ push_enabled: true }), true);
 });

@@ -1,37 +1,107 @@
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
-import { requireEnv } from "../_shared/env.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
+import { limitedJson, searchTicketmasterAll } from "../_shared/ticketmaster.ts";
 
-// Invoke only with the service-role bearer token from a cron/job runner.
+/** Provider requests per run (~1 s each; stays inside the edge wall clock). */
+const DEFAULT_REQUEST_BUDGET = 90;
+const DEFAULT_MONTHS = 6;
+import { catalogueJobAuthorized } from "../_shared/catalogue_auth.ts";
+
+const headers = { ...corsHeaders, "Content-Type": "application/json" };
 Deno.serve(async (req) => {
   const preflight = handleOptions(req);
   if (preflight) return preflight;
-  if (req.method !== "POST" || req.headers.get("Authorization") !== `Bearer ${requireEnv("SUPABASE_SERVICE_ROLE_KEY")}`) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
-  }
-  const key = requireEnv("TICKETMASTER_API_KEY");
-  const supabase = createSupabaseServiceClient();
-  let page = 0, imported = 0, totalPages = 1;
-  while (page < totalPages && page < 50) { // safety cap: 10k events per run
-    const url = new URL("https://app.ticketmaster.com/discovery/v2/events.json");
-    url.searchParams.set("apikey", key); url.searchParams.set("classificationName", "music");
-    url.searchParams.set("size", "200"); url.searchParams.set("page", String(page));
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Ticketmaster failed: ${response.status}`);
-    const json = await response.json();
-    totalPages = Math.min(Number(json.page?.totalPages ?? 0), 50);
-    const rows = (json._embedded?.events ?? []).map((event: any) => {
-      const venue = event._embedded?.venues?.[0];
-      return { external_id: event.id, source: "ticketmaster", name: event.name,
-        artist_name: event._embedded?.attractions?.[0]?.name ?? null, venue_name: venue?.name ?? null,
-        city: venue?.city?.name ?? null, country: venue?.country?.countryCode ?? null,
-        latitude: Number(venue?.location?.latitude) || null, longitude: Number(venue?.location?.longitude) || null,
-        event_date: event.dates?.start?.dateTime ?? `${event.dates?.start?.localDate}T00:00:00Z`,
-        ticket_url: event.url ?? null, image_url: event.images?.[0]?.url ?? null,
-        price_min: event.priceRanges?.[0]?.min ?? null, price_max: event.priceRanges?.[0]?.max ?? null };
+  if (req.method !== "POST" || !await catalogueJobAuthorized(req)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers,
     });
-    if (rows.length) { const { error } = await supabase.from("events").upsert(rows, { onConflict: "source,external_id" }); if (error) throw error; imported += rows.length; }
-    page++;
   }
-  return new Response(JSON.stringify({ imported, pages: page }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const key = Deno.env.get("TICKETMASTER_API_KEY");
+  if (!key) {
+    return new Response(
+      JSON.stringify({ error: "event_provider_not_configured" }),
+      { status: 503, headers },
+    );
+  }
+  let body: any;
+  try {
+    body = req.body ? await limitedJson(new Response(req.body), 2048) : {};
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      throw new Error();
+    }
+  } catch {
+    return new Response(JSON.stringify({ error: "invalid_request" }), {
+      status: 400,
+      headers,
+    });
+  }
+  const countries: string[] = body.country_codes ?? ["IT"];
+  if (
+    !Array.isArray(countries) || countries.length < 1 || countries.length > 5 ||
+    countries.some((c) => typeof c !== "string" || !/^[A-Z]{2}$/.test(c))
+  ) {
+    return new Response(JSON.stringify({ error: "invalid_countries" }), {
+      status: 400,
+      headers,
+    });
+  }
+  const months = body.months ?? DEFAULT_MONTHS;
+  const budget = body.max_requests ?? DEFAULT_REQUEST_BUDGET;
+  if (
+    !Number.isInteger(months) || months < 1 || months > 12 ||
+    !Number.isInteger(budget) || budget < 1 || budget > 200
+  ) {
+    return new Response(JSON.stringify({ error: "invalid_request" }), {
+      status: 400,
+      headers,
+    });
+  }
+  const unique = [...new Set(countries)];
+  const results = [], admin = createSupabaseServiceClient();
+  try {
+    for (const countryCode of unique) {
+      const start = new Date();
+      const end = new Date(start);
+      end.setUTCMonth(end.getUTCMonth() + months);
+      // Every music event in the horizon, split into date windows so the
+      // provider's 1000-result paging ceiling never hides events.
+      const result = await searchTicketmasterAll(
+        key,
+        { countryCode, start, end },
+        fetch,
+        Math.max(1, Math.floor(budget / unique.length)),
+      );
+      for (let offset = 0; offset < result.rows.length; offset += 200) {
+        const { error } = await admin.from("events").upsert(
+          result.rows.slice(offset, offset + 200),
+          { onConflict: "source,external_id" },
+        );
+        if (error) throw new Error("catalogue_write_failed");
+      }
+      results.push({
+        country: countryCode,
+        imported: result.rows.length,
+        total: result.total,
+        requests: result.requests,
+        windows: result.windows,
+        truncated: result.truncated,
+      });
+    }
+    return new Response(
+      JSON.stringify({
+        imported: results.reduce((n, r) => n + r.imported, 0),
+        countries: results,
+      }),
+      { headers },
+    );
+  } catch {
+    return new Response(
+      JSON.stringify({
+        error: "catalogue_sync_failed",
+        completed_countries: results,
+      }),
+      { status: 502, headers },
+    );
+  }
 });

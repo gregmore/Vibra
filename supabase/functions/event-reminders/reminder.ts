@@ -18,5 +18,6 @@ export function remindersEnabled(user: {
   push_enabled?: boolean | null;
   push_settings?: Record<string, boolean> | null;
 }): boolean {
-  return user.push_enabled !== false && user.push_settings?.event_alert !== false;
+  // Reminders off (or the older concerts switch off) means no reminders.
+  return user.push_settings?.reminders !== false && user.push_settings?.event_alert !== false;
 }

@@ -432,3 +432,15 @@ entrypoint = "./functions/compute-event-embeddings/index.ts"
 [auth.hook.password_verification_attempt]
 enabled = true
 uri = "pg-functions://postgres/public/hook_password_verification_attempt"
+
+# A dedicated Vault/Edge job secret is verified by the handler before any work.
+[functions.ticketmaster-sync]
+verify_jwt = false
+
+# Hourly Spotify sync: same dedicated job secret, verified by the handler.
+[functions.spotify-sync-worker]
+verify_jwt = false
+
+# Hourly story and feed photo cleanup: same dedicated job secret, verified by the handler.
+[functions.media-purge]
+verify_jwt = false

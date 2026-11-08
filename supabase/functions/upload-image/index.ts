@@ -38,8 +38,8 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return reply(405, "method_not_allowed");
   const rejected = await rejectRevokedSession(req, "upload-image"); if (rejected) return rejected;
   const bucket = new URL(req.url).searchParams.get("bucket") ?? "avatars";
-  if (!["avatars", "chat-media", "support-attachments"].includes(bucket)) return reply(400, "invalid_bucket");
-  const maximum = bucket === "chat-media" ? 10*1024*1024 : 5*1024*1024;
+  if (!["avatars", "chat-media", "support-attachments", "story-media", "feed-media"].includes(bucket)) return reply(400, "invalid_bucket");
+  const maximum = bucket === "chat-media" || bucket === "story-media" || bucket === "feed-media" ? 10*1024*1024 : 5*1024*1024;
   const reader = req.body?.getReader(); if (!reader) return reply(400, "missing_image");
   const chunks: Uint8Array[] = []; let length = 0;
   while (true) {

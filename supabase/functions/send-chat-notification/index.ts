@@ -1,6 +1,7 @@
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
-import { sendFcm } from "../_shared/fcm.ts";
+import { deliver } from "../_shared/notification_delivery.ts";
+import { notificationWorkerAuthorized } from "../_shared/notification_worker_auth.ts";
 
 type LiveMessageRecord = {
   id: string;
@@ -25,9 +26,7 @@ Deno.serve(async (req) => {
   if (preflight) return preflight;
 
   // SECURITY: Verify the request is authorized (e.g. from internal webhook or cron)
-  const authHeader = req.headers.get("Authorization");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!serviceRoleKey || authHeader !== `Bearer ${serviceRoleKey}`) {
+  if (!await notificationWorkerAuthorized(req)) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -100,41 +99,21 @@ Deno.serve(async (req) => {
       body = body.substring(0, 97) + "...";
     }
 
-    const notificationsToInsert = [];
-
+    // One policy for every notification (record_notification). A busy
+    // event chat is grouped per event: one notification, pushed again at
+    // most every 30 minutes, never from someone blocked.
     for (const user of (users || [])) {
       if (user.push_settings?.live_chat === false) continue;
-
-      notificationsToInsert.push({
-        user_id: user.id,
-        type: 'live_chat',
-        title: title,
-        body: body,
-        data: {
-          event_id: eventData.id,
-          message_id: record.id,
-        },
-        read: false,
+      const result = await deliver(supabase, {
+        userId: user.id,
+        type: "live_chat",
+        title,
+        body,
+        actorId: record.user_id ? String(record.user_id) : null,
+        groupKey: `live:${eventData.id}`,
+        data: { event_id: String(eventData.id), message_id: String(record.id ?? "") },
       });
-
-      if (user.fcm_token && user.push_enabled !== false) {
-        const ok = await sendFcm(
-          user.fcm_token,
-          title,
-          body,
-          {
-            type: "live_chat",
-            event_id: eventData.id,
-            message_id: record.id,
-          }
-        );
-        if (ok) pushed++;
-      }
-    }
-
-    // 5. Salva log notifiche nel DB
-    if (notificationsToInsert.length > 0) {
-      await supabase.from("notifications").insert(notificationsToInsert);
+      if (result.pushed) pushed++;
     }
 
     return new Response(

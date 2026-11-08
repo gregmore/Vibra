@@ -19,9 +19,10 @@ Deno.test("hydrates empty and missing genres for every artist, retaining existin
   });
   equal(requested, ["b", "c"]);
   equal(genres, [
+    // Rank-weighted: rap (#1 + #2) > trap (#2) > pop (#3).
     { genre: "rap", weight: 1 },
-    { genre: "pop", weight: 0.5 },
-    { genre: "trap", weight: 0.5 },
+    { genre: "trap", weight: 0.4975 },
+    { genre: "pop", weight: 0.4925 },
   ]);
 });
 

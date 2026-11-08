@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { sendFcm } from "../_shared/fcm.ts";
+import { deliver } from "../_shared/notification_delivery.ts";
+import { notificationWorkerAuthorized } from "../_shared/notification_worker_auth.ts";
 import { reminderDays, remindersEnabled } from "./reminder.ts";
 
 const corsHeaders = {
@@ -14,13 +15,19 @@ Deno.serve(async (req) => {
   }
 
   // Se è un webhook da pg_cron, possiamo verificare un token o header
-  const authHeader = req.headers.get("Authorization");
   // SECURITY: Require Service Role Key
-  if (!authHeader || authHeader !== `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`) {
+  if (!await notificationWorkerAuthorized(req)) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+  }
+
+  if (req.method.toUpperCase() !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -92,23 +99,25 @@ Deno.serve(async (req) => {
     let sent = 0;
     let created = 0;
     for (const notif of notifications) {
-      // Keep an inbox record even when FCM is unavailable; this is a
-      // transactional event reminder, so it does not consume the retention cap.
-      const { error: insertError } = await supabaseClient.from('notifications').insert({
-        user_id: notif.userId,
-        type: 'event_alert',
-        title: notif.title,
-        body: notif.body,
-        data: { event_id: notif.eventId, reminder: true, reminder_days: notif.days },
-      });
-      // The unique reminder key makes reruns safe; do not send a second push.
-      if (insertError?.code === '23505') continue;
-      if (insertError) throw insertError;
-      created++;
-      if (notif.token && await sendFcm(notif.token, notif.title, notif.body, {
-        type: 'event_alert', event_id: notif.eventId,
-      })) {
-        sent++;
+      // One policy for every notification (record_notification): stored
+      // in-app, pushed only if the user's preferences, quiet hours and caps
+      // allow it. The group key keeps reruns from stacking duplicates.
+      try {
+        const result = await deliver(supabaseClient, {
+          userId: notif.userId,
+          type: 'event_reminder',
+          title: notif.title,
+          body: notif.body,
+          groupKey: `reminder:${notif.eventId}:${notif.days}`,
+          data: { event_id: String(notif.eventId), reminder: 'true', reminder_days: String(notif.days) },
+        });
+        if (!result.stored || result.grouped) continue;
+        created++;
+        if (result.pushed) sent++;
+      } catch (e: any) {
+        // The unique reminder key makes reruns safe.
+        if (e?.code === '23505') continue;
+        throw e;
       }
     }
 

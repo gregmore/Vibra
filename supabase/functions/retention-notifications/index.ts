@@ -1,6 +1,9 @@
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
 import { sendFcm } from "../_shared/fcm.ts";
+import { notificationWorkerAuthorized } from "../_shared/notification_worker_auth.ts";
+import { forEachUserPage, keyset } from "../_shared/user_batches.ts";
+import { skipDisabledSpotifyJob } from "../_shared/spotify-feature.ts";
 
 type User = {
   id: string; fcm_token: string | null; push_enabled: boolean | null;
@@ -15,6 +18,9 @@ type Event = { id: string; name: string; artist_name: string | null; artist_spot
 
 const WEEK = 7 * 24 * 60 * 60 * 1000;
 const DAY = 24 * 60 * 60 * 1000;
+const USER_PAGE = 200;
+const MAX_PAGES_PER_RUN = 20;
+const RUN_BUDGET_MS = 100_000;
 
 function localHour(timezone: string) {
   try { return Number(new Intl.DateTimeFormat("en-GB", { timeZone: timezone, hour: "2-digit", hourCycle: "h23" }).format(new Date())); }
@@ -27,56 +33,53 @@ function isQuiet(pref: Preference) {
 }
 Deno.serve(async (req) => {
   const preflight = handleOptions(req); if (preflight) return preflight;
-  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!key || req.headers.get("Authorization") !== `Bearer ${key}`) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  if (!await notificationWorkerAuthorized(req)) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   if (req.method !== "POST") return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const paused = skipDisabledSpotifyJob(); if (paused) return paused;
   try {
     const db = createSupabaseServiceClient();
     const now = Date.now();
-    const [{ data: users, error: usersError }, { data: events, error: eventsError }] = await Promise.all([
-      db.from("users")
-        .select("id,fcm_token,push_enabled,push_settings,last_active_at,last_latitude,last_longitude,privacy_preferences!inner(marketing_notifications)")
-        .eq("is_test_user", false)
-        .eq("privacy_preferences.marketing_notifications", true)
-        .limit(1000).returns<User[]>(),
-      db.from("events").select("id,name,artist_name,artist_spotify_id,event_date,city,latitude,longitude").eq("is_test_data", false).gte("event_date", new Date(now).toISOString()).order("event_date").limit(1000).returns<Event[]>(),
-    ]);
-    if (usersError) throw usersError; if (eventsError) throw eventsError;
+    // Upcoming events are one bounded, shared set; users are visited in
+    // keyset pages that resume on the next run (docs/performance.md).
+    const { data: events, error: eventsError } = await db.from("events").select("id,name,artist_name,artist_spotify_id,event_date,city,latitude,longitude").eq("is_test_data", false).gte("event_date", new Date(now).toISOString()).order("event_date").limit(1000).returns<Event[]>();
+    if (eventsError) throw eventsError;
 
-    const nearbyEventIdsByUser = new Map<string, Set<string>>();
-    if ((users?.length ?? 0) > 0 && (events?.length ?? 0) > 0) {
-      const { data: distanceRows, error: distanceError } = await db.rpc(
-        "nearby_event_distances_for_users",
-        {
-          p_user_ids: (users ?? []).map((user) => user.id),
-          p_event_ids: (events ?? []).map((event) => event.id),
-          p_radius_meters: 75000,
-        },
-      );
-      if (distanceError) throw distanceError;
-
-      for (const row of distanceRows ?? []) {
-        const userId = String(row.user_id ?? "");
-        const eventId = String(row.event_id ?? "");
-        if (!userId || !eventId) continue;
-        const userEventIds = nearbyEventIdsByUser.get(userId) ??
-          new Set<string>();
-        userEventIds.add(eventId);
-        nearbyEventIdsByUser.set(userId, userEventIds);
-      }
-    }
     let created = 0, pushed = 0, skipped = 0;
-    for (const user of users ?? []) {
-      const { data: prefRow } = await db.from("notification_preferences").select("retention_enabled,digest_frequency,retention_max_per_week,timezone,quiet_hours_start,quiet_hours_end").eq("user_id", user.id).maybeSingle<Preference>();
-      const pref: Preference = prefRow ?? { retention_enabled: true, digest_frequency: "weekly", retention_max_per_week: 2, timezone: "Europe/Rome", quiet_hours_start: 22, quiet_hours_end: 8 };
-      if (!pref.retention_enabled || user.push_enabled === false || user.push_settings?.retention === false || isQuiet(pref)) { skipped++; continue; }
+    const handlePage = async (users: User[]) => {
+      const ids = users.map((u) => u.id);
+      // One query per page for preferences, profiles and distances instead
+      // of one per user.
+      const [{ data: prefRows, error: prefError }, { data: profileRows, error: profileError }] = await Promise.all([
+        db.from("notification_preferences").select("user_id,retention_enabled,digest_frequency,retention_max_per_week,timezone,quiet_hours_start,quiet_hours_end").in("user_id", ids).returns<Array<Preference & { user_id: string }>>(),
+        db.from("music_profiles").select("user_id,top_artists").in("user_id", ids).returns<Array<{ user_id: string; top_artists: Array<{ id?: string }> | null }>>(),
+      ]);
+      if (prefError) throw prefError; if (profileError) throw profileError;
+      const prefs = new Map((prefRows ?? []).map((p) => [p.user_id, p]));
+      const profiles = new Map((profileRows ?? []).map((p) => [p.user_id, p]));
+      const nearbyEventIdsByUser = new Map<string, Set<string>>();
+      if ((events?.length ?? 0) > 0) {
+        const { data: distanceRows, error: distanceError } = await db.rpc("nearby_event_distances_for_users", {
+          p_user_ids: ids, p_event_ids: (events ?? []).map((event) => event.id), p_radius_meters: 75000,
+        });
+        if (distanceError) throw distanceError;
+        for (const row of distanceRows ?? []) {
+          const userId = String(row.user_id ?? ""), eventId = String(row.event_id ?? "");
+          if (!userId || !eventId) continue;
+          const set = nearbyEventIdsByUser.get(userId) ?? new Set<string>();
+          set.add(eventId);
+          nearbyEventIdsByUser.set(userId, set);
+        }
+      }
+    for (const user of users) {
+      const pref: Preference = prefs.get(user.id) ?? { retention_enabled: true, digest_frequency: "weekly", retention_max_per_week: 2, timezone: "Europe/Rome", quiet_hours_start: 22, quiet_hours_end: 8 };
+      if (!pref.retention_enabled || user.push_enabled === false || user.push_settings?.retention === false || user.push_settings?.updates === false || isQuiet(pref)) { skipped++; continue; }
       const { count } = await db.from("notification_campaigns").select("id", { count: "exact", head: true }).eq("user_id", user.id).in("category", ["retention", "digest", "event_trigger"]).gte("sent_at", new Date(now - WEEK).toISOString());
       if ((count ?? 0) >= pref.retention_max_per_week) { skipped++; continue; }
 
       const inactiveDays = Math.floor((now - new Date(user.last_active_at).getTime()) / DAY);
       let category: "retention" | "digest" | "event_trigger" = "retention", triggerKey = "", type = "retention", title = "", body = "", data: Record<string, unknown> = {};
-      const { data: profile } = await db.from("music_profiles").select("top_artists,top_genres,last_synced_at").eq("user_id", user.id).maybeSingle();
-      const artists = new Set<string>((profile?.top_artists ?? []).map((a: { id?: string }) => a.id).filter(Boolean));
+      const profile = profiles.get(user.id);
+      const artists = new Set<string>((profile?.top_artists ?? []).map((a) => a.id).filter((id): id is string => typeof id === "string" && id.length > 0));
       const nearEventIds = nearbyEventIdsByUser.get(user.id) ?? new Set<string>();
       const near = (events ?? []).filter((event) => nearEventIds.has(event.id));
       const artistEvent = near.find((e) => e.artist_spotify_id && artists.has(e.artist_spotify_id));
@@ -134,16 +137,38 @@ Deno.serve(async (req) => {
           .limit(1);
         if (alreadyAnnounced?.length) continue;
       }
-      const { data: notification, error: notificationError } = await db.from("notifications").insert({ user_id: user.id, type, title, body, data }).select("id").single();
-      if (notificationError) continue;
-      const { data: campaign, error: campaignError } = await db.from("notification_campaigns").insert({ user_id: user.id, notification_id: notification.id, category, trigger_key: triggerKey, variant: Math.random() < .5 ? "a" : "b", metadata: data }).select("id").single();
+      // One policy for every notification (record_notification): it stores
+      // the notification and decides whether this push is allowed (category
+      // switch, quiet hours, daily cap, one "updates" push a day).
+      const { data: recorded, error: recordError } = await db.rpc("record_notification", {
+        p_user: user.id, p_type: type, p_title: title, p_body: body, p_data: data,
+        p_actor: null, p_group_key: triggerKey ? `${category}:${triggerKey}` : null,
+      });
+      if (recordError || !recorded?.id || recorded.grouped) continue;
+      const { data: campaign, error: campaignError } = await db.from("notification_campaigns").insert({ user_id: user.id, notification_id: recorded.id, category, trigger_key: triggerKey, variant: Math.random() < .5 ? "a" : "b", metadata: data }).select("id").single();
       if (campaignError) continue;
       created++;
-      if (user.fcm_token) {
-        const ok = await sendFcm(user.fcm_token, title, body, { type, event_id: String(data.event_id ?? ""), campaign_id: campaign.id });
+      if (recorded.push === true && typeof recorded.token === "string") {
+        const ok = await sendFcm(recorded.token, title, body, { type, event_id: String(data.event_id ?? ""), campaign_id: campaign.id });
         if (ok) { pushed++; await db.from("notification_campaigns").update({ delivered_at: new Date().toISOString() }).eq("id", campaign.id); }
       }
     }
-    return new Response(JSON.stringify({ ok: true, created, pushed, skipped }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    };
+    const batch = await forEachUserPage<User>(db, {
+      job: "retention-notifications", pageSize: USER_PAGE, maxPages: MAX_PAGES_PER_RUN, budgetMs: RUN_BUDGET_MS,
+      loadPage: async (cursor, limit) => {
+        const { data, error } = await keyset(
+          db.from("users")
+            .select("id,fcm_token,push_enabled,push_settings,last_active_at,last_latitude,last_longitude,privacy_preferences!inner(marketing_notifications)")
+            .eq("is_test_user", false)
+            .eq("privacy_preferences.marketing_notifications", true),
+          cursor, limit,
+        ) as { data: User[] | null; error: unknown };
+        if (error) throw error;
+        return data ?? [];
+      },
+      handlePage,
+    });
+    return new Response(JSON.stringify({ ok: true, created, pushed, skipped, users: batch.users, pages: batch.pages, completed_pass: batch.completedPass }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) { return new Response(JSON.stringify({ error: "internal_error", message: String(error) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
 });

@@ -1,155 +1,50 @@
 import { rejectRevokedSession } from "../_shared/session-guard.ts";
 import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 import { createSupabaseServiceClient } from "../_shared/supabase.ts";
-import { clamp } from "../_shared/geo.ts";
+import { requireEnv } from "../_shared/env.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { rejectDisabledSpotify, spotifyUnavailableResponse } from "../_shared/spotify-feature.ts";
+import { SpotifyRequestError } from "../_shared/spotify_api.ts";
+import { recomputeMatches, refreshDnaSafely } from "../_shared/music_sync.ts";
 
-type CalculateMatchRequest = {
-  user_id?: string; // If not provided, might be a batch job
-};
+const headers = { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" };
+const reply = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers });
 
+// Recomputes the caller's affinities with the engine in
+// _shared/music_affinity.ts (documented in docs/music-affinity-engine.md).
+// Called after the user edits their genres, and after a manual sync.
+// Also refreshes the caller's Musical DNA snapshot (docs/musical-dna.md).
+// The hourly spotify-sync-worker does the same for every connected user.
 Deno.serve(async (req) => {
   const rejected = await rejectRevokedSession(req, "calculate-match");
   if (rejected) return rejected;
   const preflight = handleOptions(req);
   if (preflight) return preflight;
+  if (req.method.toUpperCase() !== "POST") return reply(405, { error: "Method not allowed" });
 
   try {
-    if (req.method.toUpperCase() !== "POST") {
-      return new Response(JSON.stringify({ error: "Method not allowed" }), {
-        status: 405,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized", message: "Missing Authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const supabase = createSupabaseServiceClient();
-    const body = await req.json().catch(() => ({})) as CalculateMatchRequest;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const isServiceRole = serviceRoleKey && authHeader === `Bearer ${serviceRoleKey}`;
-
-    let targetUserId: string;
-
-    if (isServiceRole && body.user_id) {
-      targetUserId = body.user_id;
-    } else {
-      const token = authHeader.replace("Bearer ", "");
-      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-      if (authError || !user) {
-        return new Response(
-          JSON.stringify({ error: "Unauthorized", message: "Invalid or expired session" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      targetUserId = user.id;
-    }
-
-    // 1. Fetch user profile and embedding
-    const { data: userProfile, error: profileErr } = await supabase
-      .from("music_profiles")
-      .select("user_id, embedding, top_artists, top_genres")
-      .eq("user_id", targetUserId)
-      .maybeSingle();
-      
-    if (profileErr) throw profileErr;
-    if (!userProfile) {
-      return new Response(JSON.stringify({ error: "music_profile_missing" }), { status: 404, headers: corsHeaders });
-    }
-
-    // If no embedding, fallback to the old Jaccard logic or abort
-    if (!userProfile.embedding) {
-      return new Response(
-        JSON.stringify({ error: "embedding_missing", message: "Utente non ha ancora le audio features." }),
-        { status: 400, headers: corsHeaders }
-      );
-    }
-    
-    const { data: matches, error: matchErr } = await supabase.rpc("find_compatible_users", {
-      p_user_id: targetUserId,
-      p_embedding: userProfile.embedding,
-      p_limit: 50
+    const userClient = createClient(requireEnv("SUPABASE_URL"), requireEnv("SUPABASE_ANON_KEY"), {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
     });
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) return reply(401, { error: "Unauthorized" });
 
-    if (matchErr) throw matchErr;
+    const unavailable = rejectDisabledSpotify();
+    if (unavailable) return unavailable;
 
-    // 2. Hybrid Scoring in JS (can also be done in SQL, but JS is easier to tweak)
-    // Here we can fetch config from algorithm_config
-    const { data: configRows } = await supabase.from("algorithm_config").select("*").eq("active", true).limit(1);
-    const config = configRows?.[0] ?? { content_weight: 0.6, collab_weight: 0.1, geo_weight: 0.2, social_weight: 0.1, serendipity_factor: 0.15 };
-
-    const upserts = [];
-    
-    const myArtists = new Set((userProfile.top_artists ?? []).map((a: any) => a.id).filter(Boolean));
-
-    for (const match of (matches || [])) {
-      if (match.user_id === targetUserId) continue; // Skip self
-      
-      // pgvector returns cosine distance (0 to 2) usually, similarity is 1 - distance
-      // Match distance from RPC: match.distance
-      const vectorSimilarity = Math.max(0, 1 - (match.distance || 0));
-      
-      // Calculate shared artists to boost
-      const theirArtists = match.top_artists || [];
-      let sharedArtists = 0;
-      for (const a of theirArtists) {
-        if (myArtists.has(a.id)) sharedArtists++;
-      }
-      
-      const artistBoost = Math.min(sharedArtists * 5, 30) / 100.0; // Up to 30% boost for shared artists
-      
-      // Calculate final score
-      // Simulating a geo/social hybrid score for now
-      let finalScore = (vectorSimilarity * config.content_weight) + artistBoost;
-      
-      // Add serendipity (random variance)
-      if (Math.random() < config.serendipity_factor) {
-        finalScore += (Math.random() * 0.2); // +0 to +20%
-      }
-      
-      const compatibility = clamp(finalScore * 100, 0, 100);
-
-      const [a, b] = targetUserId < match.user_id
-        ? [targetUserId, match.user_id]
-        : [match.user_id, targetUserId];
-
-      upserts.push({
-        user_id_a: a,
-        user_id_b: b,
-        compatibility: Math.round(compatibility),
-        shared_artists: sharedArtists,
-        shared_genres: 0 // Simplification
-      });
-    }
-
-    if (upserts.length > 0) {
-      const { error: upsertError } = await supabase
-        .from("user_matches")
-        .upsert(upserts, { onConflict: "user_id_a,user_id_b" });
-
-      if (upsertError) throw upsertError;
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        matches_found: upserts.length,
-        message: "Match calcolati con pgvector!"
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    // Works with a Spotify profile, hand-picked genres, or both. Without any
+    // musical data the engine stores nothing (insufficient data), it never
+    // invents a score.
+    const admin = createSupabaseServiceClient();
+    await refreshDnaSafely(admin, user.id);
+    // The app calls this after every profile visit or genre edit: unchanged
+    // inputs reuse the pairs computed in the last few hours.
+    const matches = await recomputeMatches(admin, user.id, { onlyIfChanged: true });
+    return reply(200, { success: true, matches_found: matches });
   } catch (e) {
-    return new Response(
-      JSON.stringify({
-        error: "internal_error",
-        message: e instanceof Error ? e.message : String(e),
-      }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    if (e instanceof SpotifyRequestError && e.status === 503) return spotifyUnavailableResponse();
+    console.error("calculate-match failed", e instanceof Error ? e.message : e);
+    return reply(500, { error: "internal_error" });
   }
 });
