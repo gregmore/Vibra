@@ -1,44 +1,53 @@
 # Schede store — Vibra
 
-Versione 1.0.0, build 2. Le descrizioni seguenti sono pronte da copiare dopo
+Versione 1.0.0, build 3. Le descrizioni seguenti sono pronte da copiare dopo
 aver completato i requisiti di [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md).
 
 Contatto assistenza/privacy: **vibra7341@gmail.com**. Titolare del progetto
 personale: Gregorio Morelli. URL pubblici, screenshot e risposte preparate
 ai questionari: [pacchetto materiali store](store/README.md).
 
+## Spotify nella versione pubblica
+
+Il collegamento Spotify è disponibile a tutti e facoltativo: statistiche
+musicali, affinità con altre persone e consigli “Per Te”. Tutto il resto
+funziona senza Spotify. Le schede possono citarlo come funzione facoltativa;
+gli screenshot vanno rigenerati con la build pubblica.
+
 ## Italiano
 
 **Nome:** Vibra
 
-**Sottotitolo App Store:** Concerti e affinità musicali
+**Sottotitolo App Store:** Concerti, amici e chat
 
-**Descrizione breve Google Play:** Scopri concerti, collega Spotify e incontra chi condivide i tuoi gusti.
+**Descrizione breve Google Play:** Scopri concerti sulla mappa, salva eventi e organizza la serata con gli amici.
 
-**Testo promozionale App Store:** La tua musica, dal vivo. Trova concerti vicini, scopri affinità musicali e condividi gli eventi con le persone giuste.
+**Testo promozionale App Store:** La tua musica, dal vivo. Esplora concerti e festival, salva gli eventi e organizza la prossima serata con amici, messaggi e chat Live.
 
-**Parole chiave App Store:** musica,concerti,eventi,festival,live,spotify,amici,chat,affinità
+**Parole chiave App Store:** musica,concerti,eventi,festival,live,mappa,amici,chat,scoperta,spotify
 
 **Descrizione completa:**
 
 Non ascoltare la musica. Vivila.
 
-Vibra mette in contatto i tuoi gusti musicali con i concerti e le persone che
-li condividono. Collega Spotify, cerca gli eventi vicino a te e organizza la
-tua prossima serata dal vivo.
+Vibra ti aiuta a trovare concerti e festival, salvare gli eventi che ti
+interessano e organizzare la tua prossima serata dal vivo insieme agli amici.
 
-• Collega Spotify per creare il tuo profilo musicale.
 • Esplora concerti e festival sulla mappa e filtra la ricerca.
-• Scopri eventi consigliati in base ai tuoi gusti.
+• Cerca eventi nella zona che scegli.
 • Salva gli eventi e ritrovali nella tua raccolta.
-• Incontra persone con affinità musicali e chatta con loro.
-• Durante gli eventi, partecipa alla chat Live.
-• Gestisci connessioni, permessi e notifiche dalle impostazioni.
+• Collega Spotify (facoltativo): scopri le tue statistiche, ricevi consigli
+  sugli eventi e trova persone con i tuoi gusti musicali.
+• Cerca persone, gestisci le amicizie e scambia messaggi.
+• Durante gli eventi, partecipa alla chat Live quando sei nelle vicinanze.
+• Gestisci il profilo, i permessi e le notifiche dalle impostazioni.
 
-Spotify e la posizione sono collegamenti facoltativi. Puoi scollegare Spotify,
-controllare la tua visibilità, esportare i tuoi dati o eliminare il tuo account
-dall'app. Per i biglietti, Vibra apre il sito del fornitore: disponibilità e
-acquisti dipendono dal servizio esterno.
+La posizione del dispositivo è facoltativa; puoi scegliere una zona sulla
+mappa. Spotify è facoltativo e puoi scollegarlo in qualsiasi momento.
+
+Puoi controllare le tue scelte di privacy, esportare i tuoi dati o eliminare
+il tuo account dall'app. Per i biglietti, Vibra apre il sito del fornitore:
+disponibilità e acquisti dipendono dal servizio esterno.
 
 Vibra è destinata a persone maggiorenni.
 
@@ -46,32 +55,36 @@ Vibra è destinata a persone maggiorenni.
 
 **Name:** Vibra
 
-**App Store subtitle:** Concerts and music connections
+**App Store subtitle:** Concerts, friends and chat
 
-**Google Play short description:** Discover concerts, connect Spotify and meet people who share your music taste.
+**Google Play short description:** Discover concerts on the map, save events and plan your night with friends.
 
-**App Store promotional text:** Your music, live. Find nearby concerts, discover shared music tastes and plan your next event with the right people.
+**App Store promotional text:** Your music, live. Explore concerts and festivals, save events and plan your next night out with friends, messages and Live chat.
 
-**App Store keywords:** music,concerts,events,festival,live,spotify,friends,chat,discovery
+**App Store keywords:** music,concerts,events,festival,live,map,friends,chat,discovery,spotify
 
 **Full description:**
 
 Don't just listen to music. Live it.
 
-Vibra connects your music taste with live concerts and people who share it.
-Link Spotify, explore nearby events and plan your next night out.
+Vibra helps you find concerts and festivals, save the events you care about
+and plan your next night out with friends.
 
-• Connect Spotify to create your music profile.
 • Explore concerts and festivals on the map and filter your search.
-• Discover event recommendations based on your taste.
+• Search for events in the area you choose.
 • Save events and find them in your collection.
-• Meet people with similar music preferences and chat with them.
-• Join Live chat while attending an event.
-• Manage your connections, permissions and notifications in settings.
+• Connect Spotify (optional): see your music stats, get event suggestions and
+  meet people who share your taste.
+• Find people, manage friendships and exchange messages.
+• Join Live chat while nearby an event.
+• Manage your profile, permissions and notifications in settings.
 
-Spotify and location are optional. Disconnect Spotify, control your visibility,
-export your data or delete your account from the app. Ticket links open the
-provider's website; availability and purchases depend on that external service.
+Device location is optional; you can choose an area on the map. Spotify
+is optional and you can disconnect it at any time.
+
+Control your privacy choices, export your data or delete your account from
+the app. Ticket links open the provider's website; availability and purchases
+depend on that external service.
 
 Vibra is intended for adults aged 18 and over.
 
@@ -103,8 +116,9 @@ la distribuzione lo include.
 
 ## Note per la review
 
-Spiegare login email/Google/Apple, collegamento Spotify facoltativo, ricerca
-concerti, salvataggi e chat. La modalità Live richiede presenza nei pressi
+Spiegare i metodi di accesso disponibili sulla piattaforma, ricerca concerti,
+mappa, salvataggi, amicizie e chat. Spotify è facoltativo: la review
+può valutare l’app senza account Spotify (vedi store/questionnaires/age-content-and-review.md). La modalità Live richiede presenza nei pressi
 dell'evento e va descritta nelle istruzioni di review. Fornire alla review
 accesso effettivo al servizio secondo le istruzioni della console; nessun
 bypass di autenticazione e nessun seed demo sono inclusi nella release.

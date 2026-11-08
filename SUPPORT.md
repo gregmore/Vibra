@@ -1,6 +1,6 @@
 # Ci siamo. Scrivici. — Vibra
 
-Versione 10 ottobre 2026. Titolare: Gregorio Morelli. Contatto: vibra7341@gmail.com
+Versione 6 novembre 2026. Titolare: Gregorio Morelli. Contatto: vibra7341@gmail.com
 
 [Testo pubblico completo](https://vibra-assistenza.newrobin4.chatgpt.site/supporto.html). Copia generata da `script/store/build_site.py`.
 
@@ -17,9 +17,13 @@ Non riesco ad accedere
 
 Usa lo stesso metodo della registrazione: email, Google o Apple. Per email controlla anche la cartella spam. Se il problema continua, scrivi dal recapito associato all’account.
 
-Spotify non si collega o non si aggiorna
+Come funziona il collegamento con Spotify?
 
-Controlla le autorizzazioni e prova a scollegare e ricollegare il servizio. L’accesso può essere soggetto ai limiti del fornitore. Puoi continuare a usare le altre funzioni senza collegarlo.
+Da Home, Profilo o Social tocca “Collega Spotify” e autorizza Vibra. Leggiamo i tuoi artisti, brani e generi più ascoltati e gli orari degli ascolti recenti per statistiche, affinità musicali e consigli sugli eventi; i dati si aggiornano da soli. Puoi scollegare Spotify da Impostazioni: i dati musicali vengono cancellati. Tutto il resto di Vibra funziona anche senza Spotify, e puoi trovare persone affini anche scegliendo i tuoi generi preferiti in Impostazioni.
+
+Spotify dice che Vibra non è abilitata per il mio account
+
+Per alcuni account Spotify può non aver ancora abilitato Vibra. Il resto dell’app funziona normalmente: riprova più tardi o scrivi all’assistenza indicando l’email del tuo account Spotify.
 
 Non vedo concerti nella mia zona
 

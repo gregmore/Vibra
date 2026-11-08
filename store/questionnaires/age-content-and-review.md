@@ -1,6 +1,6 @@
 # Età, contenuti, review e dati regionali
 
-Scheda di compilazione per Apple e Google, 10 ottobre 2026. Non inviata.
+Scheda di compilazione per Apple e Google, aggiornata il 13 ottobre 2026. Non inviata.
 
 | Domanda/funzione | Risposta proposta dal codice |
 |---|---|
@@ -49,21 +49,27 @@ della console. Non inserirli nel repository, nel sito o negli screenshot.
 
 Note da copiare dopo aver predisposto l'accesso:
 
-> Vibra is a music and live-events app for adults. Sign in with the review
-> account supplied in the private credentials fields. Spotify and location
-> are optional. Home, event browsing, saved events and messaging are available
-> according to the account's data and permissions. Tickets open the external
-> provider website; Vibra does not process payment. Account deletion and
-> data export are available in Settings → Privacy and personal data. Public
-> support and privacy pages use the URLs provided in the listing.
+> Vibra is a live-events app for adults. Sign in with the review account
+> supplied in the private credentials fields. Browse concerts on the map,
+> save events, manage friendships and exchange messages. Live chat requires
+> being near an eligible event. Device location is optional for browsing.
+> Connecting Spotify is optional (Home, Profile or Social → "Connect
+> Spotify") and adds music statistics, musical affinity and personalised
+> event suggestions; the rest of the app works without it. Tickets open the external provider website; Vibra
+> does not process payment. Account deletion and data export are available
+> in Settings → Privacy and personal data. Public support and privacy pages
+> use the URLs provided in the listing.
 
-Per testare Spotify il reviewer deve poter essere autorizzato dal servizio;
-l'accesso pubblico Spotify non è ancora verificato. Non promettere credenziali
-demo, bypass o accesso alle funzioni tramite un account non predisposto.
+Spotify è facoltativo: il reviewer può valutare l’app senza un account Spotify.
+Se Spotify ha concesso l’accesso pubblico (extended quota), il reviewer può
+collegare il proprio account; altrimenti indicare che la funzione richiede un
+account Spotify abilitato. Non promettere credenziali demo, bypass o accesso
+alle funzioni tramite un account non predisposto.
 
 ## Crittografia/export Apple
 
-Il client usa HTTPS/TLS; il backend usa AES-GCM standard per token Spotify.
+Il client usa HTTPS/TLS; il backend usa AES-GCM standard per cifrare
+i token Spotify sul server.
 `ITSAppUsesNonExemptEncryption` nel progetto va riconciliato con il questionario
 del bundle e l'eventuale documentazione richiesta. Non è presente un algoritmo
 crittografico proprietario, ma non attestare un'esenzione legale soltanto dal
@@ -71,8 +77,10 @@ nome dell'algoritmo. Nessuna modifica automatica alle dichiarazioni export.
 
 ## DSA e identità sviluppatore
 
-Progetto personale dichiarato dall'autore. Il paese e l'indirizzo non sono
-stati forniti. Trader/non-trader deve essere determinato dal titolare in base
+Progetto personale dichiarato dall’autore. Il titolare ha confermato Italia e
+Via Pasquale Modestino 29, 44123, Ferrara, Italia. Gli account sviluppatore
+Apple e Google non sono ancora stati creati, come confermato dal titolare.
+Trader/non-trader deve essere determinato dal titolare in base
 all'attività effettiva, non dall'assenza di una società. Se trader individuale,
 Apple richiede recapito/indirizzo o casella postale, telefono ed email da
 verificare. Non inventare questi valori.

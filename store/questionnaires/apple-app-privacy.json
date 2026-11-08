@@ -127,5 +127,11 @@
     }
   ],
   "tracking": false,
-  "source": "ios/Runner/PrivacyInfo.xcprivacy"
+  "source": "ios/Runner/PrivacyInfo.xcprivacy",
+  "current_release_features": {
+    "release_scope": "public_release",
+    "spotify_connection": true,
+    "music_affinity": true
+  },
+  "spotify_data_scope": "Optional Spotify connection for all users: Spotify ID, top 50 artists/tracks/genres (~6 months) and recent play timestamps, synced hourly server-side; deleted on disconnect, revocation or account deletion. See docs/spotify-integration.md."
 }

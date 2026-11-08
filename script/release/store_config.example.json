@@ -15,5 +15,8 @@
   "push_delivery_verified": false,
   "moderation_operations_verified": false,
   "privacy_controls_verified": false,
-  "physical_device_qa_verified": false
+  "physical_device_qa_verified": false,
+  "spotify_enabled": true,
+  "spotify_disabled_verified": false,
+  "developer_accounts_registered": false
 }

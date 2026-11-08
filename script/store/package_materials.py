@@ -3,11 +3,25 @@
 import hashlib
 import json
 import plistlib
+import re
 import zipfile
 from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def read_app_version(pubspec):
+    matches = re.findall(r'^version:\s*([^\r\n#]+)', pubspec.read_text(), re.M)
+    if len(matches) != 1:
+        raise SystemExit('pubspec.yaml: expected exactly one app version')
+    version = matches[0].strip().strip('\'"')
+    if not re.fullmatch(r'\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?\+\d+', version):
+        raise SystemExit('pubspec.yaml: expected version name and build number')
+    return version
+
+
+APP_VERSION = read_app_version(ROOT / 'pubspec.yaml')
 OUT = ROOT / 'release/store-materials'
 OUT.mkdir(parents=True, exist_ok=True)
 formats = {'ios-medium': (1206, 2622), 'android-phone': (1080, 1920),
@@ -27,7 +41,7 @@ for folder, size in formats.items():
         records.append({'path': str(path.relative_to(OUT)), 'width': size[0],
                         'height': size[1], 'mode': 'RGB',
                         'sha256': hashlib.sha256(path.read_bytes()).hexdigest()})
-manifest = {'version': '1.0.0+2', 'capture_method': 'production Flutter widgets',
+manifest = {'version': APP_VERSION, 'capture_method': 'production Flutter widgets',
             'fixture_data': 'fictional, local, no backend writes',
             'device_qa': False, 'screenshots': records}
 (OUT / 'screenshots.json').write_text(json.dumps(manifest, indent=2) + '\n')
@@ -44,10 +58,16 @@ for i, path in enumerate(sorted((OUT / 'screenshots/ios-medium').glob('*.png')))
 sheet.save(OUT / 'contact-sheet.jpg', quality=94)
 
 manifest_ios = plistlib.loads((ROOT / 'ios/Runner/PrivacyInfo.xcprivacy').read_bytes())
+owner = json.loads((ROOT / 'store/owner.json').read_text())
 privacy = {'status': 'proposed_from_code_not_submitted',
            'collected_data': manifest_ios['NSPrivacyCollectedDataTypes'],
            'tracking': manifest_ios['NSPrivacyTracking'],
-           'source': 'ios/Runner/PrivacyInfo.xcprivacy'}
+           'source': 'ios/Runner/PrivacyInfo.xcprivacy',
+           'current_release_features': owner.get('feature_availability', {}),
+           'spotify_data_scope': 'Optional Spotify connection for all users: '
+               'Spotify ID, top 50 artists/tracks/genres (~6 months) and recent '
+               'play timestamps, synced hourly server-side; deleted on disconnect, '
+               'revocation or account deletion. See docs/spotify-integration.md.'}
 (ROOT / 'store/questionnaires/apple-app-privacy.json').write_text(
     json.dumps(privacy, indent=2) + '\n')
 
@@ -70,7 +90,8 @@ with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as z:
         if (OUT / name).exists(): z.write(OUT / name, name)
     for name in ['STORE_METADATA.md', 'PRIVACY_POLICY.md', 'TERMS_OF_SERVICE.md', 'SUPPORT.md']:
         z.write(ROOT / name, 'documents/' + name)
-    z.write(ROOT / 'docs/store-materials-20261010.md', 'documents/verification-report.md')
+    z.write(ROOT / 'docs/store-materials-20261010.md', 'documents/materials-history-20261010.md')
+    z.write(ROOT / 'docs/bugfixes-20261015.md', 'documents/verification-report.md')
     if (OUT / 'public-support.jpg').exists():
         z.write(OUT / 'public-support.jpg', 'preview/public-support.jpg')
     for path in sorted((ROOT / 'store/questionnaires').glob('*')):

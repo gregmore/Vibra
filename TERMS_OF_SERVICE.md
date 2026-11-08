@@ -1,12 +1,12 @@
 # Le regole per stare bene insieme. — Vibra
 
-Versione 10 ottobre 2026. Titolare: Gregorio Morelli. Contatto: vibra7341@gmail.com
+Versione 6 novembre 2026. Titolare: Gregorio Morelli. Contatto: vibra7341@gmail.com
 
 [Testo pubblico completo](https://vibra-assistenza.newrobin4.chatgpt.site/termini.html). Copia generata da `script/store/build_site.py`.
 
 ## 1. Servizio e gestore
 
-Vibra è il progetto personale di Gregorio Morelli. Aiuta a scoprire eventi, salvare concerti, confrontare gusti musicali e comunicare con altri utenti. Contatto: [vibra7341@gmail.com](mailto:vibra7341@gmail.com). Le funzioni dipendono anche da servizi esterni e dalle disponibilità dei loro dati.
+Vibra è il progetto personale di Gregorio Morelli, con indirizzo ufficiale in Via Pasquale Modestino 29, 44123, Ferrara, Italia. Aiuta a scoprire eventi sulla mappa, salvare concerti, gestire amicizie e comunicare con altri utenti, anche nelle chat Live degli eventi. Contatto: [vibra7341@gmail.com](mailto:vibra7341@gmail.com). Le funzioni dipendono anche da servizi esterni e dalle disponibilità dei loro dati.
 
 ## 2. Età e account
 
@@ -20,9 +20,9 @@ Sono vietati molestie, minacce, discriminazione, contenuti illegali, sessualment
 
 Puoi segnalare contenuti e utenti e usare il blocco dove disponibile. Il gestore può rimuovere contenuti o limitare/sospendere account per violazioni, sicurezza o obblighi di legge. Per contestare un intervento scrivi a [vibra7341@gmail.com](mailto:vibra7341@gmail.com) con gli elementi utili.
 
-## 4. Spotify, eventi e biglietti
+## 4. Funzioni disponibili, eventi e biglietti
 
-Collegare Spotify è facoltativo e puoi scollegarlo nelle impostazioni. Disponibilità e limiti delle integrazioni dipendono dai fornitori. Eventi, date, luoghi e prezzi possono cambiare: verifica sempre sul sito dell’organizzatore. Vibra apre i siti esterni per i biglietti e non gestisce il pagamento o il contratto di acquisto del biglietto.
+Il collegamento Spotify è facoltativo: richiede un account Spotify, è soggetto anche alle condizioni di Spotify e puoi scollegarlo in qualsiasi momento dalle impostazioni. Vibra non è affiliata a Spotify. Statistiche, affinità musicali e consigli sono indicazioni automatiche, non garanzie. Disponibilità e limiti delle integrazioni dipendono dai fornitori. Eventi, date, luoghi e prezzi possono cambiare: verifica sempre sul sito dell’organizzatore. Vibra apre i siti esterni per i biglietti e non gestisce il pagamento o il contratto di acquisto del biglietto.
 
 ## 5. Privacy e sicurezza personale
 
@@ -30,7 +30,7 @@ Il trattamento dei dati è descritto nell’[informativa privacy](https://vibra-
 
 ## 6. Disponibilità e responsabilità
 
-Il servizio può subire interruzioni o modifiche. Le informazioni degli eventi e le affinità musicali non garantiscono risultati, disponibilità di biglietti o compatibilità personale. Restano salvi i diritti inderogabili previsti dalla legge; questi termini non escludono responsabilità che non possano essere escluse secondo la normativa applicabile.
+Il servizio può subire interruzioni o modifiche. Le informazioni degli eventi non garantiscono risultati o disponibilità di biglietti. Restano salvi i diritti inderogabili previsti dalla legge; questi termini non escludono responsabilità che non possano essere escluse secondo la normativa applicabile.
 
 ## 7. Cancellazione e aggiornamenti
 

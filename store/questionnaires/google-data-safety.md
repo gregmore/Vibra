@@ -1,14 +1,25 @@
 # Google Play — Data safety
 
-Risposte preparate dal codice 1.0.0+2 il 10 ottobre 2026, non inviate.
+Risposte preparate il 13 ottobre 2026, non inviate. Riferimento della candidata
+aggiornato al 15 ottobre: `1.0.0+3`; confermare i dati nella console prima dell’invio.
 Raccolta dati: **Sì**. I dati persistenti del backend non sono effimeri.
 Non dichiarare “nessun dato raccolto”.
+
+## Spotify (funzione facoltativa)
+
+Il collegamento Spotify è disponibile a tutti ed è facoltativo. Se collegato,
+Vibra legge ID e profilo Spotify, i 50 artisti e brani più ascoltati negli
+ultimi ~6 mesi con i generi e gli orari degli ascolti recenti (senza titoli),
+li sincronizza circa ogni ora sul server e li usa per statistiche, affinità
+musicali e consigli sugli eventi. Le credenziali sono cifrate (AES-GCM) solo
+sul server. Altri utenti con l’affinità attiva vedono punteggio e artisti/generi
+in comune. Dettagli: `docs/spotify-integration.md`.
 
 | Tipo console | Raccolto | Obbligatorio/facoltativo | Finalità proposte |
 |---|---|---|---|
 | Personal info → Name | Sì | Facoltativo | App functionality, Account management |
 | Personal info → Email address | Sì | Obbligatorio per account | App functionality, Account management |
-| Personal info → User IDs | Sì | Account obbligatorio; Spotify facoltativo | App functionality, Account management, Advertising or marketing per campagne |
+| Personal info → User IDs | Sì | Account obbligatorio; ID Spotify facoltativo | App functionality, Account management, Advertising or marketing per campagne |
 | Location → Approximate location | Sì | Facoltativo | App functionality, Personalization, Advertising or marketing per campagne |
 | Location → Precise location | Sì | Facoltativo | App functionality, Personalization, Advertising or marketing per campagne |
 | Messages → Other in-app messages | Sì | Facoltativo | App functionality, Fraud prevention/security/compliance |
@@ -16,12 +27,13 @@ Non dichiarare “nessun dato raccolto”.
 | Contacts → Contacts | Sì | Facoltativo | App functionality, Personalization |
 | App activity → App interactions | Sì | Dipende dalla funzione | App functionality, Personalization, Analytics, Advertising or marketing |
 | App activity → Other user-generated content | Sì | Facoltativo | App functionality; assistenza/sicurezza |
-| App activity → Other actions | Sì | Facoltativo | Personalization, App functionality; preferenze musicali derivate |
+| App activity → Other actions | Sì | Facoltativo | Personalization, App functionality; preferenze dell’app, profilo musicale Spotify e orari degli ascolti |
 | App info and performance → Diagnostics | Sì | Facoltativo con invio supporto | Analytics, App functionality |
 | Device or other IDs | Sì | Facoltativo con push | App functionality, Developer communications, Advertising or marketing per campagne |
 
 Contacts comprende il grafo sociale, non solo una rubrica. Chat dell'app non
-sono SMS/MMS. Spotify invia metadati e preferenze, non file audio. Clic su link
+sono SMS/MMS. I dati Spotify sono metadati e
+preferenze, non file audio. Clic su link
 biglietti non sono dati di pagamento. Dichiarare la raccolta di una funzione
 opzionale anche se l'utente può disattivarla.
 [Definizioni e guida Google](https://support.google.com/googleplay/android-developer/answer/10787469?hl=en).
@@ -35,7 +47,7 @@ sopra verificare contratti e attività dei destinatari effettivi:
 |---|---|---|
 | Supabase | Account, profili, contenuti e record applicativi | Verificare ruolo di responsabile/fornitore di servizio |
 | Firebase/Google/Apple | OAuth, identificatori, token e payload push | Verificare trattamenti SDK, configurazione e accordi |
-| Spotify | Connessione OAuth e sincronizzazione musicale | Verificare finalità proprie del provider e categorie trasmesse |
+| Spotify | Collegamento facoltativo: Vibra riceve da Spotify i dati musicali indicati; invia solo le richieste OAuth/API dell’utente | Confermare che Spotify agisce come fonte dati su richiesta dell’utente, non come destinatario di dati Vibra |
 | OpenStreetMap/provider mappe | IP, richieste tile e area visualizzata | Verificare raccolta/retention; posizione e identificatori da dichiarare se applicabile |
 | Google traduzione | Descrizioni pubbliche di eventi e richieste tecniche | Non viene inviato il testo delle chat; verificare metadati di rete |
 | Altri utenti | Profilo e messaggi indirizzati tramite azioni dell'utente | Verificare l'eccezione per trasferimenti avviati dall'utente |
@@ -51,8 +63,9 @@ etichetta “backend”. Questa colonna rimane **da confermare**, non un “No�
   piattaforma. Non dichiarare autenticazione esclusivamente aziendale.
 - Richiesta cancellazione: Sì, dall'app e dalla pagina esterna sottostante.
   Confermare il presidio operativo delle richieste email prima dell'invio.
-- Eliminazione parziale: Spotify può essere scollegato; non promettere un
-  meccanismo generale di eliminazione selettiva di qualsiasi categoria.
+- Eliminazione parziale: scollegare Spotify cancella collegamento, profilo
+  musicale, orari degli ascolti e affinità; non promettere un meccanismo
+  generale di eliminazione selettiva di qualsiasi categoria.
 - Dati cifrati in transito: HTTPS presente nei flussi censiti; risposta “Sì”
   finale subordinata a verifica completa SDK, media e servizi in produzione.
 - Revisione di sicurezza indipendente: No, nessun audit documentato.

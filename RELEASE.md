@@ -1,7 +1,19 @@
-# Rilascio Vibra 1.0.0+2
+# Rilascio Vibra 1.0.0+3
 
 Package Android e bundle iOS: `com.vibra.app`. I controlli tecnici completati e
-le mancanze effettive sono in [docs/store-readiness-20261007.md](docs/store-readiness-20261007.md).
+le mancanze effettive sono in [docs/launch-closure-20261018.md](docs/launch-closure-20261018.md).
+
+## Versione pubblica con Spotify
+
+Il titolare ha deciso che l’app pubblica è una sola e include Spotify per
+tutti (facoltativo): statistiche, affinità e consigli. Client
+`SPOTIFY_ENABLED=true` (predefinito), secret backend omonimo `true` e riga SQL
+`launch_features.spotify=true` (migrazione `20261106000000`) devono essere
+allineati. Gli stessi tre controlli restano l’interruttore d’emergenza per
+sospendere Spotify: [dettagli](docs/spotify-integration.md).
+Lo script compila la disponibilità scelta in `release/store-config.json`.
+La riattivazione richiede approvazione e QA del provider, un nuovo bundle e
+materiali store corrispondenti; non basta cambiare un solo controllo.
 
 ## Configurazione
 
@@ -19,10 +31,10 @@ va passato come `--dart-define`.
 ## Backend
 
 Il progetto attualmente collegato è `dxgqovzlvmhcmpvlkxgi`.
-Prima del deploy esaminare `supabase db push --linked --dry-run`: al controllo del
-7 ottobre mancano 17 migrazioni. Dopo verifica del piano e backup, applicare con
-`supabase db push --linked`. Le migrazioni mantengono le protezioni RLS che
-escludono eventuali dati sintetici residui; non riscrivere la cronologia già applicata.
+Le migrazioni sono allineate dopo l'aggiornamento autorizzato del 13 ottobre;
+[esiti hosted](docs/backend-20261013.md). Per successivi cambiamenti esaminare
+`supabase db push --linked --dry-run`, conservare un backup e applicare il piano
+verificato. Non riscrivere la cronologia delle migrazioni già applicate.
 
 Distribuire tutte le funzioni presenti in `supabase/functions`, rispettando
 `supabase/config.toml`. In particolare servono `upload-image` e `resolve-event`,
@@ -38,7 +50,9 @@ con autorizzazione di invio e salvare il suo JSON **solo** nel secret Supabase
 Controllare in Supabase i provider Google/Apple, gli ID client, conferma email,
 SMTP, redirect `com.vibra.app://callback`, job di sincronizzazione/retention e
 policy Storage. In Spotify confermare che l'accesso sia disponibile agli utenti
-pubblici e non limitato alla lista degli sviluppatori.
+pubblici e non limitato alla lista degli sviluppatori. Il controllo del 13 ottobre
+ha trovato la Web API dell'app configurata bloccata per assenza di Premium del
+proprietario e nessuna quota pubblica approvata; [riscontri e vincoli](docs/provider-readiness-20261013.md).
 
 Per inventariare eventuali dati demo su un progetto con le migrazioni aggiornate:
 
@@ -54,10 +68,19 @@ persona o la parola “test” come criterio generico.
 
 ## Firma Android
 
-Creare o recuperare la chiave di upload ufficiale e conservarla con un backup
-sicuro. Copiare `key.properties.example` in **`android/key.properties`** e
-compilare i quattro campi. `storeFile` relativo si risolve da `android/app/`;
-l'esempio punta quindi a `android/keystore/upload-keystore.jks`.
+Per il primo lancio è stata creata, su richiesta del titolare, la chiave RSA 4096
+`android/keystore/vibra-upload.p12`, alias `vibra-upload`; `android/key.properties`
+è configurato. Questi file sono privati e ignorati da Git. La copia locale protetta
+è in `release/qa-20261013/android-signing-backup/`: conservarne anche una copia
+esterna cifrata. Non rigenerare la chiave per gli aggiornamenti futuri.
+Le impronte SHA-1 e SHA-256 sono registrate in Firebase, il client OAuth Android
+è configurato e il pubblico Google è In production; [riscontri Google](docs/google-android-launch-20261013.md).
+Resta da provare l'accesso reale su release e sul certificato di Play App Signing.
+
+Su un altro Mac ripristinare la stessa chiave e configurare `android/key.properties`
+con i dati privati della copia protetta. `storeFile` relativo si risolve da
+`android/app/`; quello attuale punta a `../keystore/vibra-upload.p12`.
+Il template `key.properties.example` è disponibile per nuove configurazioni.
 
 Le release richiedono la chiave ufficiale: non esiste più il fallback al
 certificato debug. Attivare Play App Signing in Play Console e registrare il
@@ -66,6 +89,11 @@ Verificare anche la compatibilità delle librerie native con pagine da 16 KB sul
 bundle finale e su dispositivo compatibile.
 
 ## Firma iOS
+
+Controllo locale senza modifiche: `python3 script/release/ios_signing.py`.
+Il preflight verifica profilo App Store, scadenza, team, bundle, capability e
+corrispondenza con un’identità di firma disponibile nel portachiavi.
+
 
 Selezionare in Xcode il team Apple Developer effettivo e allineare
 `apple_team_id` nella configurazione store. Servono certificato Apple Distribution

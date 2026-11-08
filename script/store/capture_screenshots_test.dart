@@ -9,6 +9,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vibra/core/theme/vibra_theme.dart';
+import 'package:vibra/core/constants/app_constants.dart';
+import 'package:vibra/presentation/providers/public_users_provider.dart';
+import 'package:vibra/presentation/providers/public_friends_provider.dart';
 import 'package:vibra/domain/entities/app_user.dart';
 import 'package:vibra/domain/entities/event.dart';
 import 'package:vibra/domain/entities/friendship.dart';
@@ -16,6 +19,9 @@ import 'package:vibra/domain/entities/music_profile.dart';
 import 'package:vibra/domain/usecases/events_usecases.dart';
 import 'package:vibra/l10n/app_localizations.dart';
 import 'package:vibra/presentation/providers/app_state_providers.dart';
+import 'package:vibra/presentation/providers/auth_provider.dart';
+import 'package:vibra/presentation/screens/auth/login_screen.dart';
+import 'package:vibra/presentation/screens/profile/edit_profile_screen.dart';
 import 'package:vibra/presentation/providers/usecase_providers.dart';
 import 'package:vibra/presentation/screens/home/home_screen.dart';
 import 'package:vibra/presentation/screens/profile/my_profile_screen.dart';
@@ -31,7 +37,7 @@ const me = AppUser(
   username: 'giulia_live',
   displayName: 'Giulia',
   bio: 'Indie, amici e una serata sotto il palco.',
-  spotifyId: 'fixture-spotify',
+  spotifyId: AppConstants.spotifyEnabled ? 'fixture-spotify' : null,
 );
 final events = [
   for (final (i, name, artist) in [
@@ -67,10 +73,12 @@ final matches = [
         username: '${name.toLowerCase()}_music',
         displayName: name,
       ),
-      compatibility: score,
-      topArtists: ['Calcutta', 'Indie'],
-      city: 'Milano',
-      attendingEvents: i + 1,
+      compatibility: AppConstants.spotifyEnabled ? score : 0,
+      topArtists: AppConstants.spotifyEnabled
+          ? ['Calcutta', 'Indie']
+          : const [],
+      city: AppConstants.spotifyEnabled ? 'Milano' : '',
+      attendingEvents: AppConstants.spotifyEnabled ? i + 1 : 0,
       isFriend: i == 1,
     ),
 ];
@@ -88,6 +96,13 @@ const music = MusicProfile(
     GenrePreference(genre: 'Alternative', weight: 0.3),
   ],
 );
+
+class FixtureAuth extends StateNotifier<GeneralAuthState>
+    implements GeneralAuthNotifier {
+  FixtureAuth() : super(const GeneralAuthState.idle());
+  @override
+  dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}
 
 class FixtureProfile extends StateNotifier<AppUser>
     implements ProfileController {
@@ -192,7 +207,6 @@ void main() {
           'Inter-ExtraBold',
         ],
       ),
-      ('Syne', ['Syne-SemiBold', 'Syne-Bold']),
     ]) {
       final loader = FontLoader(family);
       for (final file in files) {
@@ -216,6 +230,9 @@ void main() {
     ('04-agenda', '/my-events'),
     ('05-messaggi', '/conversations'),
     ('06-profilo', '/profile'),
+    ('07-accesso', '/login'),
+    ('08-modifica-profilo', '/edit-profile'),
+    ('09-foto-profilo', '/edit-profile?photoSheet=1'),
   ];
   for (final (format, size, scale) in formats) {
     for (final (name, location) in captures) {
@@ -253,6 +270,11 @@ void main() {
               path: '/event-detail',
               builder: (c, s) => EventDetailScreen(event: events[0]),
             ),
+            GoRoute(path: '/login', builder: (c, s) => const LoginScreen()),
+            GoRoute(
+              path: '/edit-profile',
+              builder: (c, s) => const EditProfileScreen(),
+            ),
             GoRoute(
               path: '/my-events',
               builder: (c, s) => const MyEventsScreen(),
@@ -262,10 +284,30 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              generalAuthProvider.overrideWith((ref) => FixtureAuth()),
               myProfileProvider.overrideWith((ref) => FixtureProfile()),
+              publicFriendsProvider.overrideWith(
+                (ref) async => [matches.first],
+              ),
+              publicConnectionProfilesProvider.overrideWith(
+                (ref) async => matches,
+              ),
               myMusicProfileProvider.overrideWith((ref) => FixtureMusic()),
               myEventsProvider.overrideWith((ref) => FixtureEvents()),
               matchedUsersProvider.overrideWith((ref) => FixtureMatches()),
+              publicUsersProvider.overrideWith(
+                (ref, query) async => matches
+                    .where(
+                      (u) =>
+                          u.user.username.toLowerCase().contains(
+                            query.toLowerCase(),
+                          ) ||
+                          (u.user.displayName ?? '').toLowerCase().contains(
+                            query.toLowerCase(),
+                          ),
+                    )
+                    .toList(),
+              ),
               pendingFriendshipsProvider.overrideWith(
                 (ref) => FixtureFriendships(),
               ),
@@ -292,7 +334,9 @@ void main() {
               child: MaterialApp.router(
                 debugShowCheckedModeBanner: false,
                 routerConfig: router,
-                theme: VibraTheme.lightTheme,
+                theme: Platform.environment['VIBRA_CAPTURE_THEME'] == 'dark'
+                    ? VibraTheme.darkTheme
+                    : VibraTheme.lightTheme,
                 localizationsDelegates: AppLocalizations.localizationsDelegates,
                 supportedLocales: AppLocalizations.supportedLocales,
                 locale: const Locale('it'),
@@ -318,6 +362,19 @@ void main() {
           await tester.pump(const Duration(seconds: 2));
           await tester.pump();
         }
+        if (name == '09-foto-profilo') {
+          await tester.tap(find.text('Cambia immagine profilo'));
+          await tester.pump();
+          await tester.pump(const Duration(seconds: 1));
+        }
+        // Widget tests only decode images (the VIBRA mark, local photos)
+        // when real async time is allowed; give decoders a moment.
+        for (var i = 0; i < 3; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 150)),
+          );
+          await tester.pump();
+        }
         expect(tester.takeException(), isNull);
         final boundary =
             key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
@@ -325,7 +382,7 @@ void main() {
           final image = await boundary.toImage(pixelRatio: scale);
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
           final file = File(
-            'release/store-materials/screenshots/$format/$name.png',
+            '${Platform.environment['VIBRA_SCREENSHOT_DIR'] ?? 'release/store-materials/screenshots'}/$format/$name.png',
           );
           await file.parent.create(recursive: true);
           await file.writeAsBytes(bytes!.buffer.asUint8List());

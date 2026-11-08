@@ -1,8 +1,17 @@
-# Invio agli store — Vibra 1.0.0+2
+# Invio agli store — Vibra 1.0.0+3
 
-Stato attuale: **preparazione tecnica completata; invio non ancora pronto**.
-Risultati e blocchi: [report del 7 ottobre](docs/store-readiness-20261007.md).
+Stato attuale: **candidata in verifica finale; invio non ancora pronto**.
+Correzioni correnti e verifiche pendenti: [chiusura del 18 ottobre](docs/launch-closure-20261018.md).
+Il [report del 15 ottobre](docs/bugfixes-20261015.md) conserva le prove precedenti.
+Risultati della candidata precedente: [report del 13 ottobre](docs/launch-readiness-20261013.md).
 Materiali aggiornati al 10 ottobre: [store/README.md](store/README.md).
+
+Aggiornamento del 18 ottobre: 295 test Flutter superati e analisi pulita; corretto
+il flusso di cancellazione account. Nessuna prova fisica o conferma di presidio
+è stata dichiarata completata. Protocollo: [telefoni](docs/device-acceptance-20261018.md),
+[push](docs/push-readiness-20261018.md), [procedure operative](docs/operations-runbook.md).
+Le verifiche hosted del 18 ottobre rilevano inoltre l’assenza del job di
+retention dei dati: riscontro e piano nel [verbale operativo](docs/operations-verification-20261018.md).
 
 ## Codice e bundle
 
@@ -16,23 +25,43 @@ Materiali aggiornati al 10 ottobre: [store/README.md](store/README.md).
 - [x] Configurate entitlements Apple/push e ambiente APNs per build.
 - [x] Eliminata la firma debug dalle release Android.
 - [x] Aggiornato invio push a FCM HTTP v1, verificato con test automatici.
-- [x] Versione 1.0.0, build 2, identificatore `com.vibra.app`.
+- [x] Versione 1.0.0, build 3, identificatore `com.vibra.app`.
 
 ## Backend e firma
+
+Aggiornamento del 13 ottobre: [correzioni e verifica](docs/launch-readiness-20261013.md).
+Le nuove protezioni sono attive nel backend di lancio, dopo backup e approvazione.
+Riscontri: [backend del 13 ottobre](docs/backend-20261013.md).
+
+Aggiornamento del 15 ottobre: [segnalazioni, messaggi, traduzioni e catalogo eventi](docs/bugfixes-20261015.md).
+
+- [x] Applicate le migrazioni `20261014000000`, `20261014000001`, `20261015000000`; distribuiti ricerca geografica e job catalogo autenticato. Importazione verificata: 449 eventi italiani dal provider, 450 futuri reali nel catalogo.
+
+- [x] Applicate le due migrazioni del 13 ottobre e distribuite le tre funzioni Spotify aggiornate.
 
 - [x] Applicate le 17 migrazioni mancanti e due correzioni successive, dopo dry run e backup (10 ottobre).
 - [x] Distribuite tutte le 16 funzioni, incluse `upload-image` e `resolve-event` (10 ottobre).
 - [x] Collegato il service account backend `FIREBASE_SERVICE_ACCOUNT_JSON` all’invio FCM HTTP v1.
 - [ ] Configurare/verificare APNs in Firebase e provare la consegna push su device.
-- [ ] Confermare accesso Spotify per utenti pubblici.
-- [ ] Configurare chiave Android e Play App Signing.
+- [x] Spotify incluso nella versione pubblica: client (`SPOTIFY_ENABLED` predefinito `true`), migrazione `20261106000000_enable_spotify_public.sql`, testi legali e store aggiornati.
+- [ ] Spotify: approvazione extended quota, secret Edge `SPOTIFY_ENABLED=true`, migrazioni del 5–6 novembre e funzioni Spotify distribuite, QA su dispositivo (vedi docs/spotify-integration.md).
+- [x] Creata e verificata chiave di upload Android ufficiale, con copia locale protetta (13 ottobre).
+- [x] Registrate SHA-1 e SHA-256 della chiave Android in Firebase.
+- [x] Creato client OAuth Android della nuova chiave e configurato pubblico Google In production.
+- [ ] Provare login Google con il certificato ufficiale e da test interno Play.
+- [ ] Attivare Play App Signing e registrare il certificato di distribuzione.
+- [ ] Registrare gli account Google Play Console e Apple Developer (il titolare conferma di non averli ancora).
+- [ ] Completare il test chiuso richiesto per nuovi account personali Play.
 - [ ] Configurare firma e profilo App Store Apple con le capability necessarie.
-- [ ] Ottenere AAB e IPA firmati con la procedura di rilascio.
-- [ ] Verificare pagine native da 16 KB sul bundle Android finale.
+- [x] Ottenuto e verificato AAB Android firmato; APK release firmato per QA.
+- [ ] Ottenere IPA firmata per App Store.
+- [x] Verificati ELF da 16 KB nel bundle e allineamento ZIP dell'APK release.
+- [ ] Provare la release su dispositivo con pagine native da 16 KB.
 
 ## Materiali e operatività
 
-- [ ] Confermare titolare legale, indirizzo e contatti monitorati.
+- [x] Confermati titolare legale Gregorio Morelli e indirizzo; privacy/termini pubblicati aggiornati.
+- [ ] Confermare presidio dei contatti email.
 - [x] Pubblicate privacy, termini, supporto, eliminazione account e sicurezza community.
 - [x] Allineati documenti, contatto email nell'app e link alle pagine complete.
 - [x] Preparate tabelle App Privacy / Data safety e questionari età/review.

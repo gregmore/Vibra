@@ -1,15 +1,20 @@
 {
   "project_type": "personal",
   "legal_name": "Gregorio Morelli",
-  "legal_address": "",
-  "country": "",
+  "legal_address": "Via Pasquale Modestino 29, 44123, Ferrara, Italia",
+  "country": "Italia",
   "support_email": "vibra7341@gmail.com",
   "privacy_email": "vibra7341@gmail.com",
   "legal_email": "vibra7341@gmail.com",
   "child_safety_email": "vibra7341@gmail.com",
   "domain": "",
   "trader_status": "to_confirm",
-  "address_status": "awaiting_owner",
+  "address_status": "owner_confirmed",
   "mailbox_monitoring_status": "owner_to_enable",
-  "public_site_url": "https://vibra-assistenza.newrobin4.chatgpt.site"
+  "public_site_url": "https://vibra-assistenza.newrobin4.chatgpt.site",
+  "feature_availability": {
+    "release_scope": "public_release",
+    "spotify_connection": true,
+    "music_affinity": true
+  }
 }

@@ -76,7 +76,9 @@ jobs:
         run: supabase test db
 
       - name: Run Edge Functions Unit Tests
-        run: deno test --allow-env=FCM_SERVICE_ACCOUNT_JSON,FIREBASE_SERVICE_ACCOUNT_JSON supabase/functions/event-reminders/reminder.test.ts supabase/functions/_shared/fcm.test.ts supabase/functions/calculate-match/index.test.ts supabase/functions/sync-music-profile/genres.test.ts
+        # Every shared module's tests (affinity, DNA, feed, stories, AI,
+        # notification delivery, batching, …) plus the function tests.
+        run: deno test --allow-env --allow-read supabase/functions/_shared/ supabase/functions/calculate-match/index.test.ts supabase/functions/sync-music-profile/genres.test.ts supabase/functions/event-reminders/reminder.test.ts supabase/functions/search-events/index.test.ts
 
       - name: Check Edge Functions
         run: deno check supabase/functions/*/index.ts
